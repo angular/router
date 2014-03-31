@@ -1,0 +1,43 @@
+{
+  "name": "templating",
+  "version": "0.0.0",
+  "description": "Templating engine for Angular.",
+  "main": "node/index.js",
+  "homepage": "https://github.com/angular/templating",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/angular/templating.git"
+  },
+  "bugs": {
+    "url": "https://github.com/angular/templating/issues"
+  },
+  "dependencies": {
+    "di": "~2.0.0-pre-5",
+    "expressionist": "git://github.com/angular/expressionist.js#dist",
+    "watchtower": "git://github.com/angular/watchtower.js#dist",
+    "traceur": "git://github.com/vojtajina/traceur-compiler#es6-plus-to-pure-es6"
+  },
+  "devDependencies": {
+    "assert": "git://github.com/angular/assert#dist",
+    "clientify": "git://github.com/vojtajina/clientify#shrinkwrap",
+    "gulp": "^3.5.6",
+    "gulp-connect": "~1.0.5",
+    "gulp-traceur": "^0.3.0",
+    "karma": "^0.12.1",
+    "karma-chrome-launcher": "^0.1.2",
+    "karma-jasmine": "^0.2.2",
+    "karma-requirejs": "^0.2.1",
+    "karma-sauce-launcher": "^0.2.3",
+    "karma-traceur-preprocessor": "^0.2.2",
+    "pipe": "git://github.com/angular/pipe#remove-transitive-deps",
+    "requirejs": "^2.1.11",
+    "through2": "^0.4.1",
+    "gulp-util": "~2.2.14",
+    "jsdom": "~0.10.3"
+  },
+  "scripts": {
+    "test": "karma start --single-run"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

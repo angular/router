@@ -1,0 +1,100 @@
+{
+  "name": "templating",
+  "version": "0.0.0",
+  "dependencies": {
+    "di": {
+      "version": "2.0.0-pre-5",
+      "from": "di@2.0.0-pre-5",
+      "dependencies": {}
+    },
+    "traceur": {
+      "version": "0.0.33",
+      "from": "git://github.com/vojtajina/traceur-compiler#es6-plus-to-pure-es6",
+      "dependencies": {}
+    },
+    "expressionist": {
+      "version": "0.0.1",
+      "from": "git://github.com/angular/expressionist.js#dist",
+      "dependencies": {}
+    },
+    "watchtower": {
+      "version": "0.0.1",
+      "from": "git://github.com/angular/watchtower.js#dist",
+      "dependencies": {}
+    },
+    "es6-shim": {
+      "version": "0.9.3",
+      "from": "es6-shim@0.9.3",
+      "dependencies": {}
+    },
+    "commander": {
+      "version": "2.1.0",
+      "from": "commander@2.1.0",
+      "dependencies": {}
+    },
+    "q-io": {
+      "version": "1.10.9",
+      "from": "q-io@1.10.9",
+      "dependencies": {}
+    },
+    "semver": {
+      "version": "2.2.1",
+      "from": "semver@2.2.1",
+      "dependencies": {}
+    },
+    "q": {
+      "version": "0.9.7",
+      "from": "q@0.9.7",
+      "dependencies": {}
+    },
+    "qs": {
+      "version": "0.1.0",
+      "from": "qs@0.1.0",
+      "dependencies": {}
+    },
+    "url2": {
+      "version": "0.0.0",
+      "from": "url2@0.0.0",
+      "dependencies": {}
+    },
+    "mime": {
+      "version": "1.2.11",
+      "from": "mime@1.2.11",
+      "dependencies": {}
+    },
+    "mimeparse": {
+      "version": "0.1.4",
+      "from": "mimeparse@0.1.4",
+      "dependencies": {}
+    },
+    "collections": {
+      "version": "0.2.2",
+      "from": "collections@0.2.2",
+      "dependencies": {}
+    },
+    "weak-map": {
+      "version": "1.0.0",
+      "from": "weak-map@1.0.0",
+      "dependencies": {}
+    },
+
+    "gulp-traceur": {
+      "version": "0.3.0",
+      "from": "gulp-traceur@0.3.0",
+      "dependencies": {
+        "through2": {
+          "version": "0.4.1",
+          "from": "through2@0.4.1"
+        },
+        "gulp-util": {
+          "version": "2.2.14",
+          "from": "gulp-util@2.2.14"
+        }
+      }
+    },
+    "karma-traceur-preprocessor": {
+      "version": "0.2.2",
+      "from": "karma-traceur-preprocessor@0.2.2"
+    }
+  }
+}
