@@ -1,0 +1,7 @@
+node_modules
+compiled
+dist
+sauce_connect.log
+.idea
+.DS_STORE
+temp

@@ -1,0 +1,11 @@
+test/
+*.sublime-project
+*.sublime-workspace
+gulpfile.js
+karma.conf.js
+.travis.yml
+test-main.js
+.npmignore
+*.orig
+Gruntfile.*
+compiled/
