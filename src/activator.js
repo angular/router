@@ -61,7 +61,7 @@ class Step{
         try{
           var value = invoke(item, this.methodName, context);
 
-          Promise.all([value]).then((results) => {
+          return Promise.all([value]).then((results) => {
             return handleOutput(context, results[0], this.onContinue);
           }).catch((e1) =>{
             return handleOutput(context, e1);

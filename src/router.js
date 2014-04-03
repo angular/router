@@ -17,6 +17,40 @@ function reconstructUrl(instruction) {
   return instruction.fragment + '?' + instruction.queryString;
 }
 
+export class Instruction{
+  constructor(fragment, queryString, params, queryParams, config={}){
+    this.fragment = fragment;
+    this.queryString = queryString;
+    this.params = params;
+    this.queryParams = queryParams;
+    this.config = config;
+  }
+
+  canActivate(){
+    if('canActivate' in this.controller){
+      return this.controller.canActivate.appy(this.controller, arguments);
+    }
+  }
+
+  activate(){
+    if('activate' in this.controller){
+      return this.controller.activate.appy(this.controller, arguments);
+    }
+  }
+
+  canDeactivate(){
+    if('canDeactivate' in this.controller){
+      return this.controller.canDeactivate.appy(this.controller, arguments);
+    }
+  }
+
+  deactivate(){
+    if('deactivate' in this.controller){
+      return this.controller.deactivate.appy(this.controller, arguments);
+    }
+  }
+}
+
 export class Router{
   constructor(parent:Router=null){
     this.parent = parent;
@@ -72,18 +106,13 @@ export class Router{
       var first = results[0];
       var fragment = url; //split query string...
       var queryString = url;
-      var instruction = { 
-        fragment:fragment, 
-        queryString: queryString
-        params:first.params, 
-        queryParams:first.queryParams 
-      };
 
       if(typeof first.handler == 'function'){
-        first.handler(instruction);
+        instruction.config = {};
+        first.handler(new Instruction(fragment, queryString, params, queryParams));
       }else{
         instruction.config = first.handler;
-        this.queueInstruction(instruction);
+        this.queueInstruction(new Instruction(fragment, queryString, params, queryParams, first.handler));
       }
     }else{
       //log('Route Not Found');
@@ -124,8 +153,6 @@ export class Router{
       currentInstruction:this.currentInstruction, 
       prevInstruction:this.currentInstruction, 
       nextInstruction:instruction,
-      currentController: this.currentController,
-      prevController: this.currentController,
       activator: this.activator,
       router:this,
       createActivator:this.createActivator
@@ -236,8 +263,6 @@ export class Router{
     var catchAllRoute = "*path";
 
     var callback = (instruction) => {
-      instruction.config = {};
-
       if (!config) {
         instruction.config.moduleId = instruction.fragment;
       } else if (typeof config == 'string') {
@@ -324,7 +349,6 @@ export class Router{
     this.queue = [];
     this.isProcessing = false;
     this.currentInstruction = null;
-    this.currentActivation = null;
     delete this.options;
   };
 
