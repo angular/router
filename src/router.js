@@ -1,6 +1,7 @@
 import Pipeline from './pipeline';
 import history from './history';
 import extend from './util';
+import Activator from './activator';
 
 function stripParametersFromRoute(route) {
   var colonIndex = route.indexOf(':');
@@ -123,17 +124,35 @@ export class Router{
       currentInstruction:this.currentInstruction, 
       prevInstruction:this.currentInstruction, 
       nextInstruction:instruction,
-      router:this
+      currentController: this.currentController,
+      prevController: this.currentController,
+      activator: this.activator,
+      router:this,
+      createActivator:this.createActivator
     };
 
-    var pipeline = new Pipeline();
+    this.createPipeline().run(context).then((result) => {
+      //check result and do different things?
 
-    //what?
-
-    pipeline.run(context).then((result) => {
       this.isProcessing = false;
       this.dequeueInstruction();
     });
+  }
+
+  createActivator(){
+    var activator = new Activator();
+
+    //TODO: configure
+
+    return activator;
+  }
+
+  createPipeline(){
+    var pipeline = new Pipeline();
+
+    //TODO: configure
+
+    return pipeline;
   }
 
   map(route, config) {

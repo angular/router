@@ -130,6 +130,10 @@ export class Activator{
     };
   }
 
+  setCurrentAndBypassLifecycle(current){
+    this.current = current;
+  }
+
   activate(item, input){
     var context = this.createContext('activate', input, item);
     var pipeline = new Pipeline()
