@@ -40,6 +40,19 @@ function areSameInputs(prev, next){
     && JSON.stringify(prev.queryParams) === JSON.stringify(next.queryParams);
 }
 
+function targetIsThisWindow(target) {
+  var targetWindow = target.getAttribute('target');
+
+  if(!targetWindow ||
+      targetWindow === window.name ||
+      targetWindow === '_self' ||
+      (targetWindow === 'top' && window === window.top)) {
+      return true;
+  }
+
+  return false;
+}
+
 export class Instruction{
   constructor(fragment, queryString, params, queryParams, config={}){
     this.fragment = fragment;
@@ -234,8 +247,8 @@ export class DelegateToChildRouter{
   }
 }
 
-export class Router{
-  constructor(parent:Router=null){
+export class RouterBase{
+  constructor(parent:RouterBase=null){
     this.parent = parent;
     this.activator = this.createActivator();
     this.reset();
@@ -342,6 +355,11 @@ export class Router{
     pipeline.run(context).then((result) => {
       this.isNavigating = false;
 
+      if (this.resolveActivate) {
+        this.resolveActivate();
+        this.resolveActivate = null;
+      }
+
       if(result.completed){
         if (!context.hasChildRouter) {
           this.updateDocumentTitle(context.currentInstruction);
@@ -352,8 +370,9 @@ export class Router{
         this.navigate(reconstructUrl(context.prevInstruction), false);
       }
       
-      instruction.resolve(result);
-      this.dequeueInstruction();
+      instruction.resolve(result).then(() =>{
+        this.dequeueInstruction();
+      });
     });
   }
 
@@ -551,9 +570,9 @@ export class Router{
 
     Object.defineProperty(config, 'link', {
       get:function(){
-        if(that.parent && that.parent.activeInstruction){
-          var instruction = that.parent.activeInstruction,
-              link = instruction.config.link + '/' + config.route;
+        if(that.parent && that.parent.activator.current){
+          var instruction = that.parent.activator.current,
+              link = instruction.config.link + '/' + config.route; //TODO: strip * at end
 
             if (history._hasPushState) {
                 link = '/' + link;
@@ -564,7 +583,7 @@ export class Router{
         }
 
         if (history._hasPushState) {
-            return config.route;
+          return config.route;
         }
 
         return "#" + config.route;
@@ -586,6 +605,59 @@ export class Router{
   };
 
   createChildRouter() {
-    return new Router(this);
+    return new ChildRouter(this);
   };
+}
+
+export class ChildRouter extends RouterBase {
+  constructor(parent:RouterBase=null){
+    super(parent);
+  }
+}
+
+export class Router extends RouterBase {
+  constructor(){
+    super();
+  }
+
+  handleLinkClick(evt) {
+    var target = evt.target;
+    if(target.tagName != 'A') {
+      return;
+    }
+
+    if(history._hasPushState) {
+      if(!evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && targetIsThisWindow(target)) {
+        var href = target.getAttribute('href');
+
+        // Ensure the protocol is not part of URL, meaning its relative.
+        // Stop the event bubbling to ensure the link will not cause a page refresh.
+        if(href != null && !(href.charAt(0) === "#" || /^[a-z]+:/i.test(href))) {
+          evt.preventDefault();
+          history.navigate(href);
+        }
+      }
+    }
+  }
+
+  activate(options) {
+    return new Promise((resolve) => {
+      this.resolveActivate = resolve;
+
+      this.options = extend({ routeHandler: rootRouter.loadUrl.bind(this) }, this.options, options);
+      history.activate(this.options);
+
+      document.addEventListener('click', this.handleLinkClick, true);
+
+      if(history.options.silent && startDeferred){
+        this.resolveActivate();
+        this.resolveActivate = null;
+      }
+    });
+  }
+
+  deactivate() {
+    document.removeEventListener('click', this.handleLinkLick);
+    history.deactivate();
+  }
 }
