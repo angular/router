@@ -26,6 +26,8 @@ function setTitle(value) {
 }
 
 function areSameInputs(prev, next){
+
+
   return false;
 }
 
@@ -372,12 +374,17 @@ export class Router{
         return false;
       },
       findChildActivator(context){
-        var childRouter = context.nextItem.controller.router;
+        var controller = context.prevItem.controller;
+        if(!controller){
+          return null;
+        }
+
+        var childRouter = controller.router;
         if(childRouter){
           return childRouter.activator;
         }
 
-        return null;
+        return controller.activator;
       }
     });
   }
