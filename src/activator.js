@@ -15,11 +15,11 @@ function handleOutput(context, output, onContinue){
 }
 
 function invoke(target, method, context){
-  if(Array.isArray(context.input)){
-    target[method].apply(target, context.input);
+  if(Array.isArray(context.nextInput)){
+    target[method].apply(target, context.nextInput);
   }
 
-  return target[method](context.input);
+  return target[method](context.nextInput);
 }
 
 function createFakeChild(){
@@ -28,6 +28,34 @@ function createFakeChild(){
       return Promise.resolve({completed:true});
     }
   };
+}
+
+function shouldContinue(output){
+  if(output instanceof Error){
+    return false;
+  }
+
+  if(output === Object(output)){
+    output = output.next || false;
+  }
+
+  if(typeof output == 'string'){
+    return affirmations.indexOf(value.toLowerCase()) !== -1;
+  }
+
+  return output;
+}
+
+function findChildActivator(context){
+  if(context.currentItem){
+    return context.currentItem.activator;
+  }
+
+  return null;
+}
+
+function areSameItem(context) {
+  return context.currentItem == context.nextItem;
 }
 
 class Step{
@@ -79,54 +107,56 @@ class Step{
 export var canDeactivatePrevious = new Step('prevItem', 'canDeactivate', true);
 export var canActivateNext = new Step('nextItem', 'canActivate');
 export var deactivatePrevious = new Step('prevItem', 'deactivate', true);
-export var activateNext = new Step('nextItem', 'activate', false, (context) => context.currentItem = context.nextItem);
+export var activateNext = new Step('nextItem', 'activate', false, (context) => {
+  context.currentItem = context.nextItem;
+  context.currentInput = context.nextInput;
+});
 
 export function processResult(context){
   return context.next().then((result) =>{
     if(result.completed && context.currentItem != context.prevItem){
       context.activator.current = context.currentItem;
+      context.activator.currentInput = context.currentInput;
     }
 
     return result;
-  }).catch((e) =>{
-    return handleOutput(context, e);
+  }).catch((err) =>{
+    return handleOutput(context, err);
   });
 }
 
-export function shouldContinue(output){
-  if(output instanceof Error){
-    return false;
+export function equivalenceCheck(context){
+  if(context.areSameItem(context)){
+    return context.complete();
   }
 
-  return output;
+  return context.next();
 }
 
-export function findChildActivator(context){
-  if(context.currentItem){
-    return context.currentItem.activator;
-  }
-
-  return null;
-}
+export var affirmations: ['yes', 'ok', 'true'];
 
 export class Activator{
-  construtor(){
+  construtor(options){
     this.current = null;
-    this.shouldContinue = shouldContinue;
-    this.findChildActivator = findChildActivator;
+    this.shouldContinue = options.shouldContinue || shouldContinue;
+    this.findChildActivator = options.findChildActivator || findChildActivator;
+    this.areSameItem = options.areSameItem || areSameItem;
   }
 
-  createContext(operation, input, nextItem){
+  createContext(operation, nextInput, nextItem){
     return { 
       operation:operation,
-      input: input,
+      prevInput: this.currentInput,
+      currentInput: this.currentInput,
+      nextInput: nextInput,
       output: null,
       currentItem:this.current, 
       prevItem:this.current, 
       nextItem:nextItem,
       activator:this,
       shouldContinue:this.shouldContinue,
-      findChildActivator:this.findChildActivator
+      findChildActivator:this.findChildActivator,
+      areSameItem:this.areSameItem
     };
   }
 
@@ -138,6 +168,7 @@ export class Activator{
     var context = this.createContext('activate', input, item);
     var pipeline = new Pipeline()
       .withStep(processResult)
+      .withStep(equivalenceCheck)
       .withStep(canDeactivatePrevious)
       .withStep(canActivateNext)
       .withStep(deactivatePrevious)

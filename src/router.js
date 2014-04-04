@@ -25,6 +25,10 @@ function setTitle(value) {
   }
 }
 
+function areSameInputs(prev, next){
+  return false;
+}
+
 export class Instruction{
   constructor(fragment, queryString, params, queryParams, config={}){
     this.fragment = fragment;
@@ -62,6 +66,28 @@ export class Instruction{
 export class Redirect {
   constructor(url){
     this.url = url;
+  }
+}
+
+export class NavigationContext {
+  constructor(router, nextInstruction){
+      this.output = null;
+      this.currentInstruction = router.activator.current;
+      this.prevInstruction = router.activator.current;
+      this.nextInstruction = nextInstruction;
+      this.activator = router.activator;
+      this.router = router;
+      this.createActivator = router.createActivator.bind(router);
+  }
+
+  get hasChildRouter(){
+    var controller = this.nextInstruction.controller;
+    return controller && controller.router && controller.router.parent == this.router;
+  }
+
+  redirect(redirect){
+    this.output = redirect;
+    return this.cancel();
   }
 }
 
@@ -197,28 +223,6 @@ export class DelegateToChildRouter{
   }
 }
 
-export class NavigationContext {
-  constructor(router, nextInstruction){
-      this.output = null;
-      this.currentInstruction = router.activator.current;
-      this.prevInstruction = router.activator.current;
-      this.nextInstruction = nextInstruction;
-      this.activator = router.activator;
-      this.router = router;
-      this.createActivator = router.createActivator.bind(router);
-  }
-
-  get hasChildRouter(){
-    var controller = this.nextInstruction.controller;
-    return controller && controller.router && controller.router.parent == this.router;
-  }
-
-  redirect(redirect){
-    this.output = redirect;
-    return this.cancel();
-  }
-}
-
 export class Router{
   constructor(parent:Router=null){
     this.parent = parent;
@@ -230,28 +234,25 @@ export class Router{
     return new Redirect(url);
   }
 
-  get isNavigating(){
-    return false;
-  }
-
   get navigationModel(){
     if(this._needsNavModelBuild){
       var nav = [], routes = this.routes;
       var fallbackOrder = 100;
 
-      for (var i = 0; i < routes.length; i++) {
-          var current = routes[i];
+      for (var i = 0, length = routes.length; i < length; i++) {
+        var current = routes[i];
 
-          if (current.nav) {
-              if (!(typeof current.nav == 'number')) {
-                  current.nav = ++fallbackOrder;
-              }
-
-              nav.push(current);
+        if (current.nav) {
+          if (typeof current.nav != 'number') {
+            current.nav = ++fallbackOrder;
           }
+
+          nav.push(current);
+        }
       }
 
       nav.sort(function (a, b) { return a.nav - b.nav; });
+
       this._navigationModel = nav;
       this._needsNavModelBuild = false;
     }
@@ -327,24 +328,22 @@ export class Router{
     var context = this.createNavigationContext();
     var pipeline = this.createNavigationPipeline();
 
-    pipeline.run(context)
-      .then((result) => {
-        this.isNavigating = false;
+    pipeline.run(context).then((result) => {
+      this.isNavigating = false;
 
-        if(result.completed){
-          if (!context.hasChildRouter) {
-            this.updateDocumentTitle(context.currentInstruction);
-          }
-        }else if(result.output instanceof Redirect){
-          this.navigate(result.output.url, { trigger: true, replace: true });
-        }else if (context.currentInstruction) {
-          this.navigate(reconstructUrl(context.prevInstruction), false);
+      if(result.completed){
+        if (!context.hasChildRouter) {
+          this.updateDocumentTitle(context.currentInstruction);
         }
-        
-        instruction.resolve(result);
-      }).then(() =>{
-        this.dequeueInstruction();
-      });
+      }else if(result.output instanceof Redirect){
+        this.navigate(result.output.url, { trigger: true, replace: true });
+      }else if (context.currentInstruction) {
+        this.navigate(reconstructUrl(context.prevInstruction), false);
+      }
+      
+      instruction.resolve(result);
+      this.dequeueInstruction();
+    });
   }
 
   createNavigationContext(){
@@ -361,11 +360,26 @@ export class Router{
   }
 
   createActivator(){
-    var activator = new Activator();
+    return new Activator({
+      areSameItem(context){
+        var prevController = context.prevItem.controller,
+            nextController = context.nextItem.controller;
 
-    //TODO: configure
+        if(prevController == nextController){
+          return areSameInputs(context.prevInput, context.nextInput);
+        }
 
-    return activator;
+        return false;
+      },
+      findChildActivator(context){
+        var childRouter = context.nextItem.controller.router;
+        if(childRouter){
+          return childRouter.activator;
+        }
+
+        return null;
+      }
+    });
   }
 
   updateDocumentTitle = function (instruction) {

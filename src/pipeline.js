@@ -50,9 +50,13 @@ export class Pipeline {
           return context.reject(e);
         }
       }else{
-        context.status = 'completed';
-        return Promise.resolve(createResult(context));
+        return context.complete();
       }
+    };
+
+    context.complete = () =>{
+      context.status = 'completed';
+      return Promise.resolve(createResult(context));
     };
 
     context.cancel = () =>{
