@@ -177,10 +177,11 @@ export class SelectView{
   }
 
   determineViewId(nextInstruction){
-    return nextInstruction.config.viewId || nextInstruction.config.moduleId + '.html'; //TODO: apply proper plugin to path
+    return nextInstruction.config.viewId || nextInstruction.config.moduleId + '.html';
   }
 
   resolveViewFactory(id){
+     //TODO: apply proper plugin to id
     //TODO: load and compile view factory
   }
 }
@@ -228,13 +229,15 @@ export class DelegateToChildRouter{
         controller = instruction.controller;
 
     if(context.hasChildRouter){
-      var fullFragment = instruction.fragment;//TODO: construct from wildcard segment
+      var wildcardIndex = instruction.config.route.lastIndexOf('*'),
+          wildcardName = instruction.config.route.substr(wildcardIndex + 1),
+          path = instruction.params[wildcardName];
 
       if (instruction.queryString) {
-          fullFragment += "?" + instruction.queryString;
+        path += "?" + instruction.queryString;
       }
 
-      return controller.router.loadUrl(fullFragment).then((result) =>{
+      return controller.router.loadUrl(path).then((result) =>{
         if(result.completed){
           return context.next();
         }
@@ -570,23 +573,26 @@ export class RouterBase{
 
     Object.defineProperty(config, 'link', {
       get:function(){
+        var link = config.route; //TODO: strip * at end
+
         if(that.parent && that.parent.activator.current){
-          var instruction = that.parent.activator.current,
-              link = instruction.config.link + '/' + config.route; //TODO: strip * at end
+          var instruction = that.parent.activator.current;
+          link = instruction.config.link + '/' + link; 
 
-            if (history._hasPushState) {
-                link = '/' + link;
-            }
+          //TODO: add query string?
 
-            link = link.replace('//', '/').replace('//', '/');
-            return link;
+          if (history._hasPushState) {
+            link = '/' + link;
+          }
+
+          return link.replace('//', '/').replace('//', '/');
         }
 
         if (history._hasPushState) {
-          return config.route;
+          return link;
         }
 
-        return "#" + config.route;
+        return "#" + link;
       }
     });
   }
