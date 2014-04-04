@@ -577,7 +577,13 @@ export class RouterBase{
 
         if(that.parent && that.parent.activator.current){
           var instruction = that.parent.activator.current;
-          link = instruction.config.link + '/' + link; 
+
+          //get wildcard name
+          //lookup wildcard value
+          //strip value from fragment
+          //add to beginning of link
+
+          link = instruction.config.link + '/' + link;
 
           //TODO: add query string?
 
