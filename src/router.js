@@ -26,9 +26,18 @@ function setTitle(value) {
 }
 
 function areSameInputs(prev, next){
+  var prevParams, nextParams;
 
+  if(prev == next){
+    return true;
+  }
 
-  return false;
+  if(!prev || !next){
+    return false;
+  }
+
+  return JSON.stringify(prev.params) === JSON.stringify(next.params)
+    && JSON.stringify(prev.queryParams) === JSON.stringify(next.queryParams);
 }
 
 export class Instruction{

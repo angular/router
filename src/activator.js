@@ -138,6 +138,7 @@ export var affirmations: ['yes', 'ok', 'true'];
 export class Activator{
   construtor(options){
     this.current = null;
+    this.currentInput = null;
     this.shouldContinue = options.shouldContinue || shouldContinue;
     this.findChildActivator = options.findChildActivator || findChildActivator;
     this.areSameItem = options.areSameItem || areSameItem;
