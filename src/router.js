@@ -17,6 +17,14 @@ function reconstructUrl(instruction) {
   return instruction.fragment + '?' + instruction.queryString;
 }
 
+function setTitle(value) {
+  if (Router.appTitle) {
+    document.title = value + " | " + Router.appTitle;
+  } else {
+    document.title = value;
+  }
+}
+
 export class Instruction{
   constructor(fragment, queryString, params, queryParams, config={}){
     this.fragment = fragment;
@@ -151,7 +159,16 @@ export class ActivateInstruction {
 
 export class CompleteNavigation {
   run(context){
+    this.setInstructionIsActive(context.currentInstruction, false);
+    context.currentInstruction = context.nextInstruction;
+    this.setInstructionIsActive(context.currentInstruction, true);
+    return context.next();
+  }
 
+  setInstructionIsActive(instruction, isActive){
+    if (instruction && instruction.config) {
+      instruction.config.isActive = isActive;
+    }
   }
 }
 
@@ -182,10 +199,9 @@ export class DelegateToChildRouter{
 
 export class NavigationContext {
   constructor(router, nextInstruction){
-      this.operation = 'navigate';
       this.output = null;
-      this.currentInstruction = router.currentInstruction;
-      this.prevInstruction = router.currentInstruction;
+      this.currentInstruction = router.activator.current;
+      this.prevInstruction = router.activator.current;
       this.nextInstruction = nextInstruction;
       this.activator = router.activator;
       this.router = router;
@@ -295,7 +311,7 @@ export class Router{
   }
 
   dequeueInstruction(){
-    if(this.isProcessing){
+    if(this.isNavigating){
       return;
     }
 
@@ -306,21 +322,23 @@ export class Router{
         return;
     }
 
-    this.isProcessing = true;
+    this.isNavigating = true;
 
     var context = this.createNavigationContext();
     var pipeline = this.createNavigationPipeline();
 
     pipeline.run(context)
       .then((result) => {
-        this.isProcessing = false;
+        this.isNavigating = false;
 
         if(result.completed){
-          
+          if (!context.hasChildRouter) {
+            this.updateDocumentTitle(context.currentInstruction);
+          }
         }else if(result.output instanceof Redirect){
           this.navigate(result.output.url, { trigger: true, replace: true });
         }else if (context.currentInstruction) {
-          this.navigate(reconstructUrl(context.currentInstruction), false);
+          this.navigate(reconstructUrl(context.prevInstruction), false);
         }
         
         instruction.resolve(result);
@@ -334,11 +352,12 @@ export class Router{
   }
 
   createNavigationPipeline(){
-    var pipeline = new Pipeline();
-
-    //TODO: configure
-
-    return pipeline;
+    return new Pipeline()
+      .withStep(new SelectController())
+      .withStep(new SelectView())
+      .withStep(new ActivateInstruction())
+      .withStep(new CompleteNavigation())
+      .withStep(new DelegateToChildRouter());
   }
 
   createActivator(){
@@ -348,6 +367,19 @@ export class Router{
 
     return activator;
   }
+
+  updateDocumentTitle = function (instruction) {
+    var title = instruction.config.title;
+
+    //TODO: dispose previous watch
+
+    if (title) {
+      //TODO: setup new watch
+      setTitle(title);
+    } else if (Router.appTitle) {
+      document.title = Router.appTitle;
+    }
+  };
 
   map(route, config) {
     if (Array.isArray(route)) {
@@ -435,15 +467,15 @@ export class Router{
       } else if (typeof config == 'string') {
         instruction.config.moduleId = config;
         if (replaceRoute) {
-          history.navigate(replaceRoute, { trigger: false, replace: true });
+          return history.navigate(replaceRoute, { trigger: false, replace: true });
         }
       } else if (typeof config == 'function') {
         var result = config(instruction);
         if (result && result.then) {
-          result.then(() => {
+          return result.then(() => {
             //this.trigger('router:route:before-config', instruction.config, this);
             //this.trigger('router:route:after-config', instruction.config, this);
-            this.queueInstruction(instruction);
+            return this.queueInstruction(instruction);
           });
 
           return;
@@ -455,7 +487,7 @@ export class Router{
 
       //this.trigger('router:route:before-config', instruction.config, this);
       //this.trigger('router:route:after-config', instruction.config, this);
-      this.queueInstruction(instruction);
+      return this.queueInstruction(instruction);
     };
 
     this.recognizer.add([{path:catchAllRoute, handler: callback}]);
@@ -510,13 +542,17 @@ export class Router{
     });
   }
 
-  reset() {
+  reset(clearController=true) {
     this.recognizer = new RouteRecognizer();
     this.routes = [];
     this.queue = [];
-    this.isProcessing = false;
-    this.currentInstruction = null;
+    this.isNavigating = false;
+
     delete this.options;
+
+    if(clearController){
+      this.activator.setCurrentAndBypassLifecycle(null);
+    }
   };
 
   createChildRouter() {
