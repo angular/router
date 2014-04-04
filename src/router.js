@@ -51,10 +51,167 @@ export class Instruction{
   }
 }
 
+export class Redirect {
+  constructor(url){
+    this.url = url;
+  }
+}
+
+export class SelectController {
+  run(context){
+    var currentInstruction = context.currentInstruction,
+        nextInstruction = context.nextInstruction;
+
+    if (this.canReuseCurrentController(currentInstruction, nextInstruction)) {
+      context.activator = context.createActivator();
+      context.activator.setCurrentAndBypassLifecycle(currentInstruction);
+      context.nextInstruction = currentInstruction;
+      return context.next();
+    } else {
+      var moduleId = this.determineModuleId(nextInstruction);
+
+      return this.resolveControllerInstance(moduleId).then(function (controller) {
+        context.nextInstruction.controller = controller;
+        return context.next();
+      }).catch(function (err) {
+        //log('Failed to load routed module (' + instruction.config.moduleId + '). Details: ' + err.message);
+        return context.cancel();
+      });
+    }
+  }
+
+  determineModuleId(nextInstruction){
+    return nextInstruction.config.moduleId;
+  }
+
+  resolveControllerInstance(nextInstruction){
+    //TODO: load module, and use injector to get controller instance
+  }
+
+  canReuseCurrentController(currentInstruction, nextInstruction){
+    var currentController = currentInstruction.controller;
+
+    return currentInstruction
+      && currentInstruction.config.moduleId == nextInstruction.config.moduleId
+      && currentController
+      && ((currentController.canReuseForRoute && currentController.canReuseForRoute(nextInstruction.params, nextInstruction.queryParams))
+        || (!currentController.canReuseForRoute && currentController.router && currentController.router.loadUrl));
+  }
+}
+
+export class SelectView{
+  run(context){
+    var nextInstruction = context.nextInstruction;
+
+    if('viewFactory' in nextInstruction){
+      return context.next();
+    }
+
+    var viewId = this.determineViewId(nextInstruction);
+
+    return this.resolveViewFactory(viewId).then((viewFactory) => {
+      nextInstruction.viewFactory = viewFactory;
+      return context.next();
+    }).catch(function (err) {
+      //log('Failed to load routed module (' + instruction.config.moduleId + '). Details: ' + err.message);
+      return context.cancel();
+    });
+  }
+
+  determineViewId(nextInstruction){
+    return nextInstruction.config.viewId || nextInstruction.config.moduleId + '.html'; //TODO: apply proper plugin to path
+  }
+
+  resolveViewFactory(id){
+    //TODO: load and compile view factory
+  }
+}
+
+export class ActivateInstruction {
+  run(context){
+    var input = [
+      context.nextInstruction.params, 
+      context.nextInstruction.queryParams,
+      context.nextInstruction.config
+    ];
+
+    //trigger('router:route:activating', instance, instruction, router);
+
+    return context.activator.activate(context.nextInstruction, input).then((result) => {
+      if(result.completed){
+        return context.next();
+      }else if(result.output instanceof Redirect){
+        return context.redirect(result.output);
+      }else{
+        return context.cancel();
+      }
+    });
+  }
+}
+
+export class CompleteNavigation {
+  run(context){
+
+  }
+}
+
+export class DelegateToChildRouter{
+  run(context){
+    var instruction = context.nextInstruction,
+        controller = instruction.controller;
+
+    if(context.hasChildRouter){
+      var fullFragment = instruction.fragment;//TODO: construct from wildcard segment
+
+      if (instruction.queryString) {
+          fullFragment += "?" + instruction.queryString;
+      }
+
+      return controller.router.loadUrl(fullFragment).then((result) =>{
+        if(result.completed){
+          return context.next();
+        }
+
+        return context.cancel();
+      });
+    }else{
+      return context.next();
+    }
+  }
+}
+
+export class NavigationContext {
+  constructor(router, nextInstruction){
+      this.operation = 'navigate';
+      this.output = null;
+      this.currentInstruction = router.currentInstruction;
+      this.prevInstruction = router.currentInstruction;
+      this.nextInstruction = nextInstruction;
+      this.activator = router.activator;
+      this.router = router;
+      this.createActivator = router.createActivator.bind(router);
+  }
+
+  get hasChildRouter(){
+    var controller = this.nextInstruction.controller;
+    return controller && controller.router && controller.router.parent == this.router;
+  }
+
+  redirect(redirect){
+    this.output = redirect;
+    return this.cancel();
+  }
+}
+
 export class Router{
   constructor(parent:Router=null){
     this.parent = parent;
+    this.activator = this.createActivator();
     this.reset();
+  }
+
+  static redirect(url){
+    return new Redirect(url);
   }
 
   get isNavigating(){
@@ -109,10 +266,10 @@ export class Router{
 
       if(typeof first.handler == 'function'){
         instruction.config = {};
-        first.handler(new Instruction(fragment, queryString, params, queryParams));
+        return first.handler(new Instruction(fragment, queryString, params, queryParams));
       }else{
         instruction.config = first.handler;
-        this.queueInstruction(new Instruction(fragment, queryString, params, queryParams, first.handler));
+        return this.queueInstruction(new Instruction(fragment, queryString, params, queryParams, first.handler));
       }
     }else{
       //log('Route Not Found');
@@ -120,6 +277,7 @@ export class Router{
 
       if (this.currentInstruction) {
         history.navigate(reconstructUrl(this.currentInstruction), { trigger: false, replace: true });
+        return Promise.resolve();
       }
     }
   }
@@ -129,8 +287,11 @@ export class Router{
   }
 
   queueInstruction(instruction){
-    this.queue.unshift(instruction);
-    this.dequeueInstruction();
+    return new Promise((resolve) =>{
+      instruction.resolve = resolve;
+      this.queue.unshift(instruction);
+      this.dequeueInstruction();
+    });
   }
 
   dequeueInstruction(){
@@ -147,23 +308,37 @@ export class Router{
 
     this.isProcessing = true;
 
-    var context = { 
-      operation:'navigate',
-      output: null,
-      currentInstruction:this.currentInstruction, 
-      prevInstruction:this.currentInstruction, 
-      nextInstruction:instruction,
-      activator: this.activator,
-      router:this,
-      createActivator:this.createActivator
-    };
+    var context = this.createNavigationContext();
+    var pipeline = this.createNavigationPipeline();
 
-    this.createPipeline().run(context).then((result) => {
-      //check result and do different things?
+    pipeline.run(context)
+      .then((result) => {
+        this.isProcessing = false;
 
-      this.isProcessing = false;
-      this.dequeueInstruction();
-    });
+        if(result.completed){
+          
+        }else if(result.output instanceof Redirect){
+          this.navigate(result.output.url, { trigger: true, replace: true });
+        }else if (context.currentInstruction) {
+          this.navigate(reconstructUrl(context.currentInstruction), false);
+        }
+        
+        instruction.resolve(result);
+      }).then(() =>{
+        this.dequeueInstruction();
+      });
+  }
+
+  createNavigationContext(){
+    return new NavigationContext(this, instruction);
+  }
+
+  createNavigationPipeline(){
+    var pipeline = new Pipeline();
+
+    //TODO: configure
+
+    return pipeline;
   }
 
   createActivator(){
@@ -172,14 +347,6 @@ export class Router{
     //TODO: configure
 
     return activator;
-  }
-
-  createPipeline(){
-    var pipeline = new Pipeline();
-
-    //TODO: configure
-
-    return pipeline;
   }
 
   map(route, config) {
