@@ -1,7 +1,7 @@
-import Pipeline from './pipeline';
-import history from './history';
-import extend from './util';
-import Activator from './activator';
+import {Pipeline} from './pipeline';
+import {history} from './history';
+import {extend} from './util';
+import {Activator} from './activator';
 
 function stripParametersFromRoute(route) {
   var colonIndex = route.indexOf(':');

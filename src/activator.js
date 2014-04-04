@@ -1,4 +1,4 @@
-import Pipeline from './pipeline';
+import {Pipeline} from './pipeline';
 
 function handleOutput(context, output, onContinue){
   context.output = output;
