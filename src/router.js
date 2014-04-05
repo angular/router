@@ -305,7 +305,7 @@ export class RouterBase{
 
     if(results.length){
       var first = results[0];
-      var fragment = url; //split query string...
+      var fragment = url; //TODO: split query string...
       var queryString = url;
 
       if(typeof first.handler == 'function'){
@@ -661,7 +661,7 @@ export class Router extends RouterBase {
 
       document.addEventListener('click', this.handleLinkClick, true);
 
-      if(history.options.silent && startDeferred){
+      if(history.options.silent){
         this.resolveActivate();
         this.resolveActivate = null;
       }
