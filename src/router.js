@@ -317,7 +317,7 @@ export class RouterBase{
       }
     }else{
       //log('Route Not Found');
-      //this.trigger('router:route:not-found', url, this);
+      //trigger('router:route:not-found', url, this);
 
       if (this.currentInstruction) {
         history.navigate(reconstructUrl(this.currentInstruction), { trigger: false, replace: true });
@@ -491,7 +491,7 @@ export class RouterBase{
   configureRoute(config) {
     this._needsNavModelBuild = true;
 
-    //this.trigger('router:route:before-config', config, this);
+    //trigger('router:route:before-config', config, this);
 
     config.name = config.name || this.deriveName(config);
     config.route = config.route || this.deriveRoute(config);
@@ -504,7 +504,7 @@ export class RouterBase{
       config.isActive = false;
     }
 
-    //this.trigger('router:route:after-config', config, this);
+    //trigger('router:route:after-config', config, this);
 
     this.routes.push(config);
     this.recognizer.add([{path:config.route, handler: config}]);
@@ -525,8 +525,8 @@ export class RouterBase{
         var result = config(instruction);
         if (result && result.then) {
           return result.then(() => {
-            //this.trigger('router:route:before-config', instruction.config, this);
-            //this.trigger('router:route:after-config', instruction.config, this);
+            //trigger('router:route:before-config', instruction.config, this);
+            //trigger('router:route:after-config', instruction.config, this);
             return this.queueInstruction(instruction);
           });
 
@@ -537,8 +537,8 @@ export class RouterBase{
         instruction.config.route = catchAllRoute;
       }
 
-      //this.trigger('router:route:before-config', instruction.config, this);
-      //this.trigger('router:route:after-config', instruction.config, this);
+      //trigger('router:route:before-config', instruction.config, this);
+      //trigger('router:route:after-config', instruction.config, this);
       return this.queueInstruction(instruction);
     };
 
@@ -669,7 +669,7 @@ export class Router extends RouterBase {
   }
 
   deactivate() {
-    document.removeEventListener('click', this.handleLinkLick);
+    document.removeEventListener('click', this.handleLinkClick);
     history.deactivate();
   }
 }
