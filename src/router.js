@@ -53,6 +53,14 @@ function targetIsThisWindow(target) {
   return false;
 }
 
+function getWildcardPath(route, params){
+  var wildcardIndex = route.lastIndexOf('*'),
+      wildcardName = route.substr(wildcardIndex + 1),
+      path = params[wildcardName];
+
+  return path;
+}
+
 export class Instruction{
   constructor(fragment, queryString, params, queryParams, config={}){
     this.fragment = fragment;
@@ -229,9 +237,7 @@ export class DelegateToChildRouter{
         controller = instruction.controller;
 
     if(context.hasChildRouter){
-      var wildcardIndex = instruction.config.route.lastIndexOf('*'),
-          wildcardName = instruction.config.route.substr(wildcardIndex + 1),
-          path = instruction.params[wildcardName];
+      var path = getWildcardPath(instruction.config.route, instruction.params);
 
       if (instruction.queryString) {
         path += "?" + instruction.queryString;
@@ -304,9 +310,15 @@ export class RouterBase{
     var results = this.recognizer.recognize(url);
 
     if(results.length){
-      var first = results[0];
-      var fragment = url; //TODO: split query string...
-      var queryString = url;
+      var first = results[0],
+          fragment = url,
+          queryIndex = fragment.indexOf('?'),
+          queryString;
+
+      if (queryIndex != -1) {
+        fragment = url.substring(0, queryIndex);
+        queryString = url.substr(queryIndex + 1);
+      }
 
       if(typeof first.handler == 'function'){
         instruction.config = {};
@@ -493,21 +505,25 @@ export class RouterBase{
 
     //trigger('router:route:before-config', config, this);
 
-    config.name = config.name || this.deriveName(config);
-    config.route = config.route || this.deriveRoute(config);
-    config.title = config.title || this.deriveTitle(config);
-    config.moduleId = config.moduleId || this.deriveModuleId(config);
-    
-    this.ensureHash(config);
-
-    if(!('isActive' in config)) {
-      config.isActive = false;
-    }
+    this.ensureDefaultsForRouteConfig(config);
 
     //trigger('router:route:after-config', config, this);
 
     this.routes.push(config);
     this.recognizer.add([{path:config.route, handler: config}]);
+  }
+
+  ensureDefaultsForRouteConfig(config){
+    config.name = config.name || this.deriveName(config);
+    config.route = config.route || this.deriveRoute(config);
+    config.title = config.title || this.deriveTitle(config);
+    config.moduleId = config.moduleId || this.deriveModuleId(config);
+    
+    this.ensureHREF(config);
+
+    if(!('isActive' in config)) {
+      config.isActive = false;
+    }
   }
 
   mapUnknownRoutes(config, replaceRoute){
@@ -564,41 +580,36 @@ export class RouterBase{
     return stripParametersFromRoute(config.route);
   }
 
-  ensureLink(config){
+  ensureHREF(config){
     var that = this;
 
-    if(config.link){
+    if(config.href){
       return;
     }
 
-    Object.defineProperty(config, 'link', {
+    Object.defineProperty(config, 'href', {
       get:function(){
-        var link = config.route; //TODO: strip * at end
+        var href = config.route; //TODO: strip * at end
 
         if(that.parent && that.parent.activator.current){
-          var instruction = that.parent.activator.current;
+          var instruction = that.parent.activator.current,
+              path = getWildcardPath(instruction.config.route, instruction.params),
+              fragment = fragment.slice(0, -path.length);
 
-          //get wildcard name
-          //lookup wildcard value
-          //strip value from fragment
-          //add to beginning of link
+          href = fragment + '/' + href;
 
-          link = instruction.config.link + '/' + link;
-
-          //TODO: add query string?
-
-          if (history._hasPushState) {
-            link = '/' + link;
+          if (instruction.queryString) {
+            href += "?" + instruction.queryString;
           }
 
-          return link.replace('//', '/').replace('//', '/');
+          if (history._hasPushState) {
+            href = '/' + href;
+          }
+        } else if(!history._hasPushState) {
+          href = '#' + href;
         }
 
-        if (history._hasPushState) {
-          return link;
-        }
-
-        return "#" + link;
+        return href;
       }
     });
   }
