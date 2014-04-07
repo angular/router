@@ -152,6 +152,7 @@ export class SelectController {
 
   resolveControllerInstance(nextInstruction){
     //TODO: load module, and use injector to get controller instance
+    //configure injector with symbols for child router and other contextual data
   }
 
   canReuseCurrentController(currentInstruction, nextInstruction){
@@ -185,12 +186,13 @@ export class SelectView{
   }
 
   determineViewId(nextInstruction){
+    //TODO: also, we could look for a special annotation on the controller
     return nextInstruction.config.viewId || nextInstruction.config.moduleId + '.html';
   }
 
   resolveViewFactory(id){
      //TODO: apply proper plugin to id
-    //TODO: load and compile view factory?
+    //TODO: load and compile view factory? or just send view id down to directive via binding and let it do it?
   }
 }
 
@@ -381,7 +383,7 @@ export class RouterBase{
         }
       }else if(result.output instanceof Redirect){
         this.navigate(result.output.url, { trigger: true, replace: true });
-      }else if (context.currentInstruction) {
+      }else if (context.prevInstruction) {
         this.navigate(reconstructUrl(context.prevInstruction), false);
       }
       
