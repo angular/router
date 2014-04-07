@@ -118,7 +118,7 @@ export class NavigationContext {
   }
 
   redirect(redirect){
-    this.output = redirect;
+    this.output = typeof redirect == 'string' ? new Redirect(redirect) : redirect;
     return this.cancel();
   }
 }
@@ -190,7 +190,7 @@ export class SelectView{
 
   resolveViewFactory(id){
      //TODO: apply proper plugin to id
-    //TODO: load and compile view factory
+    //TODO: load and compile view factory?
   }
 }
 
