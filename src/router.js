@@ -104,14 +104,19 @@ export class Redirect {
 
 export class NavigationContext {
   constructor(router, nextInstruction){
-      this.output = null;
-      this.currentInstruction = router.activator.current;
-      this.prevInstruction = router.activator.current;
-      this.nextInstruction = nextInstruction;
-      this.activator = router.activator;
-      this.router = router;
-      this.injector = router.injector;
-      this.createActivator = router.createActivator.bind(router);
+    this.output = null;
+    this.currentInstruction = router.activator.current;
+    this.prevInstruction = router.activator.current;
+    this.nextInstruction = nextInstruction;
+    this.activator = router.activator;
+    this.router = router;
+    this.injector = router.injector;
+    this.createActivator = router.createActivator.bind(router);
+    this.activationInput = [
+      nextInstruction.params, 
+      nextInstruction.queryParams,
+      nextInstruction.config
+    ];
   }
 
   get hasChildRouter(){
@@ -234,15 +239,9 @@ export class SelectView{
 
 export class ActivateInstruction {
   run(context){
-    var input = [
-      context.nextInstruction.params, 
-      context.nextInstruction.queryParams,
-      context.nextInstruction.config
-    ];
-
     //trigger('router:route:activating', instance, instruction, router);
 
-    return context.activator.activate(context.nextInstruction, input).then((result) => {
+    return context.activator.activate(context.nextInstruction, context.activationInput).then((result) => {
       if(result.completed){
         return context.next();
       }else if(result.output instanceof Redirect){
