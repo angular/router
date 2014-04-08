@@ -21,6 +21,7 @@ This is a prototype of a new router for Angular 2.0. It's feature set is based o
 * Supports intelligent controller re-use and activation/deactivation semantics in complex hierarchies of routers. (Completely customizable, of course, but with sensible defaults.)
 * Public apis for route registration (in various forms), navigation to a url, navigating back and link generation. You can also completely reset the router and/or change routes dynamically at runtime in the root router or in any child router.
 * The async pipeline pulls from an internal instruction queue which handles "overlapping" route requests common in async scenarios. Hooks provided to tap into the internal instruction data and control what the router is doing.
+* Supports basic history manipulation for replacing with/without triggering activation.
 
 ## To Do
 * Need to create a custom TemplateDirective to bind to the router. This represents a placeholder for the router's activate controller/view.
