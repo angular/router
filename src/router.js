@@ -203,7 +203,7 @@ export class SelectView{
 
     var viewId = this.determineViewId(nextInstruction);
 
-    return this.resolveViewFactory(viewId).then((viewFactory) => {
+    return this.resolveViewFactory(viewId).then((viewFactory) =>{
       nextInstruction.viewFactory = viewFactory;
       return context.next();
     }).catch(function (err) {
@@ -217,9 +217,18 @@ export class SelectView{
     return nextInstruction.config.viewId || nextInstruction.config.moduleId + '.html';
   }
 
-  resolveViewFactory(id){
-     //TODO: apply proper plugin to id
-    //TODO: load and compile view factory? or just send view id down to directive via binding and let it do it?
+  resolveViewFactory(viewId){
+    return new Promise((resolve, reject) => {
+      require([viewId], (viewModule) => {
+        viewModule.promise.then((viewFactoryAndModules) => {
+          resolve(viewFactoryAndModules.viewFactory);
+        }).catch((err) =>{
+          reject(err);
+        });
+      }, (err) =>{
+        reject(err);
+      });
+    });
   }
 }
 

@@ -7,7 +7,7 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 ## Features
 
 * Simple json based config. Minimal config required, with reasonable convention-based fallbacks. All conventions are customizable. Multiple ways to cinfigure routes (object, arrays, strings, etc). Map multiple routes to the same controller as well.
-* Router pattern maching is handled by [route-recognizer.js](https://github.com/tildeio/route-recognizer). This allows for static routes, named parameters, spats and query strings. Route generation is also supported.
+* Router pattern maching is handled by [route-recognizer.js](https://github.com/tildeio/route-recognizer). This allows for static routes, named parameters, splats and query strings. Route generation is also supported.
 * Handles push state and hash change.
 * Automatic handling of "not found" routes. This can be customized easily. Simple convention-based routing can also be hooked in.
 * Automatic construction of a "navigation model" which can be used to generate a navigation UI. Each item in the nav model has a link that can be bound. The link will properly generate hash/pushState urls and understands router hierarchies. Each item in the nav model has a property `isActive` which reflects whether or not it is the current active route (useful in styling a nav).
@@ -24,11 +24,11 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 * The async pipeline pulls from an internal instruction queue which handles "overlapping" route requests common in async scenarios. Hooks provided to tap into the internal instruction data and control what the router is doing.
 * Supports basic history manipulation for replacing with/without triggering activation.
 * Integrated with DI. The DI is used to instantiate the controller when needed. It also sets symbols that relate to ChildRouters.
-* Integreated with requirejs for controller module loading.
+* Integrated with require.js for controller module loading.
+* Integrated with templating for viewFactory loading, via require.js.
 
 ## To Do
 * Need to create a custom TemplateDirective to bind to the router. This represents a placeholder for the router's active controller/view.
-* Currently there's no loader abstraction in ng2, so it uses require.js for now. Controller loading is implemented. Still need to handle view loading.
 * Probably should write some tests...
 
 
