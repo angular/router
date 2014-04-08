@@ -7,9 +7,9 @@ This is a prototype of a new router for Angular 2.0. It's feature set is based o
 ## Features:
 
 * Simple json based config. Minimal config required, with reasonable convention-based fallbacks. All conventions are customizable. Multiple ways to cinfigure routes (object, arrays, strings, etc). Map multiple routes to the same controller as well.
-* Router pattern maching is handled by [route-recognizer.js](https://github.com/tildeio/route-recognizer). This allows for named parameters, spats and query string. Route gernation is also supported.
+* Router pattern maching is handled by [route-recognizer.js](https://github.com/tildeio/route-recognizer). This allows for static routes, named parameters, spats and query strings. Route generation is also supported.
 * Handles push state and hash change.
-* Automatic handling of "not found" routes. This can also be customized easily. Simple convention-based routing can also be hooked in.
+* Automatic handling of "not found" routes. This can be customized easily. Simple convention-based routing can also be hooked in.
 * Automatic construction of a "navigation model" which can be used to generate a navigation UI. Each item in the nav model has a link that can be bound. The link will properly generate hash/pushState urls and understands router hierarchies. Each item in the nav model has a property `isActive` which reflects whether or not it is the current active route (useful in styling a nav).
 * The router can update the document title correctly (even with child routers). This process is customizable.
 * Has a fully customizable internal asynchronous pipleline. Want to add security, just add a step to the pipeline and guard route access, cancel routing, redirect or allow navigation easily at any point. The default steps in the pipeline are: SelectController, SelectView, ActivateInstruction, CompleteNavigation, DelegateToChildRouter.
