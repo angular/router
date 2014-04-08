@@ -2,7 +2,7 @@
 
 # Angular Router Prototype
 
-This is a prototype of a new router for Angular 2.0. It's feature set is based on the router used by Durandal (which was the second client-side router I've written). This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. Controller activation also uses a customizable async pipeline.
+This is a prototype of a new router for Angular 2.0. Its feature set is based on the router used by Durandal (which was the second client-side router I've written...this is the third...well, maybe the 4th actually. I may have lost count). This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. The screen activator has also had a similar re-design. Generally speaking, it allows for tons of customization at almost every point, understands basic conventions, has sensible defaults, etc.
 
 ## Features:
 
