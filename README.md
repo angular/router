@@ -31,7 +31,6 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 * Need to create a custom TemplateDirective to bind to the router. This represents a placeholder for the router's active controller/view.
 * Probably should write some tests...
 
-
 ## Develop
 npm install
 karma start

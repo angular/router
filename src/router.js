@@ -69,6 +69,7 @@ export class Instruction{
     this.params = params;
     this.queryParams = queryParams;
     this.config = config;
+    this.activationInput = [params, queryParams, config];
   }
 
   canActivate(){
@@ -112,11 +113,6 @@ export class NavigationContext {
     this.router = router;
     this.injector = router.injector;
     this.createActivator = router.createActivator.bind(router);
-    this.activationInput = [
-      nextInstruction.params, 
-      nextInstruction.queryParams,
-      nextInstruction.config
-    ];
   }
 
   get hasChildRouter(){
@@ -239,9 +235,10 @@ export class SelectView{
 
 export class ActivateInstruction {
   run(context){
+    var nextInstruction = context.nextInstruction;
     //trigger('router:route:activating', instance, instruction, router);
 
-    return context.activator.activate(context.nextInstruction, context.activationInput).then((result) => {
+    return context.activator.activate(nextInstruction, nextInstruction.activationInput).then((result) => {
       if(result.completed){
         return context.next();
       }else if(result.output instanceof Redirect){
