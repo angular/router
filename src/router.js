@@ -161,7 +161,7 @@ export class SelectController {
     return currentInstruction
       && currentInstruction.config.moduleId == nextInstruction.config.moduleId
       && currentController
-      && ((currentController.canReuseForRoute && currentController.canReuseForRoute(nextInstruction.params, nextInstruction.queryParams))
+      && ((currentController.canReuseForRoute && currentController.canReuseForRoute(nextInstruction.params, nextInstruction.queryParams, nextInstruction.config))
         || (!currentController.canReuseForRoute && currentController.router && currentController.router.loadUrl));
   }
 }
