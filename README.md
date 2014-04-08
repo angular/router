@@ -4,7 +4,7 @@
 
 This is a prototype of a new router for Angular 2.0. It's feature set is based on the router used by Durandal (which was the second client-side router I've written). This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. Controller activation also uses a customizable async pipeline.
 
-## Featres:
+## Features:
 
 * Simple json based config. Minimal config required, with reasonable convention-based fallbacks. All conventions are customizable. Multiple ways to cinfigure routes (object, arrays, strings, etc). Map multiple routes to the same controller as well.
 * Router pattern maching is handled by [route-recognizer.js](https://github.com/tildeio/route-recognizer). This allows for named parameters, spats and query string. Route gernation is also supported.
@@ -26,6 +26,7 @@ This is a prototype of a new router for Angular 2.0. It's feature set is based o
 * Need to create a custom TemplateDirective to bind to the router. This represents a placeholder for the router's activate controller/view.
 * Integrate with DI. The DI should be used to instantiate the controller when needed. It should also be set up with some symbols that relate to routing, such as ChildRouter (so we can instantiate child routers and inject them) and possibly RouterData (so the injector hierarchy has access to parameters from the route (still thinking about this one)).
 * Integrate with the loader. Currently there's no load abstraction in ng2, so I'll probably write this directly against require.js for now. The loader is needed by the router for on-demand loading of controllers and views.
+* Probably should write some tests...
 
 
 ## Develop
