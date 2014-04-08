@@ -2,6 +2,7 @@ import {Pipeline} from './pipeline';
 import {history} from './history';
 import {extend} from './util';
 import {Activator} from './activator';
+import {Injector, Provide, Inject} from 'di';
 
 function stripParametersFromRoute(route) {
   var colonIndex = route.indexOf(':');
@@ -109,6 +110,7 @@ export class NavigationContext {
       this.nextInstruction = nextInstruction;
       this.activator = router.activator;
       this.router = router;
+      this.injector = router.injector;
       this.createActivator = router.createActivator.bind(router);
   }
 
@@ -136,7 +138,7 @@ export class SelectController {
     } else {
       var moduleId = this.determineModuleId(nextInstruction);
 
-      return this.resolveControllerInstance(moduleId).then(function (controller) {
+      return this.resolveControllerInstance(context, moduleId).then(function (controller) {
         context.nextInstruction.controller = controller;
         return context.next();
       }).catch(function (err) {
@@ -150,9 +152,34 @@ export class SelectController {
     return nextInstruction.config.moduleId;
   }
 
-  resolveControllerInstance(nextInstruction){
-    //TODO: load module, and use injector to get controller instance
-    //configure injector with symbols for child router and other contextual data
+  resolveControllerInstance(context, moduleId){
+    return new Promise((resolve, reject) => {
+      require([moduleId], (moduleInstance) => {
+
+        @Provide(ChildRouter)
+        @Inject(Injector)
+        function childRouterProvider(injector:Injector) {
+          var childRouter = new ChildRouter(injector);
+          child.parent = context.router;
+          return child;
+        }
+
+        var modules = [moduleInstance, childRouterProvider];
+        var controllerInjector = context.injector.createChild(modules);
+        var controllerType = this.getControllerTypeFromModule(moduleInstance);
+        var controller = controllerInjector.get(controllerType);
+        
+        resolve(controller);
+      }, (err) = >{
+        reject(err);
+      });
+    });
+  }
+
+  getControllerTypeFromModule(moduleInstance){
+    for(var key in moduleInstance){
+      return moduleInstance[key];
+    }
   }
 
   canReuseCurrentController(currentInstruction, nextInstruction){
@@ -259,8 +286,8 @@ export class DelegateToChildRouter{
 }
 
 export class RouterBase{
-  constructor(parent:RouterBase=null){
-    this.parent = parent;
+  constructor(injector:Injector){
+    this.injector = injector;
     this.activator = this.createActivator();
     this.reset();
   }
@@ -627,10 +654,6 @@ export class RouterBase{
     if(clearController){
       this.activator.setCurrentAndBypassLifecycle(null);
     }
-  };
-
-  createChildRouter() {
-    return new ChildRouter(this);
   };
 }
 

@@ -23,11 +23,12 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 * Public apis for route registration (in various forms), navigation to a url, navigating back and link generation. You can also completely reset the router and/or change routes dynamically at runtime in the root router or in any child router.
 * The async pipeline pulls from an internal instruction queue which handles "overlapping" route requests common in async scenarios. Hooks provided to tap into the internal instruction data and control what the router is doing.
 * Supports basic history manipulation for replacing with/without triggering activation.
+* Integrated with DI. The DI is used to instantiate the controller when needed. It also sets symbols that relate to ChildRouters.
+* Integreated with requirejs for controller module loading.
 
 ## To Do
 * Need to create a custom TemplateDirective to bind to the router. This represents a placeholder for the router's active controller/view.
-* Integrate with DI. The DI should be used to instantiate the controller when needed. It should also be set up with some symbols that relate to routing, such as ChildRouter (so we can instantiate child routers and inject them) and possibly RouterData (so the injector hierarchy has access to parameters from the route (still thinking about this one...becuase it's a problem with controller re-use, which is why a prefer an explicit activation hook)).
-* Integrate with the loader. Currently there's no loader abstraction in ng2, so I'll probably write this directly against require.js for now. The loader is needed by the router for on-demand loading of controllers and views.
+* Currently there's no loader abstraction in ng2, so it uses require.js for now. Controller loading is implemented. Still need to handle view loading.
 * Probably should write some tests...
 
 
