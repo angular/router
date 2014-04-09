@@ -1,7 +1,5 @@
-import {TemplateDirective} from 'templating';
-import {Injector} from 'di';
-import {Inject} from 'di';
-import {View, ViewPort} from 'templating';
+import {TemplateDirective, View, ViewPort} from 'templating';
+import {Injector, Inject} from 'di';
 
 @TemplateDirective({
   selector: '[router-port]',
