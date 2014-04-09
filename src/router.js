@@ -131,6 +131,10 @@ export class SelectController {
     var currentInstruction = context.currentInstruction,
         nextInstruction = context.nextInstruction;
 
+    if('controller' in nextInstruction){
+      return context.next();
+    }
+
     if (this.canReuseCurrentController(currentInstruction, nextInstruction)) {
       context.activator = context.createActivator();
       context.activator.setCurrentAndBypassLifecycle(currentInstruction);
@@ -189,7 +193,7 @@ export class SelectController {
     return currentInstruction
       && currentInstruction.config.moduleId == nextInstruction.config.moduleId
       && currentController
-      && ((currentController.canReuseForRoute && currentController.canReuseForRoute(nextInstruction.params, nextInstruction.queryParams, nextInstruction.config))
+      && ((currentController.canReuseForRoute && currentController.canReuseForRoute.apply(currentController, nextInstruction.activationInput))
         || (!currentController.canReuseForRoute && currentController.router && currentController.router.loadUrl));
   }
 }
