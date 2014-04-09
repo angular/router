@@ -117,6 +117,11 @@ export function processResult(context){
     if(result.completed && context.currentItem != context.prevItem){
       context.activator.current = context.currentItem;
       context.activator.currentInput = context.currentInput;
+
+      //TODO: there should be a consistent event mechanism throughout Angular...fix this.
+      if(context.activator.onCurrentChanged){
+        context.activator.onCurrentChanged(context.activator.current, context.activator.currentInput);
+      }
     }
 
     return result;

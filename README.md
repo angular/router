@@ -2,7 +2,9 @@
 
 # Router Prototype
 
-This is a prototype of a new router for Angular 2.0. Its feature set is based on the router used by Durandal (which was the second client-side router I've written...this is the third...well, maybe the 4th actually. I may have lost count). This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. The screen activator has also had a similar re-design. Generally speaking, it allows for tons of customization at almost every point, understands basic conventions, has sensible defaults, etc. The intersting stuff is in the src folder. Don't pay attention to the rest for now.
+This is a prototype of a new router for Angular 2.0. Its feature set is based on the router used by Durandal (which was the second client-side router I've written...this is the third...well, maybe the 4th actually. I may have lost count). This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. The screen activator has also had a similar re-design. Generally speaking, it allows for tons of customization at almost every point, understands basic conventions, has sensible defaults, etc. The intersting stuff is in the src folder. Don't pay attention to the rest for now. 
+
+> *Note:* This prototype should fullfill almost, if not all, the requirements mentioned in the Angular 2.0 router design doc.
 
 ## Features
 
@@ -26,9 +28,9 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 * Integrated with DI. The DI is used to instantiate the controller when needed. It also sets symbols that relate to ChildRouters.
 * Integrated with require.js for controller module loading.
 * Integrated with templating for viewFactory loading, via require.js.
+* Has a custom TemplateDirective `router-port` which serves as a composition site for the router's active view.
 
 ## To Do
-* Need to create a custom TemplateDirective to bind to the router. This represents a placeholder for the router's active controller/view.
 * Probably should write some tests...
 
 ## Develop

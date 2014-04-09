@@ -8,11 +8,10 @@ import {View, ViewPort} from 'templating';
   exports: ['routerPort']
 })
 export class RouterPort {
-  @Inject(ViewPort, View, Injector)
-  constructor(viewPort, parentView, injector) {
+  @Inject(ViewPort, Injector)
+  constructor(viewPort, injector) {
     this.viewPort = viewPort;
     this.injector = injector;
-    this.parentView = parentView;
     this.view = null;
     this._router = null;
 
@@ -34,24 +33,23 @@ export class RouterPort {
   }
 
   routerSetter(value) {
+    var that = this;
+
     if (value === this._router) {
       return;
     }
 
     this._router = value;
 
-    //TODO: register for router's active instruction change
-    //use instruction data to create a bound view
-    //push the view into the view port
+    if(value){
+      value.activator.onCurrentChanged = function(instruction){
+        if(that.view){
+          that.viewPort.remove(that.view);
+        }
 
-    //if (!value && this.view) {
-    //  this.viewPort.remove(this.view);
-    //  this.view = null;
-    //}
-
-    //if (value) {
-    //  this.view = this.viewFactory.createChildView(this.injector, this.parentView.executionContext);
-    //  this.viewPort.append(this.view);
-    //}
+        that.view = instruction.viewFactory.createChildView(that.injector, instruction.controller);
+        that.viewPort.append(that.view);
+      };
+    }
   }
 }
