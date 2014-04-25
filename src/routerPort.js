@@ -3,7 +3,8 @@ import {Injector, Inject} from 'di';
 
 @TemplateDirective({
   selector: '[router-port]',
-  exports: ['routerPort']
+  bind: {'router': 'router'},
+  observe: {'router': 'routerChanged'}
 })
 export class RouterPort {
   @Inject(ViewPort, Injector)
@@ -11,43 +12,35 @@ export class RouterPort {
     this.viewPort = viewPort;
     this.injector = injector;
     this.view = null;
-    this._router = null;
-
-    Object.defineProperty(this, 'router', {
-      get: function() {
-        return this.routerGetter();
-      },
-      set: function(value) {
-        this.routerSetter(value);
-      }
-    });
   }
 
-  /* TODO: not working with traceur right now
-  set router(value) {}
-  */
-  routerGetter() {
-    return this._router;
-  }
-
-  routerSetter(value) {
-    var that = this;
-
-    if (value === this._router) {
-      return;
+  routerChanged(value, oldValue){
+    if (oldValue) {
+      oldValue.activator.onCurrentChanged = null;
+      tryRemoveView();
     }
 
-    this._router = value;
-
     if(value){
-      value.activator.onCurrentChanged = function(instruction){
-        if(that.view){
-          that.viewPort.remove(that.view);
-        }
+      value.activator.onCurrentChanged = followInstruction.bind(this);
+      if(value.activator.current){
+        followInstruction(value.activator.current);
+      }
+    }else{
+      tryRemoveView();
+    }
+  }
 
-        that.view = instruction.viewFactory.createChildView(that.injector, instruction.controller);
-        that.viewPort.append(that.view);
-      };
+  followInstruction(instruction){
+    this.tryRemoveView();
+    this.view = instruction.viewFactory.createChildView(this.injector, instruction.controller);
+    this.viewPort.append(this.view);
+  }
+
+  tryRemoveView(){
+    if(this.view){
+      this.viewPort.remove(this.view);
+      this.view.destroy();
+      this.view = null;
     }
   }
 }
