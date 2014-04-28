@@ -1,38 +1,47 @@
-import {TemplateDirective, View, ViewPort} from 'templating';
+import {TemplateDirective, View, ViewPort, ViewFactory} from 'templating';
 import {Injector, Inject} from 'di';
 
 @TemplateDirective({
-  selector: '[router-port]',
+  selector: 'router-port',
   bind: {'router': 'router'},
   observe: {'router': 'routerChanged'}
 })
 export class RouterPort {
-  @Inject(ViewPort, Injector)
-  constructor(viewPort, injector) {
+  @Inject(ViewFactory, ViewPort, View, Injector)
+  constructor(viewFactory, viewPort, parentView, injector) {
+    this.viewFactory = viewFactory;
     this.viewPort = viewPort;
+    this.parentView = parentView;
     this.injector = injector;
     this.view = null;
   }
 
   routerChanged(value, oldValue){
+    console.log('router changed');
+
     if (oldValue) {
       oldValue.activator.onCurrentChanged = null;
-      tryRemoveView();
+      this.tryRemoveView();
     }
 
     if(value){
-      value.activator.onCurrentChanged = followInstruction.bind(this);
+      value.activator.onCurrentChanged = this.followInstruction.bind(this);
       if(value.activator.current){
-        followInstruction(value.activator.current);
+        this.followInstruction(value.activator.current);
       }
     }else{
-      tryRemoveView();
+      this.tryRemoveView();
     }
   }
 
   followInstruction(instruction){
     this.tryRemoveView();
-    this.view = instruction.viewFactory.createChildView(this.injector, instruction.controller);
+    this.view = this.viewFactory.createChildView({
+      template:instruction.template, 
+      parentView:this.parentView, 
+      executionContext:instruction.controller
+    });
+
     this.viewPort.append(this.view);
   }
 

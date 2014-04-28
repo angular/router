@@ -1,7 +1,7 @@
 function createResult(context){
   return {
     status:context.status,
-    input:context.input
+    input:context.input,
     output:context.output,
     completed:context.status == 'completed'
   };
@@ -42,7 +42,7 @@ export class Pipeline {
       index++;
 
       if(index < steps.length){
-        currentStep = steps[i];
+        currentStep = steps[index];
 
         try{
           return currentStep(context);

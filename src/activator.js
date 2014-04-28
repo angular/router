@@ -43,12 +43,16 @@ function shouldContinue(output){
     return affirmations.indexOf(value.toLowerCase()) !== -1;
   }
 
+  if(typeof output == 'undefined'){
+    return true;
+  }
+
   return output;
 }
 
 function findChildActivator(context){
-  if(context.currentItem){
-    return context.currentItem.activator;
+  if(context.prevItem){
+    return context.prevItem.activator;
   }
 
   return null;
@@ -71,7 +75,7 @@ class Step{
       return createFakeChild();
     }
 
-    return context.findChildActivator() || createFakeChild();
+    return context.findChildActivator(context) || createFakeChild();
   }
 
   run(context){
@@ -100,7 +104,7 @@ class Step{
       }
 
       return context.next();
-    }
+    });
   }
 }
 
@@ -138,10 +142,10 @@ export function equivalenceCheck(context){
   return context.next();
 }
 
-export var affirmations: ['yes', 'ok', 'true'];
+export var affirmations = ['yes', 'ok', 'true'];
 
 export class Activator{
-  construtor(options){
+  constructor(options){
     this.current = null;
     this.currentInput = null;
     this.shouldContinue = options.shouldContinue || shouldContinue;

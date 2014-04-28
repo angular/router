@@ -4,6 +4,16 @@ import {extend} from './util';
 import {Activator} from './activator';
 import {Injector, Provide, Inject} from 'di';
 
+function ensureConfigValue(config, property, getter){
+  var value = config[property];
+
+  if(value || value == ''){
+    return value;
+  }
+
+  return getter(config);
+}
+
 function stripParametersFromRoute(route) {
   var colonIndex = route.indexOf(':');
   var length = colonIndex > 0 ? colonIndex - 1 : route.length;
@@ -175,9 +185,7 @@ export class SelectController {
         var controller = controllerInjector.get(controllerType);
         
         resolve(controller);
-      }, (err) = >{
-        reject(err);
-      });
+      }, reject);
     });
   }
 
@@ -188,11 +196,11 @@ export class SelectController {
   }
 
   canReuseCurrentController(currentInstruction, nextInstruction){
-    var currentController = currentInstruction.controller;
+    var currentController;
 
     return currentInstruction
       && currentInstruction.config.moduleId == nextInstruction.config.moduleId
-      && currentController
+      && (currentController = currentInstruction.controller)
       && ((currentController.canReuseForRoute && currentController.canReuseForRoute.apply(currentController, nextInstruction.activationInput))
         || (!currentController.canReuseForRoute && currentController.router && currentController.router.loadUrl));
   }
@@ -202,14 +210,14 @@ export class SelectView{
   run(context){
     var nextInstruction = context.nextInstruction;
 
-    if('viewFactory' in nextInstruction){
+    if('template' in nextInstruction){
       return context.next();
     }
 
-    var viewId = this.determineViewId(nextInstruction);
+    var templateId = this.determineTemplateId(nextInstruction);
 
-    return this.resolveViewFactory(viewId).then((viewFactory) =>{
-      nextInstruction.viewFactory = viewFactory;
+    return this.resolveTemplate(templateId).then((template) =>{
+      nextInstruction.template = template;
       return context.next();
     }).catch(function (err) {
       //log('Failed to load routed module (' + instruction.config.moduleId + '). Details: ' + err.message);
@@ -217,22 +225,18 @@ export class SelectView{
     });
   }
 
-  determineViewId(nextInstruction){
-    //TODO: also, we could look for a special annotation on the controller
-    return nextInstruction.config.viewId || nextInstruction.config.moduleId + '.html';
+  determineTemplateId(nextInstruction){
+    //TODO: look for the component annotation first
+    return nextInstruction.config.templateId || nextInstruction.config.moduleId + '.html';
   }
 
-  resolveViewFactory(viewId){
+  resolveTemplate(templateId){
     return new Promise((resolve, reject) => {
-      require([viewId], (viewModule) => {
-        viewModule.promise.then((viewFactoryAndModules) => {
-          resolve(viewFactoryAndModules.viewFactory);
-        }).catch((err) =>{
-          reject(err);
-        });
-      }, (err) =>{
-        reject(err);
-      });
+      require([templateId], (viewModule) => {
+        viewModule.promise.then((templateAndModules) => {
+          resolve(templateAndModules.template);
+        }).catch(reject);
+      }, reject);
     });
   }
 }
@@ -347,7 +351,7 @@ export class RouterBase{
   loadUrl(url){
     var results = this.recognizer.recognize(url);
 
-    if(results.length){
+    if(results && results.length){
       var first = results[0],
           fragment = url,
           queryIndex = fragment.indexOf('?'),
@@ -359,11 +363,9 @@ export class RouterBase{
       }
 
       if(typeof first.handler == 'function'){
-        instruction.config = {};
-        return first.handler(new Instruction(fragment, queryString, params, queryParams));
+        return first.handler(new Instruction(fragment, queryString, first.params, first.queryParams));
       }else{
-        instruction.config = first.handler;
-        return this.queueInstruction(new Instruction(fragment, queryString, params, queryParams, first.handler));
+        return this.queueInstruction(new Instruction(fragment, queryString, first.params, first.queryParams, first.handler));
       }
     }else{
       //log('Route Not Found');
@@ -402,7 +404,7 @@ export class RouterBase{
 
     this.isNavigating = true;
 
-    var context = this.createNavigationContext();
+    var context = this.createNavigationContext(instruction);
     var pipeline = this.createNavigationPipeline();
 
     pipeline.run(context).then((result) => {
@@ -429,7 +431,7 @@ export class RouterBase{
     });
   }
 
-  createNavigationContext(){
+  createNavigationContext(instruction){
     return new NavigationContext(this, instruction);
   }
 
@@ -445,8 +447,15 @@ export class RouterBase{
   createActivator(){
     return new Activator({
       areSameItem(context){
-        var prevController = context.prevItem.controller,
-            nextController = context.nextItem.controller;
+        var prev = context.prevItem,
+            next = context.nextItem;
+
+        if((!prev && next) || (prev && !next)){
+          return false;
+        }
+
+        var prevController = prev.controller,
+            nextController = next.controller;
 
         if(prevController == nextController){
           return areSameInputs(context.prevInput, context.nextInput);
@@ -455,6 +464,10 @@ export class RouterBase{
         return false;
       },
       findChildActivator(context){
+        if(!context.prevItem){
+          return null;
+        }
+
         var controller = context.prevItem.controller;
         if(!controller){
           return null;
@@ -470,7 +483,7 @@ export class RouterBase{
     });
   }
 
-  updateDocumentTitle = function (instruction) {
+  updateDocumentTitle(instruction) {
     var title = instruction.config.title;
 
     //TODO: dispose previous watch
@@ -492,7 +505,7 @@ export class RouterBase{
         return this;
     }
 
-    if (typeof route == string) {
+    if (typeof route == 'string') {
         if (!config) {
             config = {};
         } else if (typeof config == 'string') {
@@ -552,10 +565,10 @@ export class RouterBase{
   }
 
   ensureDefaultsForRouteConfig(config){
-    config.name = config.name || this.deriveName(config);
-    config.route = config.route || this.deriveRoute(config);
-    config.title = config.title || this.deriveTitle(config);
-    config.moduleId = config.moduleId || this.deriveModuleId(config);
+    config.name =  ensureConfigValue(config, 'name', this.deriveName);
+    config.route = ensureConfigValue(config, 'route', this.deriveRoute);
+    config.title = ensureConfigValue(config, 'title', this.deriveTitle);
+    config.moduleId = ensureConfigValue(config, 'moduleId', this.deriveModuleId);
     
     this.ensureHREF(config);
 
@@ -667,14 +680,14 @@ export class RouterBase{
 }
 
 export class ChildRouter extends RouterBase {
-  constructor(parent:RouterBase=null){
-    super(parent);
+  constructor(injector:Injector){
+    super(injector);
   }
 }
 
 export class Router extends RouterBase {
-  constructor(){
-    super();
+  constructor(injector:Injector){
+    super(injector);
   }
 
   handleLinkClick(evt) {
@@ -701,7 +714,7 @@ export class Router extends RouterBase {
     return new Promise((resolve) => {
       this.resolveActivate = resolve;
 
-      this.options = extend({ routeHandler: rootRouter.loadUrl.bind(this) }, this.options, options);
+      this.options = extend({ routeHandler: this.loadUrl.bind(this) }, this.options, options);
       history.activate(this.options);
 
       document.addEventListener('click', this.handleLinkClick, true);

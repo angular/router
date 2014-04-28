@@ -1,4 +1,4 @@
-import extend from './util';
+import {extend} from './util';
 
 // Cached regex for stripping a leading hash/slash and trailing space.
 var routeStripper = /^[#\/]|\s+$/g;
@@ -212,4 +212,4 @@ history.navigateBack = function () {
     history.history.back();
 };
 
-export = history;
+export { history }
