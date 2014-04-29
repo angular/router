@@ -428,9 +428,8 @@ export class RouterBase{
         this.navigate(reconstructUrl(context.prevInstruction), false);
       }
       
-      instruction.resolve(result).then(() =>{
-        this.dequeueInstruction();
-      });
+      instruction.resolve(result);
+      this.dequeueInstruction();
     });
   }
 
@@ -645,6 +644,7 @@ export class RouterBase{
       return;
     }
 
+    //TODO: consider re-writing this to update manually on route changes so we don't need a getter
     Object.defineProperty(config, 'href', {
       get:function(){
         var href = config.route; //TODO: strip * at end
