@@ -28,14 +28,6 @@ function reconstructUrl(instruction) {
   return instruction.fragment + '?' + instruction.queryString;
 }
 
-function setTitle(value) {
-  if (Router.appTitle) {
-    document.title = value + " | " + Router.appTitle;
-  } else {
-    document.title = value;
-  }
-}
-
 function areSameInputs(prev, next){
   var prevParams, nextParams;
 
@@ -172,11 +164,8 @@ export class SelectController {
       require([moduleId], (moduleInstance) => {
 
         @Provide(ChildRouter)
-        @Inject(Injector)
-        function childRouterProvider(injector:Injector) {
-          var childRouter = new ChildRouter(injector);
-          child.parent = context.router;
-          return child;
+        function childRouterProvider() {
+          return context.router.createChild();
         }
 
         var modules = [moduleInstance, childRouterProvider];
@@ -299,8 +288,7 @@ export class DelegateToChildRouter{
 }
 
 export class RouterBase{
-  constructor(injector:Injector){
-    this.injector = injector;
+  constructor(){
     this.activator = this.createActivator();
     this.reset();
   }
@@ -309,7 +297,7 @@ export class RouterBase{
     return new Redirect(url);
   }
 
-  get navigationModel(){
+  get navigation(){
     if(this._needsNavModelBuild){
       var nav = [], routes = this.routes;
       var fallbackOrder = 100;
@@ -335,6 +323,19 @@ export class RouterBase{
     return this._navigationModel;
   }
 
+  connect(routerPort){
+    this._port = routerPort;
+
+    this.injector = routerPort.injector;
+    this.activator.onCurrentChanged = routerPort.followInstruction.bind(routerPort);
+
+    if(!this.isActive && 'activate' in this){
+      this.activate();
+    }else{
+      this.dequeueInstruction();
+    }   
+  }
+
   navigate(fragment, options) {
     if (fragment && fragment.indexOf('://') != -1) {
         window.location.href = fragment;
@@ -346,6 +347,13 @@ export class RouterBase{
 
   navigateBack() {
     history.navigateBack();
+  }
+
+  createChild(){
+    var childRouter = new ChildRouter();
+    child.parent = this;
+    child.title = this.title;
+    return childRouter;
   }
 
   loadUrl(url){
@@ -391,7 +399,7 @@ export class RouterBase{
   }
 
   dequeueInstruction(){
-    if(this.isNavigating){
+    if(this.isNavigating || !this._port){
       return;
     }
 
@@ -409,11 +417,6 @@ export class RouterBase{
 
     pipeline.run(context).then((result) => {
       this.isNavigating = false;
-
-      if (this.resolveActivate) {
-        this.resolveActivate();
-        this.resolveActivate = null;
-      }
 
       if(result.completed){
         if (!context.hasChildRouter) {
@@ -486,13 +489,17 @@ export class RouterBase{
   updateDocumentTitle(instruction) {
     var title = instruction.config.title;
 
-    //TODO: dispose previous watch
+    //TODO: dispose previous title watch
 
     if (title) {
-      //TODO: setup new watch
-      setTitle(title);
-    } else if (Router.appTitle) {
-      document.title = Router.appTitle;
+      //TODO: setup new title watch
+      if (this.title) {
+        document.title = title + " | " + this.title;
+      } else {
+        document.title = title;
+      }
+    } else if (this.title) {
+      document.title = this.title;
     }
   };
 
@@ -680,17 +687,22 @@ export class RouterBase{
 }
 
 export class ChildRouter extends RouterBase {
-  constructor(injector:Injector){
-    super(injector);
+  constructor(){
+    super();
   }
 }
 
 export class Router extends RouterBase {
-  constructor(injector:Injector){
-    super(injector);
+  constructor(){
+    super();
+    document.addEventListener('click', this.handleLinkClick.bind(this), true);
   }
 
   handleLinkClick(evt) {
+    if(!this.isActive){
+      return;
+    }
+
     var target = evt.target;
     if(target.tagName != 'A') {
       return;
@@ -711,23 +723,18 @@ export class Router extends RouterBase {
   }
 
   activate(options) {
-    return new Promise((resolve) => {
-      this.resolveActivate = resolve;
+    if(this.isActive){
+      return;
+    }
 
-      this.options = extend({ routeHandler: this.loadUrl.bind(this) }, this.options, options);
-      history.activate(this.options);
-
-      document.addEventListener('click', this.handleLinkClick, true);
-
-      if(history.options.silent){
-        this.resolveActivate();
-        this.resolveActivate = null;
-      }
-    });
+    this.isActive = true;
+    this.options = extend({ routeHandler: this.loadUrl.bind(this) }, this.options, options);
+    history.activate(this.options);
+    this.dequeueInstruction();
   }
 
   deactivate() {
-    document.removeEventListener('click', this.handleLinkClick);
+    this.isActive = false;
     history.deactivate();
   }
 }

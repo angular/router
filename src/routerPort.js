@@ -14,21 +14,20 @@ export class RouterPort {
     this.parentView = parentView;
     this.injector = injector;
     this.view = null;
+
+    if('router' in parentView.executionContext){
+      this.router = parentView.executionContext.router;
+      this.routerChanged(this.router);
+    }
   }
 
   routerChanged(value, oldValue){
-    console.log('router changed');
-
     if (oldValue) {
-      oldValue.activator.onCurrentChanged = null;
       this.tryRemoveView();
     }
 
     if(value){
-      value.activator.onCurrentChanged = this.followInstruction.bind(this);
-      if(value.activator.current){
-        this.followInstruction(value.activator.current);
-      }
+      value.connect(this);
     }else{
       this.tryRemoveView();
     }
@@ -36,6 +35,7 @@ export class RouterPort {
 
   followInstruction(instruction){
     this.tryRemoveView();
+
     this.view = this.viewFactory.createChildView({
       template:instruction.template, 
       parentView:this.parentView, 
