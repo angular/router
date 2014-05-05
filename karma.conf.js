@@ -30,7 +30,7 @@ module.exports = function(config) {
     }
   });
 
-  config.sauceLabs.testName = 'templating';
+  config.sauceLabs.testName = 'router';
 
   if (process.env.TRAVIS) {
     config.sauceLabs.startConnect = false;
