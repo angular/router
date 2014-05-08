@@ -1,0 +1,23 @@
+<link rel="import" href="/third_party/brick/brick.html">
+<link rel="import" href="../templating.html">
+
+<angular-element module="greet#FirstComponent">
+  <rjs-module src="../ngIf"></rjs-module>
+
+  <template>
+      <x-toggle label="Has child" bind-checked="hasChild"></x-toggle>
+      <div>
+        <!-- TODO: Syntax for binding to validity.valid -->
+        <input type="text" class="username" bind-value="user"
+          bind-validity="userValid" bind-validation-message="userError" required pattern=".{3,}">
+        {{userError}}
+      </div>
+      <div class="message">
+        Error: {{!userValid.valid}}, Message: {{greet(user)}}
+      </div>
+      <button on-click="incCounter()">Add</button>
+      <p>
+      <exp-greet bind-ng-if="hasChild" ng-if></exp-greet>
+      </p>
+  </template>
+</angular-element>

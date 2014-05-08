@@ -3,12 +3,17 @@ var pipe = require('pipe/gulp');
 var connect = require('gulp-connect');
 var traceur = require('gulp-traceur');
 var through = require('through2');
-var precompile = require('./gulp-precompile');
 
 var path = {
   src: ['./src/**/*.js'],
   examples: ['./examples/**/*.js'],
-  exampleTemplates: ['./examples/**/*.html']
+  exampleTemplates: ['./examples/**/*.html'],
+  deps: {
+    'watchtower': './node_modules/watchtower/src/**/*.js',
+    'expressionist': './node_modules/expressionist/src/**/*.js',
+    'di': './node_modules/di/src/**/*.js',
+    'rtts-assert': './node_modules/rtts-assert/src/**/*.js'
+  }
 };
 
 function rename(search, replace) {
@@ -27,23 +32,24 @@ gulp.task('build_source_amd', function() {
 
 gulp.task('build_source_es6', function() {
   gulp.src(path.src)
-      .pipe(traceur(pipe.traceur({pureES6: true})))
+      .pipe(traceur(pipe.traceur({outputLanguage: 'es6'})))
       .pipe(gulp.dest('dist/es6'));
 });
 
-gulp.task('build_examples', function() {
+gulp.task('build_examples', ['build_deps'], function() {
   gulp.src(path.examples)
       .pipe(traceur(pipe.traceur()))
       .pipe(gulp.dest('temp/examples'));
   gulp.src(path.exampleTemplates)
       .pipe(gulp.dest('temp/examples'));
-  /* TODO: Not working yet...
-  gulp.src(path.exampleTemplates)
-      .pipe(precompile())
-      .pipe(traceur({}))
-      .pipe(rename(/html$/, 'js'))
-      .pipe(gulp.dest('test/examples/'));
-  **/
+});
+
+gulp.task('build_deps', function() {
+  for (var prop in path.deps) {
+    gulp.src(path.deps[prop])
+        .pipe(traceur(pipe.traceur()))
+        .pipe(gulp.dest('node_modules/' + prop + '/dist/amd'));
+  }
 });
 
 gulp.task('build_source_cjs', function() {
@@ -58,7 +64,7 @@ gulp.task('build', ['build_source_amd', 'build_source_cjs', 'build_source_es6', 
 // WATCH FILES FOR CHANGES
 gulp.task('watch', function() {
   gulp.watch([path.src], ['build_source_amd']);
-  gulp.watch([path.examples], ['build_examples']);
+  gulp.watch([path.examples, path.exampleTemplates], ['build_examples']);
 });
 
 
@@ -66,25 +72,26 @@ gulp.task('watch', function() {
 gulp.task('serve', connect.server({
   root: [__dirname],
   port: 8000,
-  open: {
-    browser: 'Google Chrome'
-  }
+  livereload: false,
+  open: false
 }));
 
 
 var clientify = require('clientify');
 var rename = function(search, replace) {
-  return through.obj(function(file, enc, cb) {
+  return through.obj(function(file, enc, done) {
     file.path = file.path.replace(search, replace);
     this.push(file);
+    done();
   });
 };
 
 // Move to package.json?
 var GITHUB_REPOS = [
-  'angular/watchtower.js#dist',
-  'angular/expressionist.js#dist',
-  'vojtajina/traceur-compiler#es6-plus-to-pure-es6'
+  'angular/watchtower.js',
+  'angular/expressionist.js',
+  'angular/zone.js',
+  'vojtajina/traceur-compiler#add-es6-pure-transformer-dist'
 ];
 
 gulp.task('shrinkwrap', function() {
@@ -101,3 +108,4 @@ gulp.task('shrinkwrap', function() {
     .pipe(rename('package.json', 'npm-shrinkwrap.json'))
     .pipe(gulp.dest('.'));
 });
+

@@ -1,39 +1,42 @@
 {
-  "name": "templating",
+  "name": "router",
   "version": "0.0.0",
-  "description": "Templating engine for Angular.",
+  "description": "A Router Prototype for Angular 2.0",
   "main": "node/index.js",
-  "homepage": "https://github.com/angular/templating",
+  "homepage": "https://github.com/eisenbergeffect/router",
   "repository": {
     "type": "git",
-    "url": "git://github.com/angular/templating.git"
+    "url": "git://github.com/eisenbergeffect/router.git"
   },
   "bugs": {
-    "url": "https://github.com/angular/templating/issues"
+    "url": "https://github.com/eisenbergeffect/router/issues"
   },
   "dependencies": {
-    "di": "~2.0.0-pre-5",
-    "expressionist": "git://github.com/angular/expressionist.js#dist",
-    "watchtower": "git://github.com/angular/watchtower.js#dist",
-    "traceur": "git://github.com/vojtajina/traceur-compiler#es6-plus-to-pure-es6"
+    "di": "~2.0.0-pre-6",
+    "expressionist": "angular/expressionist.js",
+    "watchtower": "angular/watchtower.js#notifier",
+    "zone.js": "angular/zone.js",
+    "traceur": "vojtajina/traceur-compiler#add-es6-pure-transformer-dist",
+    "templating": "angular/templating#custom-element"
   },
   "devDependencies": {
-    "assert": "git://github.com/angular/assert#dist",
+    "rtts-assert": "angular/assert",
     "clientify": "git://github.com/vojtajina/clientify#shrinkwrap",
     "gulp": "^3.5.6",
     "gulp-connect": "~1.0.5",
-    "gulp-traceur": "^0.3.0",
+    "gulp-traceur": "vojtajina/gulp-traceur#traceur-as-peer",
     "karma": "^0.12.1",
     "karma-chrome-launcher": "^0.1.2",
     "karma-jasmine": "^0.2.2",
     "karma-requirejs": "^0.2.1",
     "karma-sauce-launcher": "^0.2.3",
-    "karma-traceur-preprocessor": "^0.2.2",
-    "pipe": "git://github.com/angular/pipe#remove-transitive-deps",
+    "karma-traceur-preprocessor": "vojtajina/karma-traceur-preprocessor#traceur-as-peer",
+    "pipe": "angular/pipe#remove-transitive-deps",
+    "protractor": "^0.21.0",
     "requirejs": "^2.1.11",
     "through2": "^0.4.1",
     "gulp-util": "~2.2.14",
-    "jsdom": "~0.10.3"
+    "jsdom": "~0.10.5"
   },
   "scripts": {
     "test": "karma start --single-run"

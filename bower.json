@@ -1,0 +1,23 @@
+{
+  "name": "router",
+  "version": "0.0.0",
+  "homepage": "https://github.com/eisenbergeffect/router",
+  "authors": [
+    "Rob Eisenberg <rob@bluespire.com>"
+  ],
+  "moduleType": [
+    "es6"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.2.3"
+  }
+}

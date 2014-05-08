@@ -1,10 +1,33 @@
-[![Build Status](https://travis-ci.org/angular/templating.png?branch=master)](https://travis-ci.org/angular/templating)
+# Angular 2.0 Router
 
-# Router Prototype
+This is a prototype of a new router for Angular 2.0. Its feature set is based on the router used by Durandal. This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. The screen activator has also had a similar re-design. Generally speaking, it allows for tons of customization at almost every point, understands basic conventions, has sensible defaults, etc.
 
-This is a prototype of a new router for Angular 2.0. Its feature set is based on the router used by Durandal (which was the second client-side router I've written...this is the third...well, maybe the 4th actually. I may have lost count). This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. The screen activator has also had a similar re-design. Generally speaking, it allows for tons of customization at almost every point, understands basic conventions, has sensible defaults, etc. The intersting stuff is in the src folder. Don't pay attention to the rest for now. 
+> **Note:** This prototype should fullfill almost, if not all, the requirements mentioned in the Angular 2.0 router design doc.
 
-> *Note:* This prototype should fullfill almost, if not all, the requirements mentioned in the Angular 2.0 router design doc.
+## Setup
+
+1. Install [NodeJS](http://nodejs.org/)
+2. At the command prompt install [Gulp](http://gulpjs.com/) with `npm install -g gulp`
+3. At the command promit install [Bower](http://bower.io/) with `npm install -g bower`
+4. From the repo, install npm dependencies with `npm install`
+5. From the repo, install bower dependencies with `bower install`
+
+## Running the Samples
+
+1. At the command prompt, start the development web server with `gulp build watch serve`
+2. Open a browser and navigate to [http://localhost:8000/temp/examples/index.html](http://localhost:8000/temp/examples/index.html)
+
+> **Note:** The examples don't currently contain an example of the router. This is based on a branch of our templating engine. The router source still needs updating to match the new templating code.
+
+## Development
+
+1. At the command prompt, install the cli for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
+2. At the command prompt, start karma with `karma start`
+3. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
+
+### Code Style Guide
+
+* Use 2 spaces as tab, see .editorconfig
 
 ## Features
 
@@ -32,9 +55,3 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 
 ## To Do
 * Probably should write some tests...
-
-## Develop
-npm install
-karma start
-
-Use 2 spaces as tab, see .editorconfig

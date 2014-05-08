@@ -1,0 +1,14 @@
+<link rel="import" href="../templating.html">
+
+<angular-element module="tab-container#TabContainer">
+  <rjs-module src="../ngRepeat"></rjs-module>
+
+  <template>
+    <button ng-repeat bind-ng-repeat="tabs" on-click="select(row)">
+      {{row.title}}
+    </button>
+    <div>
+      <content></content>
+    </div>
+  </template>
+</angular-element>
