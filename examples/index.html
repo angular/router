@@ -1,16 +1,50 @@
 <!doctype html>
-<html>
-<body>
-<!-- TODO: create standalone repo for examples, e.g. v2_examples -->
+<html ng-config="directives">
+<head>
+  <link rel="stylesheet" type="text/css" href="/styles/styles.css">
+  <link rel="stylesheet" type="text/css" href="/Third_Party/bootstrap/css/bootstrap.css">
 
-<ul>
-    <li><a href="greet/index.html">Recursive template with form validation</a></li>
-    <li><a href="tab/index.html">Tab container and tabs</a></li>
-    <li><a href="video/index.html">Video player</a></li>
-    <li><a href="ngmodel/index.html">NgModel with validation</a></li>
-    <li><a href="routing/index.html">Simple routing</a></li>
-    <li><a href="github/index.html">GitHub client</a></li>
-</ul>
+  <!-- polyfills -->
+  <script type="text/javascript" src="/bower_components/platform/platform.js"></script>
+  <script type="text/javascript" src="/Third_Party/route-recognizer.js"></script>
+  <link rel="import" href="./platform.html">
 
+  <!-- angular -->
+  <link rel="import" href="./templating.html">
+  <title>Routing</title>
+</head>
+<body>   
+	<div>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">
+                <i class="fa fa-home"></i>
+                <span>Angular 2.0</span>
+            </a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li ng-repeat bind-ng-repeat="router.navigation">
+                    <a bind-href="row.hash">{{row.title}}</a>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li class="loader">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <router-port class="page-host"></router-port>
+</div>
 </body>
 </html>
