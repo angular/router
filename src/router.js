@@ -114,6 +114,7 @@ export class NavigationContext {
     this.activator = router.activator;
     this.router = router;
     this.injector = router.injector;
+    this.viewFactory = router.viewFactory;
     this.createActivator = router.createActivator.bind(router);
   }
 
@@ -125,6 +126,78 @@ export class NavigationContext {
   redirect(redirect){
     this.output = typeof redirect == 'string' ? new Redirect(redirect) : redirect;
     return this.cancel();
+  }
+}
+
+export class SelectComponent {
+  run(context){
+    var currentInstruction = context.currentInstruction,
+        nextInstruction = context.nextInstruction;
+
+    if('controller' in nextInstruction){
+      return context.next();
+    }
+
+    if (this.canReuseCurrentController(currentInstruction, nextInstruction)) {
+      context.activator = context.createActivator();
+      context.activator.setCurrentAndBypassLifecycle(currentInstruction);
+      context.nextInstruction = currentInstruction;
+      return context.next();
+    } else {
+      var moduleId = this.determineModuleId(nextInstruction);
+
+      return this.resolveComponentInstance(context, moduleId).then(function (component) {
+        context.nextInstruction.component = component;
+        context.nextInstruction.controller = component.executionContext;
+        return context.next();
+      }).catch(function (err) {
+        //log('Failed to load routed module (' + instruction.config.moduleId + '). Details: ' + err.message);
+        return context.cancel();
+      });
+    }
+  }
+
+  canReuseCurrentController(currentInstruction, nextInstruction){
+    var currentController;
+
+    return currentInstruction
+      && currentInstruction.config.moduleId == nextInstruction.config.moduleId
+      && (currentController = currentInstruction.controller)
+      && ((currentController.canReuseForRoute && currentController.canReuseForRoute.apply(currentController, nextInstruction.activationInput))
+        || (!currentController.canReuseForRoute && currentController.router && currentController.router.loadUrl));
+  }
+
+  determineModuleId(nextInstruction){
+    return nextInstruction.config.moduleId;
+  }
+
+  resolveComponentInstance(context, moduleId){
+    return new Promise((resolve, reject) => {
+      require([moduleId], (moduleInstance) => {
+
+        @Provide(ChildRouter)
+        function childRouterProvider() {
+          return context.router.createChild();
+        }
+
+        var modules = [moduleInstance, childRouterProvider];
+        var controllerInjector = context.injector.createChild(modules);
+        var controllerType = this.getComponentTypeFromModule(moduleInstance);
+
+        var component = context.viewFactory.createComponentView({
+          component: controllerType,
+          parentInjector:controllerInjector
+        });
+        
+        resolve(component);
+      }, reject);
+    });
+  }
+
+  getComponentTypeFromModule(moduleInstance){
+    for(var key in moduleInstance){
+      return moduleInstance[key];
+    }
   }
 }
 
@@ -311,6 +384,7 @@ export class Router{
   connect(routerPort){
     this._port = routerPort;
 
+    this.viewFactory = routerPort.viewFactory;
     this.injector = routerPort.injector;
     this.activator.onCurrentChanged = routerPort.followInstruction.bind(routerPort);
 
@@ -424,8 +498,9 @@ export class Router{
 
   createNavigationPipeline(){
     return new Pipeline()
-      .withStep(new SelectController())
-      .withStep(new SelectView())
+      .withStep(new SelectComponent())
+      //.withStep(new SelectController())
+      //.withStep(new SelectView())
       .withStep(new ActivateInstruction())
       .withStep(new CompleteNavigation())
       .withStep(new DelegateToChildRouter());

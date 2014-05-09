@@ -6,6 +6,8 @@ import {RootRouter} from 'router';
 export class App {
   @Inject(RootRouter)
   constructor(router) {
+  	router.title = 'Router Demo';
+  	
     this.router = router.map([
     	{ route: ['','welcome'], title:'Welcome', moduleId: './welcome', nav: true },
         { route: 'flickr', moduleId: './flickr', nav: true }

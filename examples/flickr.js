@@ -1,8 +1,9 @@
 import {ComponentDirective} from 'templating';
 
 @ComponentDirective
-export class Welcome{
+export class Flickr{
 	constructor(){
-		this.heading = 'Welcome to the Angular 2.0 Router Demo!';
+		this.heading = 'Flickr';
+		this.images = [];
 	}
 }

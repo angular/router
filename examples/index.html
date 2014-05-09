@@ -32,6 +32,14 @@
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
+                <li>
+                    <a href="#welcome">Home</a>
+                </li>
+
+                <li>
+                    <a href="#flickr">Flickr</a>
+                </li>
+
                 <li ng-repeat bind-ng-repeat="router.navigation">
                     <a bind-href="row.hash">{{row.title}}</a>
                 </li>
@@ -45,7 +53,7 @@
         </div>
     </nav>
 
-    <router-port class="page-host"></router-port>
+    <router-port></router-port>
 </div>
 </body>
 </html>

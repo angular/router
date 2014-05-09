@@ -35,13 +35,7 @@ export class RouterPort {
 
   followInstruction(instruction){
     this.tryRemoveView();
-
-    this.view = this.viewFactory.createChildView({
-      template:instruction.template, 
-      parentView:this.parentView, 
-      executionContext:instruction.controller
-    });
-
+    this.view = instruction.component;
     this.viewPort.append(this.view);
   }
 
