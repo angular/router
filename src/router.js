@@ -78,24 +78,32 @@ export class Instruction{
     if('canActivate' in this.controller){
       return this.controller.canActivate.apply(this.controller, arguments);
     }
+
+    return true;
   }
 
   activate(){
     if('activate' in this.controller){
       return this.controller.activate.apply(this.controller, arguments);
     }
+
+    return true;
   }
 
   canDeactivate(){
     if('canDeactivate' in this.controller){
       return this.controller.canDeactivate.apply(this.controller, arguments);
     }
+
+    return true;
   }
 
   deactivate(){
     if('deactivate' in this.controller){
       return this.controller.deactivate.apply(this.controller, arguments);
     }
+
+    return true;
   }
 }
 
