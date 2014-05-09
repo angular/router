@@ -76,25 +76,25 @@ export class Instruction{
 
   canActivate(){
     if('canActivate' in this.controller){
-      return this.controller.canActivate.appy(this.controller, arguments);
+      return this.controller.canActivate.apply(this.controller, arguments);
     }
   }
 
   activate(){
     if('activate' in this.controller){
-      return this.controller.activate.appy(this.controller, arguments);
+      return this.controller.activate.apply(this.controller, arguments);
     }
   }
 
   canDeactivate(){
     if('canDeactivate' in this.controller){
-      return this.controller.canDeactivate.appy(this.controller, arguments);
+      return this.controller.canDeactivate.apply(this.controller, arguments);
     }
   }
 
   deactivate(){
     if('deactivate' in this.controller){
-      return this.controller.deactivate.appy(this.controller, arguments);
+      return this.controller.deactivate.apply(this.controller, arguments);
     }
   }
 }

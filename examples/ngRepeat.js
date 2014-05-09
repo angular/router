@@ -20,6 +20,7 @@ export class NgRepeat {
     this.views = [];
     this.ngRepeat = [];
   }
+  
   ngRepeatChanged(changeRecord) {
     var rows;
     if (changeRecord) {
