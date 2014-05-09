@@ -1,10 +1,10 @@
 import {Inject} from 'di';
 import {ComponentDirective} from 'templating';
-import {Router} from 'router';
+import {RootRouter} from 'router';
 
 @ComponentDirective
 export class App {
-  @Inject(Router)
+  @Inject(RootRouter)
   constructor(router) {
     this.router = router.map([
     	{ route: ['','welcome'], title:'Welcome', moduleId: './welcome', nav: true },

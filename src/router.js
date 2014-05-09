@@ -287,7 +287,7 @@ export class DelegateToChildRouter{
   }
 }
 
-export class RouterBase{
+export class Router{
   constructor(){
     this.activator = this.createActivator();
     this.reset();
@@ -297,30 +297,15 @@ export class RouterBase{
     return new Redirect(url);
   }
 
-  get navigation(){
-    if(this._needsNavModelBuild){
-      var nav = [], routes = this.routes;
-      var fallbackOrder = 100;
-
-      for (var i = 0, length = routes.length; i < length; i++) {
-        var current = routes[i];
-
-        if (current.nav) {
-          if (typeof current.nav != 'number') {
-            current.nav = ++fallbackOrder;
-          }
-
-          nav.push(current);
-        }
+  addToNavigation(current){
+    if (current.nav) {
+      if (typeof current.nav != 'number') {
+        current.nav = ++this.fallbackOrder;
       }
 
-      nav.sort(function (a, b) { return a.nav - b.nav; });
-
-      this._navigationModel = nav;
-      this._needsNavModelBuild = false;
+      this.navigation.push(current);
+      this.navigation = this.navigation.sort(function (a, b) { return a.nav - b.nav; });
     }
-
-    return this._navigationModel;
   }
 
   connect(routerPort){
@@ -568,6 +553,7 @@ export class RouterBase{
 
     this.routes.push(config);
     this.recognizer.add([{path:config.route, handler: config}]);
+    this.addToNavigation(config);
   }
 
   ensureDefaultsForRouteConfig(config){
@@ -677,6 +663,8 @@ export class RouterBase{
     this.routes = [];
     this.queue = [];
     this.isNavigating = false;
+    this.fallbackOrder = 100;
+    this.navigation = [];
 
     delete this.options;
 
@@ -686,13 +674,13 @@ export class RouterBase{
   };
 }
 
-export class ChildRouter extends RouterBase {
+export class ChildRouter extends Router {
   constructor(){
     super();
   }
 }
 
-export class Router extends RouterBase {
+export class RootRouter extends Router {
   constructor(){
     super();
     document.addEventListener('click', this.handleLinkClick.bind(this), true);

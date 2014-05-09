@@ -1,4 +1,4 @@
 // PUBLIC API
 
-export {Router} from './router';
+export {Router, RootRouter} from './router';
 export {RouterPort} from './routerPort';
