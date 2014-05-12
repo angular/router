@@ -17,13 +17,12 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 1. At the command prompt, start the development web server with `gulp build watch serve`
 2. Open a browser and navigate to [http://localhost:8000/temp/examples/index.html](http://localhost:8000/temp/examples/index.html)
 
-> **Note:** The examples don't currently contain an example of the router. This is based on a branch of our templating engine. The router source still needs updating to match the new templating code.
-
 ## Development
 
-1. At the command prompt, install the cli for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
-2. At the command prompt, start karma with `karma start`
-3. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
+1. At the command prompt, install [Karma](http://karma-runner.github.io/) with `npm install -g karma`
+2. At the command prompt, install the cli for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
+3. At the command prompt, start karma with `karma start`
+4. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
 
 ### Code Style Guide
 
@@ -54,4 +53,4 @@ This is a prototype of a new router for Angular 2.0. Its feature set is based on
 * Has a custom TemplateDirective `router-port` which serves as a composition site for the router's active view.
 
 ## To Do
-* Probably should write some tests...
+* Tests!!! (Coming Soon)
