@@ -6,3 +6,4 @@ sauce_connect.log
 .idea
 .DS_STORE
 temp
+npm-debug.log
