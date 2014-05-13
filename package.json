@@ -17,7 +17,8 @@
     "watchtower": "angular/watchtower.js#notifier",
     "zone.js": "angular/zone.js",
     "traceur": "vojtajina/traceur-compiler#add-es6-pure-transformer-dist",
-    "templating": "angular/templating#custom-element"
+    "templating": "angular/templating#custom-element",
+    "Deferred": "https://github.com/jeffbcross/deferred/tarball/90d74b207327444a7553ce7ea42f9258dcadf2f7"
   },
   "devDependencies": {
     "rtts-assert": "angular/assert",
