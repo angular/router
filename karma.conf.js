@@ -17,6 +17,11 @@ module.exports = function(config) {
       {pattern: 'node_modules/rtts-assert/src/**/*.js', included: false},
       {pattern: 'node_modules/watchtower/src/**/*.js', included: false},
       {pattern: 'node_modules/expressionist/src/**/*.js', included: false},
+      {pattern: 'node_modules/deferred/src/PromiseMock.js', included: false},
+
+      {pattern: 'node_modules/assert/dist/amd/**/*.js', included: false},
+      {pattern: 'node_modules/watchtower/dist/amd/**/*.js', included: false},
+      {pattern: 'node_modules/expressionist/dist/amd/**/*.js', included: false},
       {pattern: 'node_modules/es6-shim/es6-shim.js', included: false}
     ],
 
@@ -26,7 +31,8 @@ module.exports = function(config) {
       'node_modules/di/src/**/*.js': ['traceur'],
       'node_modules/rtts-assert/src/**/*.js': ['traceur'],
       'node_modules/watchtower/src/**/*.js': ['traceur'],
-      'node_modules/expressionist/src/**/*.js': ['traceur']
+      'node_modules/expressionist/src/**/*.js': ['traceur'],
+      'node_modules/deferred/src/PromiseMock.js': ['traceur'],
     }
   });
 
