@@ -27,6 +27,7 @@ require.config({
       'di/testing': 'node_modules/di/src/testing',
       'watchtower': 'node_modules/watchtower/src/index',
       'expressionist': 'node_modules/expressionist/src/index',
+      'route-recognizer': 'node_modules/route-recognizer/lib/route-recognizer',
       'templating': 'src/index',
       'compile_ng_template': 'src/loader/requirejs_html',
     }

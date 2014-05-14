@@ -2,6 +2,7 @@ import {Pipeline} from './pipeline';
 import {history} from './history';
 import {extend} from './util';
 import {Activator} from './activator';
+import RouteRecognizer from 'route-recognizer';
 import {Injector, Provide, Inject} from 'di';
 
 function ensureConfigValue(config, property, getter){
