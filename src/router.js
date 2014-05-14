@@ -521,7 +521,7 @@ export class Router{
         var prev = context.prevItem,
             next = context.nextItem;
 
-        if((!prev && next) || (prev && !next)){
+        if(!prev ^ !next) {
           return false;
         }
 
