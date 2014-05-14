@@ -197,7 +197,7 @@ export class SelectComponent {
           component: controllerType,
           parentInjector:controllerInjector
         });
-        
+
         resolve(component);
       }, reject);
     });
@@ -254,7 +254,7 @@ export class SelectController {
         var controllerInjector = context.injector.createChild(modules);
         var controllerType = this.getControllerTypeFromModule(moduleInstance);
         var controller = controllerInjector.get(controllerType);
-        
+
         resolve(controller);
       }, reject);
     });
@@ -401,7 +401,7 @@ export class Router{
       this.activate();
     }else{
       this.dequeueInstruction();
-    }   
+    }
   }
 
   navigate(fragment, options) {
@@ -495,7 +495,7 @@ export class Router{
       }else if (context.prevInstruction) {
         this.navigate(reconstructUrl(context.prevInstruction), false);
       }
-      
+
       instruction.resolve(result);
       this.dequeueInstruction();
     });
@@ -645,7 +645,7 @@ export class Router{
     config.route = ensureConfigValue(config, 'route', this.deriveRoute);
     config.title = ensureConfigValue(config, 'title', this.deriveTitle);
     config.moduleId = ensureConfigValue(config, 'moduleId', this.deriveModuleId);
-    
+
     this.ensureHREF(config);
 
     if(!('isActive' in config)) {
@@ -786,7 +786,7 @@ export class RootRouter extends Router {
 
         // Ensure the protocol is not part of URL, meaning its relative.
         // Stop the event bubbling to ensure the link will not cause a page refresh.
-        if(href != null && !(href.charAt(0) === "#" || /^[a-z]+:/i.test(href))) {
+        if(href != null && !(href.charAt(0) === "#" || (/^[a-z]+:/i).test(href))) {
           evt.preventDefault();
           history.navigate(href);
         }
