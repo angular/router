@@ -22,7 +22,7 @@ function updateHash(location, fragment, replace) {
         // Some browsers require that `hash` contains a leading #.
         location.hash = '#' + fragment;
     }
-};
+}
 
 var history = {
     interval: 50,

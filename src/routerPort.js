@@ -15,32 +15,32 @@ export class RouterPort {
     this.injector = injector;
     this.view = null;
 
-    if('router' in parentView.executionContext){
+    if ('router' in parentView.executionContext) {
       this.router = parentView.executionContext.router;
       this.routerChanged(this.router);
     }
   }
 
-  routerChanged(value, oldValue){
+  routerChanged(value, oldValue) {
     if (oldValue) {
       this.tryRemoveView();
     }
 
-    if(value){
+    if (value) {
       value.connect(this);
-    }else{
+    } else {
       this.tryRemoveView();
     }
   }
 
-  followInstruction(instruction){
+  followInstruction(instruction) {
     this.tryRemoveView();
     this.view = instruction.component;
     this.viewPort.append(this.view);
   }
 
-  tryRemoveView(){
-    if(this.view){
+  tryRemoveView() {
+    if (this.view) {
       this.viewPort.remove(this.view);
       this.view.destroy();
       this.view = null;

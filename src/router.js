@@ -5,10 +5,10 @@ import {Activator} from './activator';
 import RouteRecognizer from 'route-recognizer';
 import {Injector, Provide, Inject} from 'di';
 
-function ensureConfigValue(config, property, getter){
+function ensureConfigValue(config, property, getter) {
   var value = config[property];
 
-  if(value || value == ''){
+  if (value || value == '') {
     return value;
   }
 
@@ -22,21 +22,21 @@ function stripParametersFromRoute(route) {
 }
 
 function reconstructUrl(instruction) {
-  if(!instruction.queryString) {
+  if (!instruction.queryString) {
     return instruction.fragment;
   }
 
   return instruction.fragment + '?' + instruction.queryString;
 }
 
-function areSameInputs(prev, next){
+function areSameInputs(prev, next) {
   var prevParams, nextParams;
 
-  if(prev == next){
+  if (prev == next) {
     return true;
   }
 
-  if(!prev || !next){
+  if (!prev || !next) {
     return false;
   }
 
@@ -47,7 +47,7 @@ function areSameInputs(prev, next){
 function targetIsThisWindow(target) {
   var targetWindow = target.getAttribute('target');
 
-  if(!targetWindow ||
+  if (!targetWindow ||
       targetWindow === window.name ||
       targetWindow === '_self' ||
       (targetWindow === 'top' && window === window.top)) {
@@ -57,7 +57,7 @@ function targetIsThisWindow(target) {
   return false;
 }
 
-function getWildcardPath(route, params){
+function getWildcardPath(route, params) {
   var wildcardIndex = route.lastIndexOf('*'),
       wildcardName = route.substr(wildcardIndex + 1),
       path = params[wildcardName];
@@ -66,7 +66,7 @@ function getWildcardPath(route, params){
 }
 
 export class Instruction{
-  constructor(fragment, queryString, params, queryParams, config={}){
+  constructor(fragment, queryString, params, queryParams, config={}) {
     this.fragment = fragment;
     this.queryString = queryString;
     this.params = params;
@@ -75,32 +75,32 @@ export class Instruction{
     this.activationInput = [params, queryParams, config];
   }
 
-  canActivate(){
-    if('canActivate' in this.controller){
+  canActivate() {
+    if ('canActivate' in this.controller) {
       return this.controller.canActivate.apply(this.controller, arguments);
     }
 
     return true;
   }
 
-  activate(){
-    if('activate' in this.controller){
+  activate() {
+    if ('activate' in this.controller) {
       return this.controller.activate.apply(this.controller, arguments);
     }
 
     return true;
   }
 
-  canDeactivate(){
-    if('canDeactivate' in this.controller){
+  canDeactivate() {
+    if ('canDeactivate' in this.controller) {
       return this.controller.canDeactivate.apply(this.controller, arguments);
     }
 
     return true;
   }
 
-  deactivate(){
-    if('deactivate' in this.controller){
+  deactivate() {
+    if ('deactivate' in this.controller) {
       return this.controller.deactivate.apply(this.controller, arguments);
     }
 
@@ -109,13 +109,13 @@ export class Instruction{
 }
 
 export class Redirect {
-  constructor(url){
+  constructor(url) {
     this.url = url;
   }
 }
 
 export class NavigationContext {
-  constructor(router, nextInstruction){
+  constructor(router, nextInstruction) {
     this.output = null;
     this.currentInstruction = router.activator.current;
     this.prevInstruction = router.activator.current;
@@ -127,23 +127,23 @@ export class NavigationContext {
     this.createActivator = router.createActivator.bind(router);
   }
 
-  get hasChildRouter(){
+  get hasChildRouter() {
     var controller = this.nextInstruction.controller;
     return controller && controller.router && controller.router.parent == this.router;
   }
 
-  redirect(redirect){
+  redirect(redirect) {
     this.output = typeof redirect == 'string' ? new Redirect(redirect) : redirect;
     return this.cancel();
   }
 }
 
 export class SelectComponent {
-  run(context){
+  run(context) {
     var currentInstruction = context.currentInstruction,
         nextInstruction = context.nextInstruction;
 
-    if('controller' in nextInstruction){
+    if ('controller' in nextInstruction) {
       return context.next();
     }
 
@@ -159,14 +159,15 @@ export class SelectComponent {
         context.nextInstruction.component = component;
         context.nextInstruction.controller = component.executionContext;
         return context.next();
-      }).catch(function (err) {
+      }).
+      catch(function (err) {
         //log('Failed to load routed module (' + instruction.config.moduleId + '). Details: ' + err.message);
         return context.cancel();
       });
     }
   }
 
-  canReuseCurrentController(currentInstruction, nextInstruction){
+  canReuseCurrentController(currentInstruction, nextInstruction) {
     var currentController;
 
     return currentInstruction
@@ -176,11 +177,11 @@ export class SelectComponent {
         || (!currentController.canReuseForRoute && currentController.router && currentController.router.loadUrl));
   }
 
-  determineModuleId(nextInstruction){
+  determineModuleId(nextInstruction) {
     return nextInstruction.config.moduleId;
   }
 
-  resolveComponentInstance(context, moduleId){
+  resolveComponentInstance(context, moduleId) {
     return new Promise((resolve, reject) => {
       require([moduleId], (moduleInstance) => {
 
@@ -195,7 +196,7 @@ export class SelectComponent {
 
         var component = context.viewFactory.createComponentView({
           component: controllerType,
-          parentInjector:controllerInjector
+          parentInjector: controllerInjector
         });
 
         resolve(component);
@@ -203,19 +204,19 @@ export class SelectComponent {
     });
   }
 
-  getComponentTypeFromModule(moduleInstance){
-    for(var key in moduleInstance){
+  getComponentTypeFromModule(moduleInstance) {
+    for(var key in moduleInstance) {
       return moduleInstance[key];
     }
   }
 }
 
 export class SelectController {
-  run(context){
+  run(context) {
     var currentInstruction = context.currentInstruction,
         nextInstruction = context.nextInstruction;
 
-    if('controller' in nextInstruction){
+    if ('controller' in nextInstruction) {
       return context.next();
     }
 
@@ -237,11 +238,11 @@ export class SelectController {
     }
   }
 
-  determineModuleId(nextInstruction){
+  determineModuleId(nextInstruction) {
     return nextInstruction.config.moduleId;
   }
 
-  resolveControllerInstance(context, moduleId){
+  resolveControllerInstance(context, moduleId) {
     return new Promise((resolve, reject) => {
       require([moduleId], (moduleInstance) => {
 
@@ -260,13 +261,13 @@ export class SelectController {
     });
   }
 
-  getControllerTypeFromModule(moduleInstance){
-    for(var key in moduleInstance){
+  getControllerTypeFromModule(moduleInstance) {
+    for(var key in moduleInstance) {
       return moduleInstance[key];
     }
   }
 
-  canReuseCurrentController(currentInstruction, nextInstruction){
+  canReuseCurrentController(currentInstruction, nextInstruction) {
     var currentController;
 
     return currentInstruction
@@ -278,16 +279,16 @@ export class SelectController {
 }
 
 export class SelectView{
-  run(context){
+  run(context) {
     var nextInstruction = context.nextInstruction;
 
-    if('template' in nextInstruction){
+    if ('template' in nextInstruction) {
       return context.next();
     }
 
     var templateId = this.determineTemplateId(nextInstruction);
 
-    return this.resolveTemplate(templateId).then((template) =>{
+    return this.resolveTemplate(templateId).then((template) => {
       nextInstruction.template = template;
       return context.next();
     }).catch(function (err) {
@@ -296,12 +297,12 @@ export class SelectView{
     });
   }
 
-  determineTemplateId(nextInstruction){
+  determineTemplateId(nextInstruction) {
     //TODO: look for the component annotation first
     return nextInstruction.config.templateId || nextInstruction.config.moduleId + '.html';
   }
 
-  resolveTemplate(templateId){
+  resolveTemplate(templateId) {
     return new Promise((resolve, reject) => {
       require([templateId], (viewModule) => {
         viewModule.promise.then((templateAndModules) => {
@@ -313,16 +314,16 @@ export class SelectView{
 }
 
 export class ActivateInstruction {
-  run(context){
+  run(context) {
     var nextInstruction = context.nextInstruction;
     //trigger('router:route:activating', instance, instruction, router);
 
     return context.activator.activate(nextInstruction, nextInstruction.activationInput).then((result) => {
-      if(result.completed){
+      if (result.completed) {
         return context.next();
-      }else if(result.output instanceof Redirect){
+      } else if (result.output instanceof Redirect) {
         return context.redirect(result.output);
-      }else{
+      } else {
         return context.cancel();
       }
     });
@@ -330,14 +331,14 @@ export class ActivateInstruction {
 }
 
 export class CompleteNavigation {
-  run(context){
+  run(context) {
     this.setInstructionIsActive(context.currentInstruction, false);
     context.currentInstruction = context.nextInstruction;
     this.setInstructionIsActive(context.currentInstruction, true);
     return context.next();
   }
 
-  setInstructionIsActive(instruction, isActive){
+  setInstructionIsActive(instruction, isActive) {
     if (instruction && instruction.config) {
       instruction.config.isActive = isActive;
     }
@@ -345,41 +346,41 @@ export class CompleteNavigation {
 }
 
 export class DelegateToChildRouter{
-  run(context){
+  run(context) {
     var instruction = context.nextInstruction,
         controller = instruction.controller;
 
-    if(context.hasChildRouter){
+    if (context.hasChildRouter) {
       var path = getWildcardPath(instruction.config.route, instruction.params);
 
       if (instruction.queryString) {
         path += "?" + instruction.queryString;
       }
 
-      return controller.router.loadUrl(path).then((result) =>{
-        if(result.completed){
+      return controller.router.loadUrl(path).then((result) => {
+        if (result.completed) {
           return context.next();
         }
 
         return context.cancel();
       });
-    }else{
+    } else {
       return context.next();
     }
   }
 }
 
 export class Router{
-  constructor(){
+  constructor() {
     this.activator = this.createActivator();
     this.reset();
   }
 
-  static redirect(url){
+  static redirect(url) {
     return new Redirect(url);
   }
 
-  addToNavigation(current){
+  addToNavigation(current) {
     if (current.nav) {
       if (typeof current.nav != 'number') {
         current.nav = ++this.fallbackOrder;
@@ -390,24 +391,24 @@ export class Router{
     }
   }
 
-  connect(routerPort){
+  connect(routerPort) {
     this._port = routerPort;
 
     this.viewFactory = routerPort.viewFactory;
     this.injector = routerPort.injector;
     this.activator.onCurrentChanged = routerPort.followInstruction.bind(routerPort);
 
-    if(!this.isActive && 'activate' in this){
+    if (!this.isActive && 'activate' in this) {
       this.activate();
-    }else{
+    } else {
       this.dequeueInstruction();
     }
   }
 
   navigate(fragment, options) {
     if (fragment && fragment.indexOf('://') != -1) {
-        window.location.href = fragment;
-        return true;
+      window.location.href = fragment;
+      return true;
     }
 
     return history.navigate(fragment, options);
@@ -417,17 +418,17 @@ export class Router{
     history.navigateBack();
   }
 
-  createChild(){
+  createChild() {
     var childRouter = new ChildRouter();
     child.parent = this;
     child.title = this.title;
     return childRouter;
   }
 
-  loadUrl(url){
+  loadUrl(url) {
     var results = this.recognizer.recognize(url);
 
-    if(results && results.length){
+    if (results && results.length) {
       var first = results[0],
           fragment = url,
           queryIndex = fragment.indexOf('?'),
@@ -438,12 +439,12 @@ export class Router{
         queryString = url.substr(queryIndex + 1);
       }
 
-      if(typeof first.handler == 'function'){
+      if (typeof first.handler == 'function') {
         return first.handler(new Instruction(fragment, queryString, first.params, first.queryParams));
-      }else{
+      } else {
         return this.queueInstruction(new Instruction(fragment, queryString, first.params, first.queryParams, first.handler));
       }
-    }else{
+    } else {
       //log('Route Not Found');
       //trigger('router:route:not-found', url, this);
 
@@ -454,20 +455,20 @@ export class Router{
     }
   }
 
-  generate(name, params){
+  generate(name, params) {
     return this.recognizer.generate(name, params);
   }
 
-  queueInstruction(instruction){
-    return new Promise((resolve) =>{
+  queueInstruction(instruction) {
+    return new Promise((resolve) => {
       instruction.resolve = resolve;
       this.queue.unshift(instruction);
       this.dequeueInstruction();
     });
   }
 
-  dequeueInstruction(){
-    if(this.isNavigating || !this._port){
+  dequeueInstruction() {
+    if (this.isNavigating || !this._port) {
       return;
     }
 
@@ -486,13 +487,13 @@ export class Router{
     pipeline.run(context).then((result) => {
       this.isNavigating = false;
 
-      if(result.completed){
+      if (result.completed) {
         if (!context.hasChildRouter) {
           this.updateDocumentTitle(context.currentInstruction);
         }
-      }else if(result.output instanceof Redirect){
+      } else if (result.output instanceof Redirect) {
         this.navigate(result.output.url, { trigger: true, replace: true });
-      }else if (context.prevInstruction) {
+      } else if (context.prevInstruction) {
         this.navigate(reconstructUrl(context.prevInstruction), false);
       }
 
@@ -501,11 +502,11 @@ export class Router{
     });
   }
 
-  createNavigationContext(instruction){
+  createNavigationContext(instruction) {
     return new NavigationContext(this, instruction);
   }
 
-  createNavigationPipeline(){
+  createNavigationPipeline() {
     return new Pipeline()
       .withStep(new SelectComponent())
       //.withStep(new SelectController())
@@ -515,37 +516,37 @@ export class Router{
       .withStep(new DelegateToChildRouter());
   }
 
-  createActivator(){
+  createActivator() {
     return new Activator({
-      areSameItem(context){
+      areSameItem(context) {
         var prev = context.prevItem,
             next = context.nextItem;
 
-        if(!prev ^ !next) {
+        if (!prev ^ !next) {
           return false;
         }
 
         var prevController = prev.controller,
             nextController = next.controller;
 
-        if(prevController == nextController){
+        if (prevController == nextController) {
           return areSameInputs(context.prevInput, context.nextInput);
         }
 
         return false;
       },
-      findChildActivator(context){
-        if(!context.prevItem){
+      findChildActivator(context) {
+        if (!context.prevItem) {
           return null;
         }
 
         var controller = context.prevItem.controller;
-        if(!controller){
+        if (!controller) {
           return null;
         }
 
         var childRouter = controller.router;
-        if(childRouter){
+        if (childRouter) {
           return childRouter.activator;
         }
 
@@ -600,24 +601,24 @@ export class Router{
       var isActive = false;
 
       for (var i = 0, length = config.route.length; i < length; i++) {
-          var current = extend({}, config);
+        var current = extend({}, config);
 
-          current.route = config.route[i];
+        current.route = config.route[i];
 
-          Object.defineProperty(current, 'isActive', {
-              get: function() {
-                  return isActive;
-              },
-              set: function(value) {
-                  isActive = value;
-              }
-          });
-
-          if (i > 0) {
-              delete current.nav;
+        Object.defineProperty(current, 'isActive', {
+          get: function() {
+            return isActive;
+          },
+          set: function(value) {
+            isActive = value;
           }
+        });
 
-          this.configureRoute(current);
+        if (i > 0) {
+            delete current.nav;
+        }
+
+        this.configureRoute(current);
       }
     } else {
       this.configureRoute(config);
@@ -640,7 +641,7 @@ export class Router{
     this.addToNavigation(config);
   }
 
-  ensureDefaultsForRouteConfig(config){
+  ensureDefaultsForRouteConfig(config) {
     config.name =  ensureConfigValue(config, 'name', this.deriveName);
     config.route = ensureConfigValue(config, 'route', this.deriveRoute);
     config.title = ensureConfigValue(config, 'title', this.deriveTitle);
@@ -648,12 +649,12 @@ export class Router{
 
     this.ensureHREF(config);
 
-    if(!('isActive' in config)) {
+    if (!('isActive' in config)) {
       config.isActive = false;
     }
   }
 
-  mapUnknownRoutes(config, replaceRoute){
+  mapUnknownRoutes(config, replaceRoute) {
     var catchAllRoute = "*path";
 
     var callback = (instruction) => {
@@ -672,8 +673,6 @@ export class Router{
             //trigger('router:route:after-config', instruction.config, this);
             return this.queueInstruction(instruction);
           });
-
-          return;
         }
       } else {
         instruction.config = config;
@@ -690,36 +689,36 @@ export class Router{
     return this;
   }
 
-  deriveName(config){
+  deriveName(config) {
     return config.title || (config.route ? stripParametersFromRoute(config.route) : config.moduleId);
   }
 
-  deriveRoute(config){
+  deriveRoute(config) {
     return config.moduleId || config.name;
   }
 
-  deriveTitle(config){
+  deriveTitle(config) {
     var value = config.name;
     return value.substring(0, 1).toUpperCase() + value.substring(1);
   }
 
-  deriveModuleId(config){
+  deriveModuleId(config) {
     return stripParametersFromRoute(config.route);
   }
 
-  ensureHREF(config){
+  ensureHREF(config) {
     var that = this;
 
-    if(config.href){
+    if (config.href) {
       return;
     }
 
     //TODO: consider re-writing this to update manually on route changes so we don't need a getter
     Object.defineProperty(config, 'href', {
-      get:function(){
+      get:function() {
         var href = config.route; //TODO: strip * at end
 
-        if(that.parent && that.parent.activator.current){
+        if (that.parent && that.parent.activator.current) {
           var instruction = that.parent.activator.current,
               path = getWildcardPath(instruction.config.route, instruction.params),
               fragment = fragment.slice(0, -path.length);
@@ -733,7 +732,7 @@ export class Router{
           if (history._hasPushState) {
             href = '/' + href;
           }
-        } else if(!history._hasPushState) {
+        } else if (!history._hasPushState) {
           href = '#' + href;
         }
 
@@ -752,41 +751,41 @@ export class Router{
 
     delete this.options;
 
-    if(clearController){
+    if (clearController) {
       this.activator.setCurrentAndBypassLifecycle(null);
     }
   };
 }
 
 export class ChildRouter extends Router {
-  constructor(){
+  constructor() {
     super();
   }
 }
 
 export class RootRouter extends Router {
-  constructor(){
+  constructor() {
     super();
     document.addEventListener('click', this.handleLinkClick.bind(this), true);
   }
 
   handleLinkClick(evt) {
-    if(!this.isActive){
+    if (!this.isActive) {
       return;
     }
 
     var target = evt.target;
-    if(target.tagName != 'A') {
+    if (target.tagName != 'A') {
       return;
     }
 
-    if(history._hasPushState) {
-      if(!evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && targetIsThisWindow(target)) {
+    if (history._hasPushState) {
+      if (!evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && targetIsThisWindow(target)) {
         var href = target.getAttribute('href');
 
         // Ensure the protocol is not part of URL, meaning its relative.
         // Stop the event bubbling to ensure the link will not cause a page refresh.
-        if(href != null && !(href.charAt(0) === "#" || (/^[a-z]+:/i).test(href))) {
+        if (href != null && !(href.charAt(0) === "#" || (/^[a-z]+:/i).test(href))) {
           evt.preventDefault();
           history.navigate(href);
         }
@@ -795,7 +794,7 @@ export class RootRouter extends Router {
   }
 
   activate(options) {
-    if(this.isActive){
+    if (this.isActive) {
       return;
     }
 

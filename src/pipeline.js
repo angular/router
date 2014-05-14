@@ -1,70 +1,70 @@
-function createResult(context){
+function createResult(context) {
   return {
-    status:context.status,
-    input:context.input,
-    output:context.output,
-    completed:context.status == 'completed'
+    status: context.status,
+    input: context.input,
+    output: context.output,
+    completed: context.status == 'completed'
   };
 }
 
 export class Pipeline {
-  constructor(){
+  constructor() {
     this.steps = [];
     this.stepsByName = {};
   }
 
-  withStep(step, name){
+  withStep(step, name) {
     var run;
 
-    if(typeof step == 'function'){
+    if (typeof step == 'function') {
       run = step;
-    }else{
+    } else {
       run = step.run.bind(step);
     }
 
     this.steps.push(run);
 
     name = name || step.name;
-    if(name){
+    if (name) {
       this.stepsByName[name] = run;
     }
 
     return this;
   }
 
-  run(context){
+  run(context) {
     var index = -1,
         steps = this.steps,
-        next, 
+        next,
         currentStep;
 
-    context.next = () =>{
+    context.next = () => {
       index++;
 
-      if(index < steps.length){
+      if (index < steps.length) {
         currentStep = steps[index];
 
-        try{
+        try {
           return currentStep(context);
-        }catch(e){
+        } catch(e) {
           return context.reject(e);
         }
-      }else{
+      } else {
         return context.complete();
       }
     };
 
-    context.complete = () =>{
+    context.complete = () => {
       context.status = 'completed';
       return Promise.resolve(createResult(context));
     };
 
-    context.cancel = () =>{
+    context.cancel = () => {
       context.status = 'cancelled';
       return Promise.resolve(createResult(context));
     };
 
-    context.reject = (error) =>{
+    context.reject = (error) => {
       context.status = 'rejected';
       context.output = error;
       return Promise.reject(createResult(context));
