@@ -7,6 +7,11 @@
       "from": "di@2.0.0-pre-10",
       "dependencies": {}
     },
+    "route-recognizer":{
+      "version": "0.1.0",
+      "from": "route-recognizer@0.1.0",
+      "dependencies": {}
+    },
     "traceur": {
       "version": "0.0.33",
       "from": "git://github.com/vojtajina/traceur-compiler#add-es6-pure-transformer-dist",

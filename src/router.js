@@ -5,6 +5,8 @@ import {Activator} from './activator';
 import RouteRecognizer from 'route-recognizer';
 import {Injector, Provide, Inject} from 'di';
 
+RouteRecognizer = RouteRecognizer['default'];
+
 function ensureConfigValue(config, property, getter) {
   var value = config[property];
 
