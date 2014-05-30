@@ -1,19 +1,23 @@
-function createResult(context) {
+function createResult(ctx, next) {
   return {
-    status: context.status,
-    input: context.input,
-    output: context.output,
-    completed: context.status == 'completed'
+    status: next.status,
+    context: ctx,
+    output: next.output,
+    completed: next.status == COMPLETED
   };
 }
+
+export var COMPLETED = 'completed';
+export var CANCELLED = 'cancelled';
+export var REJECTED = 'rejected';
+export var RUNNING = 'running';
 
 export class Pipeline {
   constructor() {
     this.steps = [];
-    this.stepsByName = {};
   }
 
-  withStep(step, name) {
+  withStep(step) {
     var run;
 
     if (typeof step == 'function') {
@@ -24,53 +28,50 @@ export class Pipeline {
 
     this.steps.push(run);
 
-    name = name || step.name;
-    if (name) {
-      this.stepsByName[name] = run;
-    }
-
     return this;
   }
 
-  run(context) {
+  run(ctx) {
     var index = -1,
         steps = this.steps,
         next,
         currentStep;
 
-    context.next = () => {
+    function next() {
       index++;
 
       if (index < steps.length) {
         currentStep = steps[index];
 
         try {
-          return currentStep(context);
+          return currentStep(ctx, next);
         } catch(e) {
-          return context.reject(e);
+          return next.reject(e);
         }
       } else {
-        return context.complete();
+        return next.complete();
       }
     };
 
-    context.complete = () => {
-      context.status = 'completed';
-      return Promise.resolve(createResult(context));
+    next.complete = () => {
+      next.status = COMPLETED;
+      return Promise.resolve(createResult(ctx, next));
     };
 
-    context.cancel = () => {
-      context.status = 'cancelled';
-      return Promise.resolve(createResult(context));
+    next.cancel = (reason) => {
+      next.status = CANCELLED;
+      next.output = reason;
+      return Promise.resolve(createResult(ctx, next));
     };
 
-    context.reject = (error) => {
-      context.status = 'rejected';
-      context.output = error;
-      return Promise.reject(createResult(context));
+    next.reject = (error) => {
+      next.status = REJECTED;
+      next.output = error;
+      return Promise.reject(createResult(ctx, next));
     };
 
-    context.status = 'running';
-    return context.next();
+    next.status = RUNNING;
+
+    return next();
   }
 }

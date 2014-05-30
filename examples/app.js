@@ -1,19 +1,20 @@
 import {Inject} from 'di';
 import {ComponentDirective} from 'templating';
-import {RootRouter} from 'router';
+import {AppRouter} from 'router';
 
-@ComponentDirective({
-  selector:'ng-app'
-})
+@ComponentDirective({selector:'ng-app'})
 export class App {
-  @Inject(RootRouter)
+  @Inject(AppRouter)
   constructor(router) {
     this.router = router;
 
-    router.title = 'Router Demo';
-    router = router.map([
-      { route: ['','welcome'], title:'Welcome', moduleId: 'welcome', nav: true },
-      { route: 'flickr', moduleId: 'flickr', nav: true }
-    ]);
+    router.configure((config)=>{
+      config.title = 'Router Demo';
+
+      config.map([
+        { route: ['','welcome'], title:'Welcome', moduleId: 'welcome', nav: true },
+        { route: 'flickr', moduleId: 'flickr', nav: true }
+      ]);
+    });
   }
 }

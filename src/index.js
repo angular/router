@@ -1,4 +1,7 @@
 // PUBLIC API
 
-export {Router, RootRouter} from './router';
-export {RouterPort} from './routerPort';
+export {Router} from './router';
+export {AppRouter} from './appRouter';
+export {RouterZone} from './routerZone';
+export {PipelineProvider} from './pipelineProvider';
+export {Redirect} from './redirect';

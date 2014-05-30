@@ -2,6 +2,7 @@ var sharedConfig = require('pipe/karma');
 
 module.exports = function(config) {
   sharedConfig(config);
+  config.traceurPreprocessor.options.asyncFunctions = true;
 
   config.set({
     // list of files / patterns to load in the browser

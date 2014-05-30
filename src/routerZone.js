@@ -1,42 +1,33 @@
 import {TemplateDirective, View, ViewPort, ViewFactory} from 'templating';
 import {Injector, Inject} from 'di';
 
-@TemplateDirective({
-  selector: 'router-port',
-  bind: {'router': 'router'},
-  observe: {'router': 'routerChanged'}
-})
-export class RouterPort {
+@TemplateDirective({selector: 'router-zone'})
+export class RouterZone {
   @Inject(ViewFactory, ViewPort, View, Injector)
   constructor(viewFactory, viewPort, parentView, injector) {
     this.viewFactory = viewFactory;
     this.viewPort = viewPort;
-    this.parentView = parentView;
     this.injector = injector;
     this.view = null;
 
     if ('router' in parentView.executionContext) {
-      this.router = parentView.executionContext.router;
-      this.routerChanged(this.router);
+      parentView.executionContext.router.registerZone(this);
     }
   }
 
-  routerChanged(value, oldValue) {
-    if (oldValue) {
-      this.tryRemoveView();
-    }
-
-    if (value) {
-      value.connect(this);
-    } else {
-      this.tryRemoveView();
-    }
-  }
-
-  followInstruction(instruction) {
+  process(zoneInstruction){
     this.tryRemoveView();
-    this.view = instruction.component;
+    this.view = zoneInstruction.component;
     this.viewPort.append(this.view);
+  }
+
+  createComponent(componentType, modules){
+    var componentInjector = this.injector.createChild(modules);
+
+    return this.viewFactory.createComponentView({
+      component: componentType,
+      parentInjector: componentInjector
+    });
   }
 
   tryRemoveView() {

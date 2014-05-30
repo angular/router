@@ -1,10 +1,7 @@
 import {PromiseBackend} from '../node_modules/deferred/src/PromiseMock';
-import {Pipeline} from '../src/pipeline';
+import {Pipeline, COMPLETED, REJECTED, CANCELLED} from '../src/pipeline';
 
 describe('Pipeline', () => {
-  PromiseBackend.setGlobal(window);
-  PromiseBackend.patchWithMock();
-
   var pipeline,
       spy,
       context;
@@ -14,77 +11,65 @@ describe('Pipeline', () => {
     pipeline = new Pipeline();
   });
 
-  it('should run even when there are not steps', () => {
-    pipeline.run(context).then((result) => {
-      expect(result.completed).toBe(true);
-    });
+  it('should run even when there are not steps', async function() {
+    var result  = await pipeline
+      .run(context);
 
-    PromiseBackend.flush(true);
+    expect(result.completed).toBe(true);
   });
 
-  it('should pass the context to the step', () => {
+  it('should pass the context to the step', async function() {
     var step = mockStep();
-    pipeline.withStep(step);
-    pipeline.run(context).then((result) => {
-      expect(result.completed).toBe(true);
-    });
 
+    var result = await pipeline
+      .withStep(step)
+      .run(context);
+
+    expect(result.completed).toBe(true);
     expect(step.spy).toHaveBeenCalledWith(context);
   });
 
+  it('should set the context to CANCELLED if a step cancels', async function() {
+    var result = await pipeline
+      .withStep((ctx, next) => next.cancel())
+      .run(context);
 
-  it('should set the context to incomplete if a step cancels', () => {
-    pipeline.withStep((context) => context.cancel()).
-    run(context).catch((result) => {
-      expect(result.completed).toBe(false);
-      expect(result.status).toBe('rejected');
-    });
-
-    PromiseBackend.flush(true);
+    expect(result.completed).toBe(false);
+    expect(result.status).toBe(CANCELLED);
   });
 
+  it('should set the context to REJECTED if a step throws', async function() {
+    var result = await pipeline
+      .withStep(() => { throw new Error('oops'); })
+      .run(context);
 
-  it('should set the context to incomplete if a step throws', () => {
-    pipeline.withStep(() => {
-      throw new Error('oops');
-    }).
-    run(context).catch((result) => {
-      expect(result.completed).toBe(false);
-      expect(result.status).toBe('rejected');
-    });
-
-    PromiseBackend.flush(true);
+    expect(result.completed).toBe(false);
+    expect(result.status).toBe(REJECTED);
   });
 
-
-  it('should delegate to the next step if the previous one cancels', () => {
+  it('should move to the next step if the current one calls next', async function() {
     var firstStep = false;
 
-    pipeline.
-      withStep((context) => {
+    var result = await pipeline.withStep((ctx, next) => {
         firstStep = true;
-        return context.next();
-      }).
-      withStep((context) => context.complete()).
-      run(context).then((result) => {
-        expect(firstStep).toBe(true);
-        expect(result.completed).toBe(true);
-        expect(result.status).toBe('completed');
-      });
+        return next();
+      })
+      .withStep((ctx, next) => next.complete())
+      .run(context);
 
-    PromiseBackend.flush(true);
+    expect(firstStep).toBe(true);
+    expect(result.completed).toBe(true);
+    expect(result.status).toBe(COMPLETED);
   });
 
+  function mockStep () {
+    var spy = jasmine.createSpy('step');
 
-
-  function mockStep (name) {
-    var spy = jasmine.createSpy(name ? (name + ' step') : 'step');
     return {
-      run: (ctx) => {
+      run: (ctx, next) => {
         spy(ctx);
-        return Promise.resolve();
+        return next();
       },
-      name: name,
       spy: spy
     };
   }
