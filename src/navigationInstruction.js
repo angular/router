@@ -14,7 +14,7 @@ export class NavigationInstruction{
       name:zoneName,
       moduleId: moduleId,
       component:component,
-      childRouter:component.router,
+      childRouter:component.executionContext.router,
       lifecycleArgs:this.lifecycleArgs.slice()
     };
   }
