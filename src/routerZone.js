@@ -3,15 +3,15 @@ import {Injector, Inject} from 'di';
 
 @TemplateDirective({selector: 'router-zone'})
 export class RouterZone {
-  @Inject(ViewFactory, ViewPort, View, Injector)
-  constructor(viewFactory, viewPort, parentView, injector) {
+  @Inject(ViewFactory, ViewPort, 'executionContext', Injector)
+  constructor(viewFactory, viewPort, executionContext, injector) {
     this.viewFactory = viewFactory;
     this.viewPort = viewPort;
     this.injector = injector;
     this.view = null;
 
-    if ('router' in parentView.executionContext) {
-      parentView.executionContext.router.registerZone(this);
+    if ('router' in executionContext) {
+      executionContext.router.registerZone(this);
     }
   }
 
@@ -23,8 +23,7 @@ export class RouterZone {
 
   tryRemoveView() {
     if (this.view) {
-      this.viewPort.remove(this.view);
-      this.view.destroy();
+      this.view.remove();
       this.view = null;
     }
   }

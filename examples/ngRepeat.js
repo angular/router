@@ -1,6 +1,6 @@
 import {TemplateDirective} from 'templating';
 import {Inject} from 'di';
-import {View, ViewPort, BoundViewFactory} from 'templating';
+import {BoundViewFactory, ViewPort} from 'templating';
 
 @TemplateDirective({
   selector: '[ng-repeat]',
@@ -12,16 +12,24 @@ import {View, ViewPort, BoundViewFactory} from 'templating';
   }
 })
 export class NgRepeat {
-  @Inject(BoundViewFactory, ViewPort, View)
-  constructor(viewFactory, viewPort, parentView) {
-    this.viewPort = viewPort;
+  @Inject(BoundViewFactory, ViewPort, 'executionContext')
+  constructor(viewFactory, viewPort, parentExecutionContext) {
     this.viewFactory = viewFactory;
-    this.parentView = parentView;
+    this.parentExecutionContext = parentExecutionContext;
+    this.viewPort = viewPort;
     this.views = [];
-    this.ngRepeat = [];
+    this.ngRepeat = null;
   }
-  
   ngRepeatChanged(changeRecord) {
+    var self = this;
+    if (changeRecord && changeRecord.additionsHead && !changeRecord.movesHead && !changeRecord.removalsHead) {
+      var entry = changeRecord.additionsHead;
+      while (entry) {
+        addRow(entry.item);
+        entry = entry.nextAddedItem;
+      }
+      return;
+    }
     var rows;
     if (changeRecord) {
       rows = changeRecord.iterable;
@@ -30,15 +38,23 @@ export class NgRepeat {
     }
     // TODO: Update the views incrementally!
     this.views.forEach((view) => {
-      this.viewPort.remove(view);
-      view.destroy();
+      view.remove();
     });
-    this.views = rows.map((row) => {
-      var context = Object.create(this.parentView.executionContext);
+    this.views = [];
+    rows.forEach(addRow);
+
+    function addRow(row) {
+      var context = Object.create(self.parentExecutionContext);
       context.row = row;
-      var view = this.viewFactory.createView({executionContext: context});
-      this.viewPort.append(view);
-      return view;
-    });
+      var view = self.viewFactory.createView({executionContext: context});
+      var lastView = self.views[self.views.length-1];
+      if (lastView) {
+        view.insertAfterView(lastView);
+      } else {
+        self.viewPort.append(view);
+      }
+      self.views.push(view);
+    }
+
   }
 }

@@ -1,6 +1,6 @@
 import {TemplateDirective} from 'templating';
 import {Inject} from 'di';
-import {View, ViewPort, BoundViewFactory} from 'templating';
+import {BoundViewFactory, ViewPort} from 'templating';
 
 @TemplateDirective({
   selector: '[ng-if]',
@@ -8,11 +8,10 @@ import {View, ViewPort, BoundViewFactory} from 'templating';
   observe: {'ngIf': 'ngIfChanged'}
 })
 export class NgIf {
-  @Inject(BoundViewFactory, ViewPort, View)
-  constructor(viewFactory, viewPort, parentView) {
-    this.viewPort = viewPort;
+  @Inject(BoundViewFactory, ViewPort)
+  constructor(viewFactory, viewPort) {
     this.viewFactory = viewFactory;
-    this.parentView = parentView;
+    this.viewPort = viewPort;
     this.view = null;
   }
   ngIfChanged(value) {
@@ -21,8 +20,7 @@ export class NgIf {
       value = value === 'true';
     }
     if (!value && this.view) {
-      this.viewPort.remove(this.view);
-      this.view.destroy();
+      this.view.remove();
       this.view = null;
     }
     if (value) {
