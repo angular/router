@@ -9,9 +9,10 @@ export class NavigationInstruction{
     this.zoneInstructions = {};
   }
 
-  addZoneInstruction(zoneName, moduleId, component){
+  addZoneInstruction(zoneName, strategy, moduleId, component){
     return this.zoneInstructions[zoneName] = {
       name:zoneName,
+      strategy: strategy,
       moduleId: moduleId,
       component:component,
       childRouter:component.executionContext.router,

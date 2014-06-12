@@ -1,3 +1,5 @@
+import {REPLACE} from './navigationPlan';
+
 export class NavigationContext {
   constructor(router, nextInstruction) {
     this.router = router;
@@ -37,7 +39,9 @@ export class NavigationContext {
 
 function makeProcessor(zoneInstruction){
   return (zone) =>{
-    zone.process(zoneInstruction);
+    if(zoneInstruction.strategy === REPLACE){
+      zone.process(zoneInstruction);
+    }
 
     if('childNavigationContext' in zoneInstruction){
       zoneInstruction.childNavigationContext.commitChanges();

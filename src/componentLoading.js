@@ -43,10 +43,16 @@ function determineWhatToLoad(navigationContext, toLoad){
 				determineWhatToLoad(zonePlan.childNavigationContext, toLoad);
 			}
 		}else{
-			var zoneInstruction = next.addZoneInstruction(zoneName, zonePlan.prevModuleId, zonePlan.prevComponent);
+			var zoneInstruction = next.addZoneInstruction(
+          zoneName, 
+          zonePlan.strategy,
+          zonePlan.prevModuleId, 
+          zonePlan.prevComponent
+          );
 
       if(zonePlan.childNavigationContext){
         zoneInstruction.childNavigationContext = zonePlan.childNavigationContext;
+        determineWhatToLoad(zonePlan.childNavigationContext, toLoad);
       }
 		}
 	}
@@ -59,7 +65,13 @@ function loadComponent(navigationContext, zonePlan){
 	var next = navigationContext.nextInstruction;
 
 	return resolveComponentInstance(navigationContext.router, zonePlan).then(function(component) {
-		var zoneInstruction = next.addZoneInstruction(zonePlan.name, moduleId, component);
+		var zoneInstruction = next.addZoneInstruction(
+      zonePlan.name, 
+      zonePlan.strategy,
+      moduleId, 
+      component
+      );
+
     var controller = component.executionContext;
 
   	if(controller.router){
