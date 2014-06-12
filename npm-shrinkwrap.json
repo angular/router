@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "dependencies": {
     "di": {
-      "version": "2.0.0-pre-10",
-      "from": "di@2.0.0-pre-10",
+      "version": "2.0.0-pre-11",
+      "from": "git://github.com/angular/di.js#injectparent",
       "dependencies": {}
     },
     "route-recognizer":{
@@ -19,7 +19,7 @@
     },
     "watchtower": {
       "version": "0.0.1",
-      "from": "git://github.com/angular/watchtower.js#notifier",
+      "from": "git://github.com/angular/watchtower.js",
       "dependencies": {}
     },
     "templating": {

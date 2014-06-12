@@ -12,9 +12,9 @@
     "url": "https://github.com/eisenbergeffect/router/issues"
   },
   "dependencies": {
-    "di": "~2.0.0-pre-6",
+    "di": "angular/di.js#injectparent",
     "expressionist": "angular/expressionist.js",
-    "watchtower": "angular/watchtower.js#notifier",
+    "watchtower": "angular/watchtower.js",
     "zone.js": "angular/zone.js",
     "traceur": "vojtajina/traceur-compiler#add-es6-pure-transformer-dist",
     "templating": "angular/templating#custom-element",

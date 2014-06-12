@@ -113,11 +113,11 @@ function resolveComponentInstance(router, zonePlan){
 
 function createComponent(injector, componentType, modules){
   var viewFactory = injector.get(ViewFactory);
-  var componentInjector = injector.createChild(modules);
+  //var componentInjector = injector.createChild(modules);
 
   return viewFactory.createComponentView({
     component: componentType,
-    parentInjector: componentInjector
+    providers: modules
   });
 }
 
