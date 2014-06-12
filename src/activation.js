@@ -62,22 +62,45 @@ function findDeactivatableControllers(plan, callbackName, list){
 
 	for(var zoneName in plan){
 		var zonePlan = plan[zoneName];
+    var prevComponent = zonePlan.prevComponent;
 
 		if((zonePlan.strategy == INVOKE_LIFECYCLE 
-			|| zonePlan.strategy == REPLACE) && zonePlan.prevComponent){
-			var controller = zonePlan.prevComponent.executionContext;
+			|| zonePlan.strategy == REPLACE) && prevComponent){
+			var controller = prevComponent.executionContext;
 
 			if(callbackName in controller){
 				list.push(controller);
 			}
-
-			if(plan.childNavigationContext){
-				findDeactivatableControllers(plan.childNavigationContext.plan, callbackName, list);
-			}
 		}
+
+    if(zonePlan.childNavigationContext){
+      findDeactivatableControllers(zonePlan.childNavigationContext.plan, callbackName, list);
+    }else if(prevComponent){
+      addPreviousDeactivatableControllers(prevComponent, callbackName, list);
+    }
 	}
 
 	return list;
+}
+
+function addPreviousDeactivatableControllers(component, callbackName, list){
+  var controller = component.executionContext;
+
+  if(controller.router && controller.router.currentInstruction){
+    var zoneInstructions = controller.router.currentInstruction.zoneInstructions;
+
+    for(var zoneName in zoneInstructions){
+      var zoneInstruction = zoneInstructions[zoneName];
+      var prevComponent = zoneInstruction.component;
+      var prevController = prevComponent.executionContext;
+    
+      if(callbackName in prevController){
+        list.push(prevController);
+      }
+
+      addPreviousDeactivatableControllers(prevComponent, callbackName, list)
+    }
+  }
 }
 
 function processActivatableZones(navigationContext, callbackName, next, ignoreResult){
@@ -127,11 +150,11 @@ function findActivatableZones(navigationContext, callbackName, list){
 			if(callbackName in zoneInstruction.component.executionContext){
 				list.push(zoneInstruction);
 			}
-
-			if(plan.childNavigationContext){
-				findActivatableZones(plan.childNavigationContext, callbackName, list);
-			}
 		}
+
+    if(zonePlan.childNavigationContext){
+      findActivatableZones(zonePlan.childNavigationContext, callbackName, list);
+    }
 	}
 
 	return list;

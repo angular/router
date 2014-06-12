@@ -6,4 +6,8 @@ export class Flickr{
 		this.heading = 'Flickr';
 		this.images = [];
 	}
+
+  canDeactivate(){
+    return confirm('Are you sure you want to leave?');
+  }
 }
