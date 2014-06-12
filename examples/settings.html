@@ -1,0 +1,27 @@
+<template ng-config="directives">
+  <section>
+    <h2>{{heading}}</h2>
+    <div>
+      <div class="col-md-2">
+        <ul class="well nav nav-pills nav-stacked">
+            <li class="nav-header">Navigation</li>
+
+            <li>
+              <a href="#settings/welcome">Home</a>
+            </li>
+
+            <li>
+              <a href="#settings/flickr">Flickr</a>
+            </li>
+            
+            <li ng-repeat bind-ng-repeat="router.navigation">
+              <a bind-href="row.href">{{row.title}}</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col-md-10" style="padding: 0">
+        <router-zone></router-zone>
+      </div>
+    </div>
+  </section>
+</template>

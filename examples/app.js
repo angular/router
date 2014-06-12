@@ -13,7 +13,8 @@ export class App {
 
       config.map([
         { route: ['','welcome'], title:'Welcome', moduleId: 'welcome', nav: true },
-        { route: 'flickr', moduleId: 'flickr', nav: true }
+        { route: 'flickr', moduleId: 'flickr', nav: true },
+        { route: 'settings', moduleId: 'settings', nav: true }
       ]);
     });
   }

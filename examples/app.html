@@ -25,6 +25,10 @@
               <a href="#flickr">Flickr</a>
             </li>
 
+            <li>
+              <a href="#settings">Settings</a>
+            </li>
+
             <li ng-repeat bind-ng-repeat="router.navigation">
               <a bind-href="row.href">{{row.title}}</a>
             </li>
@@ -38,7 +42,9 @@
         </div>
       </nav>
 
-      <router-zone></router-zone>
+      <div class="page-host">
+        <router-zone></router-zone>
+      </div>
     </div>
   </template>
 </ng-element>

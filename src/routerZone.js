@@ -21,15 +21,6 @@ export class RouterZone {
     this.viewPort.append(this.view);
   }
 
-  createComponent(componentType, modules){
-    var componentInjector = this.injector.createChild(modules);
-
-    return this.viewFactory.createComponentView({
-      component: componentType,
-      parentInjector: componentInjector
-    });
-  }
-
   tryRemoveView() {
     if (this.view) {
       this.viewPort.remove(this.view);

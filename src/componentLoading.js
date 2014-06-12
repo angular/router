@@ -2,6 +2,7 @@ import {REPLACE, buildNavigationPlan} from './navigationPlan';
 import {getWildcardPath} from './util';
 import {Router} from './router';
 import {Provide} from 'di';
+import {ViewFactory} from 'templating';
 
 export class LoadNewComponentsStep{
 	run(navigationContext, next){
@@ -59,12 +60,15 @@ function loadComponent(navigationContext, zonePlan){
 
 	return resolveComponentInstance(navigationContext.router, zonePlan).then(function(component) {
 		var zoneInstruction = next.addZoneInstruction(zonePlan.name, moduleId, component);
+    var controller = component.executionContext;
 
-  	if(component.router){
+  	if(controller.router){
+      controller.router.injector = component.injector;
+
   		var path = getWildcardPath(next.config.route, next.params, next.queryString);
 
-      return component.router.createNavigationInstruction(path).then((childInstruction) =>{
-        zonePlan.childNavigationContext = component.router.createNavigationContext(childInstruction);
+      return controller.router.createNavigationInstruction(path).then((childInstruction) =>{
+        zonePlan.childNavigationContext = controller.router.createNavigationContext(childInstruction);
 
         return buildNavigationPlan(zonePlan.childNavigationContext).then((childPlan) =>{
           zonePlan.childNavigationContext.plan = childPlan;
@@ -88,10 +92,20 @@ function resolveComponentInstance(router, zonePlan){
       var modules = [moduleInstance, childRouterProvider],
           componentType = getComponentTypeFromModule(moduleInstance),
           zone = router.zones[zonePlan.name],
-          component = zone.createComponent(componentType, modules);
+          component = createComponent((zone && zone.injector) || router.injector, componentType, modules);
 
       resolve(component);
     }, reject);
+  });
+}
+
+function createComponent(injector, componentType, modules){
+  var viewFactory = injector.get(ViewFactory);
+  var componentInjector = injector.createChild(modules);
+
+  return viewFactory.createComponentView({
+    component: componentType,
+    parentInjector: componentInjector
   });
 }
 

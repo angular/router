@@ -26,17 +26,23 @@ export class NavigationContext {
       var zoneInstruction = zoneInstructions[zoneName];
       var zone = router.zones[zoneName];
 
-      if(!zone){
-        continue;
-      }
-
-      zone.process(zoneInstruction);
-
-      if('childNavigationContext' in zoneInstruction){
-        zoneInstruction.childNavigationContext.commitChanges();
+      if(zone){
+        makeProcessor(zoneInstruction)(zone);
+      }else{
+        router.zones[zoneName] = makeProcessor(zoneInstruction);
       }
     }
   }
+}
+
+function makeProcessor(zoneInstruction){
+  return (zone) =>{
+    zone.process(zoneInstruction);
+
+    if('childNavigationContext' in zoneInstruction){
+      zoneInstruction.childNavigationContext.commitChanges();
+    }
+  };
 }
 
 export class CommitChangesStep{

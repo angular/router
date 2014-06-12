@@ -83,32 +83,7 @@ export class RouterConfiguration{
       return;
     }
 
-    //TODO: re-writing this to update manually on route changes so we don't need a getter
-    Object.defineProperty(config, 'href', {
-      get:function() {
-        var href = config.route; //TODO: strip * at end
-
-        if (that.parent && that.parent.currentInstruction) {
-          var instruction = that.parent.currentInstruction,
-              path = getWildcardPath(instruction.config.route, instruction.params),
-              fragment = fragment.slice(0, -path.length);
-
-          href = fragment + '/' + href;
-
-          if (instruction.queryString) {
-            href += "?" + instruction.queryString;
-          }
-
-          if (history._hasPushState) {
-            href = '/' + href;
-          }
-        } else if (!history._hasPushState) {
-          href = '#' + href;
-        }
-
-        return href;
-      }
-    });
+    config.href = config.route;
   }
 
   mapUnknownRoutes(config) {

@@ -14,13 +14,20 @@ export class Router{
 
   registerZone(zone, name) {
     name = name || zone.name || 'default';
-    this.zones[name] = zone;
 
-    if('activate' in this){
-      if(!this.isActive){
-        this.activate();
-      }else{
-        this.dequeueInstruction();
+    if(typeof this.zones[name] == 'function'){
+      var callback = this.zones[name];
+      this.zones[name] = zone;
+      callback(zone);
+    }else{
+      this.zones[name] = zone;
+
+      if('activate' in this){
+        if(!this.isActive){
+          this.activate();
+        }else{
+          this.dequeueInstruction();
+        }
       }
     }
   }
@@ -40,11 +47,11 @@ export class Router{
 
   createChild() {
     var childRouter = new Router();
-    child.parent = this;
+    childRouter.parent = this;
     return childRouter;
   }
 
-  createNavigationInstruction(url){
+  createNavigationInstruction(url=''){
     var results = this.recognizer.recognize(url);
 
     if(!results || !results.length){
@@ -100,13 +107,15 @@ export class Router{
     this.routes.push(config);
     this.recognizer.add([{path:config.route, handler: config}]);
 
-    var withChild = JSON.parse(JSON.stringify(config));
-    withChild.route += "*childRoute";
-    withChild.hasChildRouter = true;
-    this.childRecognizer.add([{path:withChild.route, handler: withChild}]);
-    
+    if(config.route){
+      var withChild = JSON.parse(JSON.stringify(config));
+      withChild.route += "/*childRoute";
+      withChild.hasChildRouter = true;
+      this.childRecognizer.add([{path:withChild.route, handler: withChild}]);
+      withChild.navModel = navModel;
+    }
+
     config.navModel = navModel;
-    withChild.navModel = navModel;
 
     if(('nav' in config || 'order' in navModel) 
       && this.navigation.indexOf(navModel) === -1) {
