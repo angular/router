@@ -5,7 +5,7 @@ import {AppRouter} from 'router';
 @ComponentDirective({selector:'ng-app'})
 export class App {
   @Inject(AppRouter)
-  constructor(router) {
+  attachedCallback(router) {
     this.router = router;
 
     router.configure((config)=>{

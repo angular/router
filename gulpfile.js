@@ -12,7 +12,8 @@ var path = {
     'watchtower': './node_modules/watchtower/src/**/*.js',
     'expressionist': './node_modules/expressionist/src/**/*.js',
     'di': './node_modules/di/src/**/*.js',
-    'rtts-assert': './node_modules/rtts-assert/src/**/*.js'
+    'rtts-assert': './node_modules/rtts-assert/src/**/*.js',
+    'templating': './node_modules/templating/src/**/*.js'
   }
 };
 
