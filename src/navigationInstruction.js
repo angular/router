@@ -1,5 +1,5 @@
 export class NavigationInstruction{
-  constructor(fragment, queryString, params, queryParams, config) {
+  constructor(fragment, queryString, params, queryParams, config, parentInstruction) {
     this.fragment = fragment;
     this.queryString = queryString;
     this.params = params;
@@ -7,6 +7,10 @@ export class NavigationInstruction{
     this.config = config;
     this.lifecycleArgs = [params, queryParams, config];
     this.zoneInstructions = {};
+
+    if(parentInstruction && this.params){
+      this.params.$parent = parentInstruction.params;
+    }
   }
 
   addZoneInstruction(zoneName, strategy, moduleId, component){

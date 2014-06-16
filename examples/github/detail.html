@@ -1,9 +1,21 @@
 <template ng-config="../directives">
-  <div class="panel panel-primary" style="margin: 50px">
-    <div class="panel-heading">
-      <span class="badge">{{issue.number}}</span>
-      {{issue.title}}
+  <div style="margin: 50px">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <span class="badge">{{issue.number}}</span>
+        {{issue.title}}
+      </div>
+      <div class="panel-body">{{issue.body}}</div>
     </div>
-    <div class="panel-body">{{issue.body}}</div>
+
+    <ul class="nav nav-tabs">
+        <li ng-repeat bind-ng-repeat="router.navigation">
+          <a href="{{row.href}}">{{row.title}}</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+      <router-zone></router-zone>
+    </div>
   </div>
 </template>

@@ -12,6 +12,14 @@ export class GhService {
   }
   
   issue(id) {
-    return this.http('https://api.github.com/repos/angular/angular.js/issues/' + id);
+    return this.http(`https://api.github.com/repos/angular/angular.js/issues/${id}`);
+  }
+
+  comments(issueId){
+    return this.http(`https://api.github.com/repos/angular/angular.js/issues/${issueId}/comments`);
+  }
+
+  events(issueId){
+    return this.http(`https://api.github.com/repos/angular/angular.js/issues/${issueId}/events`);
   }
 }

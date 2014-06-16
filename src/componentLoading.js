@@ -82,7 +82,7 @@ function loadComponent(navigationContext, zonePlan){
 
   		var path = getWildcardPath(next.config.route, next.params, next.queryString);
 
-      return controller.router.createNavigationInstruction(path).then((childInstruction) =>{
+      return controller.router.createNavigationInstruction(path, next).then((childInstruction) =>{
         zonePlan.childNavigationContext = controller.router.createNavigationContext(childInstruction);
 
         return buildNavigationPlan(zonePlan.childNavigationContext).then((childPlan) =>{

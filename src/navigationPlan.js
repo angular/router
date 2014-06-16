@@ -35,7 +35,7 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum){
 
       if(zonePlan.strategy !== REPLACE && prevZoneInstruction.childRouter){
         var path = getWildcardPath(next.config.route, next.params, next.queryString);
-        var task = prevZoneInstruction.childRouter.createNavigationInstruction(path).then((childInstruction) =>{
+        var task = prevZoneInstruction.childRouter.createNavigationInstruction(path, next).then((childInstruction) =>{
           zonePlan.childNavigationContext = prevZoneInstruction.childRouter.createNavigationContext(childInstruction);
 
           return buildNavigationPlan(zonePlan.childNavigationContext, zonePlan.strategy == INVOKE_LIFECYCLE).then((childPlan) =>{

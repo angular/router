@@ -41,7 +41,7 @@ export class Router{
         this.parent.currentInstruction.config.route,
         this.parent.currentInstruction.params,
         this.parent.currentInstruction.fragment
-        );
+      );
 
       this.baseUrl = this.parent.baseUrl + baseUrl;
     }
@@ -86,7 +86,7 @@ export class Router{
     return childRouter;
   }
 
-  createNavigationInstruction(url=''){
+  createNavigationInstruction(url='', parentInstruction){
     var results = this.recognizer.recognize(url);
 
     if(!results || !results.length){
@@ -109,7 +109,8 @@ export class Router{
         queryString, 
         first.params, 
         first.queryParams, 
-        first.handler
+        first.handler,
+        parentInstruction
         );
 
       if (typeof first.handler == 'function') {
