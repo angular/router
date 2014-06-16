@@ -83,7 +83,7 @@ export class RouterConfiguration{
       return;
     }
 
-    config.href = config.route;
+    config.href = '#' + config.route;
   }
 
   mapUnknownRoutes(config) {

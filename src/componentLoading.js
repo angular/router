@@ -2,7 +2,7 @@ import {REPLACE, buildNavigationPlan} from './navigationPlan';
 import {getWildcardPath} from './util';
 import {Router} from './router';
 import {Provide} from 'di';
-import {ViewFactory} from 'templating';
+import {ViewFactory, ComponentLoader} from 'templating';
 
 export class LoadNewComponentsStep{
 	run(navigationContext, next){
@@ -65,6 +65,9 @@ function loadComponent(navigationContext, zonePlan){
 	var next = navigationContext.nextInstruction;
 
 	return resolveComponentInstance(navigationContext.router, zonePlan).then(function(component) {
+    component.injector = component._injector._children[0];
+    component.executionContext = component.injector.get('executionContext');
+
 		var zoneInstruction = next.addZoneInstruction(
       zonePlan.name, 
       zonePlan.strategy,
@@ -93,36 +96,35 @@ function loadComponent(navigationContext, zonePlan){
 }
 
 function resolveComponentInstance(router, zonePlan){
+  var zone = router.zones[zonePlan.name],
+      injector = (zone && zone.injector) || router.injector._root,
+      loader = injector.get(ComponentLoader);
+
+  var id = zonePlan.config.moduleId + '.html';
+
 	return new Promise((resolve, reject) => {
-    require([zonePlan.config.moduleId], (moduleInstance) => {
+    loader.loadFromTemplateUrl({
+      templateUrl: id, 
+      done: ({directive})=>{
 
       @Provide(Router)
       function childRouterProvider() {
         return router.createChild();
       }
 
-      var modules = [moduleInstance, childRouterProvider],
-          componentType = getComponentTypeFromModule(moduleInstance),
-          zone = router.zones[zonePlan.name],
-          component = createComponent((zone && zone.injector) || router.injector, componentType, modules);
+      var modules = [childRouterProvider],
+          component = createComponent(injector, directive, modules);
 
       resolve(component);
-    }, reject);
+    }});
   });
 }
 
 function createComponent(injector, componentType, modules){
   var viewFactory = injector.get(ViewFactory);
-  //var componentInjector = injector.createChild(modules);
 
   return viewFactory.createComponentView({
     component: componentType,
     providers: modules
   });
-}
-
-function getComponentTypeFromModule(moduleInstance) {
-	for(var key in moduleInstance) {
-    	return moduleInstance[key];
-    }
 }

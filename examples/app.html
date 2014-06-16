@@ -13,26 +13,14 @@
           </button>
           <a class="navbar-brand" href="#">
             <i class="fa fa-home"></i>
-            <span>{{router.title}}</span>
+            <span>{{router.config.title}}</span>
           </a>
         </div>
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
-            <li>
-              <a href="#welcome">Home</a>
-            </li>
-
-            <li>
-              <a href="#flickr">Flickr</a>
-            </li>
-
-            <li>
-              <a href="#settings">Settings</a>
-            </li>
-
             <li ng-repeat bind-ng-repeat="router.navigation">
-              <a bind-href="row.href">{{row.title}}</a>
+              <a href="{{row.href}}">{{row.title}}</a>
             </li>
           </ul>
 

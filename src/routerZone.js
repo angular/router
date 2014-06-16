@@ -1,7 +1,12 @@
 import {TemplateDirective, View, ViewPort, ViewFactory} from 'templating';
 import {Injector, Inject} from 'di';
 
-@TemplateDirective({selector: 'router-zone'})
+@TemplateDirective({
+  selector: 'router-zone',
+  observe: {
+    'zoneName': 'zoneNameChanged'
+  }
+})
 export class RouterZone {
   @Inject(ViewFactory, ViewPort, 'executionContext', Injector)
   constructor(viewFactory, viewPort, executionContext, injector) {
@@ -9,9 +14,12 @@ export class RouterZone {
     this.viewPort = viewPort;
     this.injector = injector;
     this.view = null;
+    this.executionContext = executionContext;
+  }
 
-    if ('router' in executionContext) {
-      executionContext.router.registerZone(this);
+  zoneNameChanged(name){
+    if ('router' in this.executionContext) {
+      this.executionContext.router.registerZone(this, name);
     }
   }
 

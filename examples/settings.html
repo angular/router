@@ -5,17 +5,9 @@
       <div class="col-md-2">
         <ul class="well nav nav-pills nav-stacked">
             <li class="nav-header">Navigation</li>
-
-            <li>
-              <a href="#settings/welcome">Home</a>
-            </li>
-
-            <li>
-              <a href="#settings/flickr">Flickr</a>
-            </li>
             
             <li ng-repeat bind-ng-repeat="router.navigation">
-              <a bind-href="row.href">{{row.title}}</a>
+              <a href="{{row.href}}">{{row.title}}</a>
             </li>
         </ul>
       </div>
