@@ -100,11 +100,11 @@ function resolveComponentInstance(router, zonePlan){
       injector = (zone && zone.injector) || router.injector._root,
       loader = injector.get(ComponentLoader);
 
-  var id = zonePlan.config.moduleId + '.html';
+  var url = zonePlan.config.moduleId + '.html';
 
 	return new Promise((resolve, reject) => {
     loader.loadFromTemplateUrl({
-      templateUrl: id, 
+      templateUrl: url, 
       done: ({directive})=>{
 
       @Provide(Router)

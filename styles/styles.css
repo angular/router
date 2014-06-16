@@ -14,11 +14,6 @@ section {
 
 .navbar-nav li.loader {
     margin: 12px 24px 0 6px;
-    visibility: hidden;
-}
-
-.navbar-nav li.loader.active {
-    visibility: visible;
 }
 
 .pictureDetail {
