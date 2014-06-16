@@ -22,7 +22,8 @@ export class NavigationContext {
 
     next.config.navModel.isActive = true;
 
-    //TODO: update calculated hrefs for all navigation models (navModel.href)
+    router.refreshBaseUrl();
+    router.refreshNavigation();
 
     for(var zoneName in zoneInstructions){
       var zoneInstruction = zoneInstructions[zoneName];

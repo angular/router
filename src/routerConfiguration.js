@@ -55,8 +55,6 @@ export class RouterConfiguration{
     config.route = ensureConfigValue(config, 'route', this.deriveRoute);
     config.title = ensureConfigValue(config, 'title', this.deriveTitle);
     config.moduleId = ensureConfigValue(config, 'moduleId', this.deriveModuleId);
-
-    this.ensureHREF(config);
   }
 
   deriveName(config) {
@@ -74,16 +72,6 @@ export class RouterConfiguration{
 
   deriveModuleId(config) {
     return stripParametersFromRoute(config.route);
-  }
-
-  ensureHREF(config) {
-    var that = this.router;
-
-    if (config.href) {
-      return;
-    }
-
-    config.href = '#' + config.route;
   }
 
   mapUnknownRoutes(config) {

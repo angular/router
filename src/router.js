@@ -2,6 +2,7 @@ import RouteRecognizer from 'route-recognizer';
 import {NavigationContext} from './navigationContext';
 import {NavigationInstruction} from './navigationInstruction';
 import {RouterConfiguration} from './routerConfiguration';
+import {getWildCardName} from './util';
 
 RouteRecognizer = RouteRecognizer['default'];
 
@@ -10,6 +11,7 @@ export class Router{
     this.zones = {};
     this.reset();
     this.config = new RouterConfiguration(this);
+    this.baseUrl = '';
   }
 
   registerZone(zone, name) {
@@ -29,6 +31,34 @@ export class Router{
           this.dequeueInstruction();
         }
       }
+    }
+  }
+
+  refreshBaseUrl(){
+    if(this.parent){
+      var baseUrl = getBaseUrl(
+        this.parent.currentInstruction.config.route,
+        this.parent.currentInstruction.params,
+        this.parent.currentInstruction.fragment
+        );
+
+      this.baseUrl = this.parent.baseUrl + baseUrl;
+    }
+  }
+
+  refreshNavigation(){
+    var nav = this.navigation;
+
+    for(var i = 0, length = nav.length; i < length; i++){
+      var current = nav[i];
+      
+      current.href = '#' + this.baseUrl;
+
+      if(current.href[current.href.length - 1] != '/'){
+        current.href += '/';
+      }
+
+      current.href += current.relativeHref;
     }
   }
 
@@ -125,6 +155,11 @@ export class Router{
       navModel.isActive = false;
       navModel.config = config;
 
+      if (!config.href) {
+        navModel.relativeHref = config.route;
+        navModel.href = '';
+      }
+
       if (typeof navModel.order != 'number') {
         navModel.order = ++this.fallbackOrder;
       }
@@ -174,4 +209,19 @@ export class Router{
     this.isNavigating = false;
     this.navigation = [];
   };
+}
+
+function getBaseUrl(route, params, fragment){
+  if(!params){
+    return fragment;
+  }
+
+  var wildcardName = getWildCardName(route),
+      path = params[wildcardName];
+
+  if(!path){
+    return fragment;
+  }
+
+  return fragment.substring(0, fragment.indexOf(path));
 }
