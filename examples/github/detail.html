@@ -9,9 +9,9 @@
     </div>
 
     <ul class="nav nav-tabs">
-        <li ng-repeat bind-ng-repeat="router.navigation">
-          <a href="{{row.href}}">{{row.title}}</a>
-        </li>
+      <li ng-repeat bind-ng-repeat="router.navigation" ng-active bind-ng-active="row.isActive">
+        <a href="{{row.href}}">{{row.title}}</a>
+      </li>
     </ul>
 
     <div class="tab-content">

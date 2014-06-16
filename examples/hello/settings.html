@@ -4,11 +4,9 @@
     <div>
       <div class="col-md-2">
         <ul class="well nav nav-pills nav-stacked">
-            <li class="nav-header">Navigation</li>
-            
-            <li ng-repeat bind-ng-repeat="router.navigation">
-              <a href="{{row.href}}">{{row.title}}</a>
-            </li>
+          <li ng-repeat bind-ng-repeat="router.navigation" ng-active bind-ng-active="row.isActive">
+            <a href="{{row.href}}">{{row.title}}</a>
+          </li>
         </ul>
       </div>
       <div class="col-md-10" style="padding: 0">

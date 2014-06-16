@@ -19,7 +19,7 @@
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
-            <li ng-repeat bind-ng-repeat="router.navigation">
+            <li ng-repeat bind-ng-repeat="router.navigation" ng-active bind-ng-active="row.isActive">
               <a href="{{row.href}}">{{row.title}}</a>
             </li>
           </ul>
