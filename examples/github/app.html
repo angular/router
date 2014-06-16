@@ -1,7 +1,7 @@
-<link rel="import" href="templating.html">
+<link rel="import" href="../templating.html">
 
 <ng-element>
-  <template ng-config="directives">
+  <template ng-config="../directives">
     <div>
       <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="navbar-header">
@@ -13,17 +13,11 @@
           </button>
           <a class="navbar-brand" href="#">
             <i class="fa fa-home"></i>
-            <span>{{router.config.title}}</span>
+            <span>Angular Issues</span>
           </a>
         </div>
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <ul class="nav navbar-nav">
-            <li ng-repeat bind-ng-repeat="router.navigation">
-              <a href="{{row.href}}">{{row.title}}</a>
-            </li>
-          </ul>
-
           <ul class="nav navbar-nav navbar-right">
             <li class="loader" ng-if bind-ng-if="router.isNavigating">
               <i class="fa fa-spinner fa-spin fa-2x"></i>
