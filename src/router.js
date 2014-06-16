@@ -229,5 +229,5 @@ function getBaseUrl(route, params, fragment){
     return fragment;
   }
 
-  return fragment.substring(0, fragment.indexOf(path));
+  return fragment.substring(0, fragment.lastIndexOf(path));
 }
