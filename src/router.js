@@ -3,6 +3,7 @@ import {NavigationContext} from './navigationContext';
 import {NavigationInstruction} from './navigationInstruction';
 import {RouterConfiguration} from './routerConfiguration';
 import {getWildCardName} from './util';
+import {history} from './history';
 
 RouteRecognizer = RouteRecognizer['default'];
 

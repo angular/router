@@ -52,13 +52,11 @@ export class AppRouter extends Router {
       this.isNavigating = false;
 
       if (result.completed) {
-        //TODO: anything left to do here?
+        history.previousFragment = instruction.fragment;
       } else if (result.output instanceof Redirect) {
         this.navigate(result.output.url, { trigger: true, replace: true });
       } else if (context.prevInstruction) {
-        //this.navigate(reconstructUrl(context.prevInstruction), false);
-        //TODO: rollback to previous history, trigger: false, replace: true
-        //NOTE: use history.getFragment() to store before running pipleine?
+        this.navigate(history.previousFragment, false);
       }
 
       instruction.resolve(result);

@@ -26,7 +26,8 @@ function updateHash(location, fragment, replace) {
 
 var history = {
   interval: 50,
-  active: false
+  active: false,
+  previousFragment: ''
 };
 
 // Ensure that `History` can be used outside of the browser.
@@ -211,6 +212,8 @@ history.navigate = function (fragment, options) {
 
   if (options.trigger) {
     return history.loadUrl(fragment);
+  }else{
+    history.previousFragment = fragment;
   }
 };
 
