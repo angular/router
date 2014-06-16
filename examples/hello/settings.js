@@ -11,8 +11,8 @@ export class Welcome{
 
     router.configure((config) =>{
       config.map([
-        { route: ['','welcome'], title:'Welcome', moduleId: 'welcome', nav: true },
-        { route: 'flickr', moduleId: 'flickr', nav: true }
+        { route: ['','welcome'], componentUrl: 'welcome', nav: true, title:'Welcome' },
+        { route: 'flickr', componentUrl: 'flickr', nav: true }
       ]);
     });
   }

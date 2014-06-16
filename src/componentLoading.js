@@ -46,7 +46,7 @@ function determineWhatToLoad(navigationContext, toLoad){
 			var zoneInstruction = next.addZoneInstruction(
           zoneName, 
           zonePlan.strategy,
-          zonePlan.prevModuleId, 
+          zonePlan.prevComponentUrl, 
           zonePlan.prevComponent
           );
 
@@ -61,7 +61,7 @@ function determineWhatToLoad(navigationContext, toLoad){
 }
 
 function loadComponent(navigationContext, zonePlan){
-	var moduleId = zonePlan.config.moduleId;
+	var componentUrl = zonePlan.config.componentUrl;
 	var next = navigationContext.nextInstruction;
 
 	return resolveComponentInstance(navigationContext.router, zonePlan).then(function(component) {
@@ -71,7 +71,7 @@ function loadComponent(navigationContext, zonePlan){
 		var zoneInstruction = next.addZoneInstruction(
       zonePlan.name, 
       zonePlan.strategy,
-      moduleId, 
+      componentUrl, 
       component
       );
 
@@ -100,7 +100,7 @@ function resolveComponentInstance(router, zonePlan){
       injector = (zone && zone.injector) || router.injector._root,
       loader = injector.get(ComponentLoader);
 
-  var url = zonePlan.config.moduleId + '.html';
+  var url = zonePlan.config.componentUrl + '.html';
 
 	return new Promise((resolve, reject) => {
     loader.loadFromTemplateUrl({

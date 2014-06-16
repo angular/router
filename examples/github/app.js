@@ -9,8 +9,8 @@ export class App {
 
     this.router.configure((config)=>{
       config.map([
-        { route: ['','issues'], title:'Issues', moduleId: 'overview' },
-        { route: 'issues/:id', moduleId: 'detail' }
+        { route: ['','issues'], componentUrl: 'overview', title:'Issues' },
+        { route: 'issues/:id', componentUrl: 'detail' }
       ]);
     });
   }

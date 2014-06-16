@@ -20,10 +20,10 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum){
         name:zoneName,
         config:nextZoneConfig,
         prevComponent:prevZoneInstruction.component,
-        prevModuleId:prevZoneInstruction.moduleId
+        prevComponentUrl:prevZoneInstruction.componentUrl
       };
 
-      if(prevZoneInstruction.moduleId != nextZoneConfig.moduleId){
+      if(prevZoneInstruction.componentUrl != nextZoneConfig.componentUrl){
         zonePlan.strategy = REPLACE;
       } else if('determineActivationStrategy' in prevZoneInstruction.component.executionContext){
         zonePlan.strategy = prevZoneInstruction.component.executionContext.determineActivationStrategy(...next.lifecycleArgs); //TODO: should we tell them if the parent had a lifecycle min change?

@@ -13,11 +13,11 @@ export class NavigationInstruction{
     }
   }
 
-  addZoneInstruction(zoneName, strategy, moduleId, component){
+  addZoneInstruction(zoneName, strategy, componentUrl, component){
     return this.zoneInstructions[zoneName] = {
       name:zoneName,
       strategy: strategy,
-      moduleId: moduleId,
+      componentUrl: componentUrl,
       component:component,
       childRouter:component.executionContext.router,
       lifecycleArgs:this.lifecycleArgs.slice()

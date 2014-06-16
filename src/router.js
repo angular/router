@@ -136,7 +136,7 @@ export class Router{
   addRoute(config, navModel = {}){
     if(!('zones' in config)){
       config.zones = {
-        'default':{moduleId:config.moduleId}
+        'default':{componentUrl:config.componentUrl}
       };
     }
 
@@ -181,9 +181,9 @@ export class Router{
     var callback = (instruction) => {
       return new Promise((resolve) =>{
         if (!config) {
-          instruction.config.moduleId = instruction.fragment;
+          instruction.config.componentUrl = instruction.fragment;
         } else if (typeof config == 'string') {
-          instruction.config.moduleId = config;
+          instruction.config.componentUrl = config;
         } else if (typeof config == 'function') {
           var result = config(instruction);
           

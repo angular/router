@@ -18,7 +18,7 @@ export class RouterConfiguration{
       if (!config) {
           config = {};
       } else if (typeof config == 'string') {
-          config = { moduleId: config };
+          config = { componentUrl: config };
       }
 
       config.route = route;
@@ -54,15 +54,15 @@ export class RouterConfiguration{
     config.name =  ensureConfigValue(config, 'name', this.deriveName);
     config.route = ensureConfigValue(config, 'route', this.deriveRoute);
     config.title = ensureConfigValue(config, 'title', this.deriveTitle);
-    config.moduleId = ensureConfigValue(config, 'moduleId', this.deriveModuleId);
+    config.componentUrl = ensureConfigValue(config, 'componentUrl', this.deriveComponentUrl);
   }
 
   deriveName(config) {
-    return config.title || (config.route ? stripParametersFromRoute(config.route) : config.moduleId);
+    return config.title || (config.route ? stripParametersFromRoute(config.route) : config.componentUrl);
   }
 
   deriveRoute(config) {
-    return config.moduleId || config.name;
+    return config.componentUrl || config.name;
   }
 
   deriveTitle(config) {
@@ -70,7 +70,7 @@ export class RouterConfiguration{
     return value.substring(0, 1).toUpperCase() + value.substring(1);
   }
 
-  deriveModuleId(config) {
+  deriveComponentUrl(config) {
     return stripParametersFromRoute(config.route);
   }
 
