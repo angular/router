@@ -1,12 +1,12 @@
 <template ng-config="../directives">
 	<section>
 	    <h2>{{heading}}</h2>
-	    <div class="row" ng-repeat bind-ng-repeat="images">
-	        <div class="col-sm-6 col-md-3">
-	            <a href="#" class="thumbnail">
-	                <img style="width: 260px; height: 180px;" bind-src="row.media.m"/>
-	            </a>
-	        </div>
+	    <div class="row">
+        <div class="col-sm-6 col-md-3" ng-repeat bind-ng-repeat="images">
+          <a class="thumbnail">
+            <img style="width: 260px; height: 180px;" src="{{row.media.m}}"/>
+          </a>
+        </div>
 	    </div>
 	</section>
 </template>
