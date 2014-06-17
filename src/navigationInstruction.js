@@ -1,4 +1,4 @@
-export class NavigationInstruction{
+export class NavigationInstruction {
   constructor(fragment, queryString, params, queryParams, config, parentInstruction) {
     this.fragment = fragment;
     this.queryString = queryString;
@@ -8,19 +8,19 @@ export class NavigationInstruction{
     this.lifecycleArgs = [params, queryParams, config];
     this.zoneInstructions = {};
 
-    if(parentInstruction){
+    if (parentInstruction) {
       this.params.$parent = parentInstruction.params;
     }
   }
 
-  addZoneInstruction(zoneName, strategy, componentUrl, component){
+  addZoneInstruction(zoneName, strategy, componentUrl, component) {
     return this.zoneInstructions[zoneName] = {
-      name:zoneName,
+      name: zoneName,
       strategy: strategy,
       componentUrl: componentUrl,
-      component:component,
-      childRouter:component.executionContext.router,
-      lifecycleArgs:this.lifecycleArgs.slice()
+      component: component,
+      childRouter: component.executionContext.router,
+      lifecycleArgs: this.lifecycleArgs.slice()
     };
   }
 }

@@ -212,7 +212,7 @@ history.navigate = function (fragment, options) {
 
   if (options.trigger) {
     return history.loadUrl(fragment);
-  }else{
+  } else {
     history.previousFragment = fragment;
   }
 };

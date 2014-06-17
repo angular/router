@@ -17,7 +17,7 @@ export class AppRouter extends Router {
 
   loadUrl(url) {
     return this.createNavigationInstruction(url).then((instruction) => {
-      if(instruction != null){
+      if (instruction != null) {
         return this.queueInstruction(instruction);
       }
     });

@@ -7,7 +7,7 @@ import {history} from './history';
 
 RouteRecognizer = RouteRecognizer['default'];
 
-export class Router{
+export class Router {
   constructor() {
     this.zones = {};
     this.reset();
@@ -17,25 +17,25 @@ export class Router{
   registerZone(zone, name) {
     name = name || zone.name || 'default';
 
-    if(typeof this.zones[name] == 'function'){
+    if (typeof this.zones[name] == 'function') {
       var callback = this.zones[name];
       this.zones[name] = zone;
       callback(zone);
-    }else{
+    } else {
       this.zones[name] = zone;
 
-      if('activate' in this){
-        if(!this.isActive){
+      if ('activate' in this) {
+        if (!this.isActive) {
           this.activate();
-        }else{
+        } else {
           this.dequeueInstruction();
         }
       }
     }
   }
 
-  refreshBaseUrl(){
-    if(this.parent){
+  refreshBaseUrl() {
+    if (this.parent) {
       var baseUrl = getBaseUrl(
         this.parent.currentInstruction.config.pattern,
         this.parent.currentInstruction.params,
@@ -46,19 +46,19 @@ export class Router{
     }
   }
 
-  refreshNavigation(){
+  refreshNavigation() {
     var nav = this.navigation;
 
-    for(var i = 0, length = nav.length; i < length; i++){
+    for(var i = 0, length = nav.length; i < length; i++) {
       var current = nav[i];
-      
-      if(this.baseUrl[0] == '/'){
+
+      if (this.baseUrl[0] == '/') {
         current.href = '#' + this.baseUrl;
-      }else{
+      } else {
         current.href = '#/' + this.baseUrl;
       }
 
-      if(current.href[current.href.length - 1] != '/'){
+      if (current.href[current.href.length - 1] != '/') {
         current.href += '/';
       }
 
@@ -66,12 +66,12 @@ export class Router{
     }
   }
 
-  configure(callbackOrConfig){
-    if(typeof callbackOrConfig == 'function'){
+  configure(callbackOrConfig) {
+    if (typeof callbackOrConfig == 'function') {
       var config = new RouterConfiguration();
       callbackOrConfig(config);
       config.exportToRouter(this);
-    }else{
+    } else {
       callbackOrConfig.exportToRouter(this);
     }
 
@@ -92,10 +92,10 @@ export class Router{
     return childRouter;
   }
 
-  createNavigationInstruction(url='', parentInstruction){
+  createNavigationInstruction(url='', parentInstruction) {
     var results = this.recognizer.recognize(url);
 
-    if(!results || !results.length){
+    if (!results || !results.length) {
       results = this.childRecognizer.recognize(url);
     }
 
@@ -106,15 +106,15 @@ export class Router{
           queryString;
 
       if (queryIndex != -1) {
-        fragment = url.substring(0, queryIndex);
+        fragment = url.substr(0, queryIndex);
         queryString = url.substr(queryIndex + 1);
       }
 
       var instruction = new NavigationInstruction(
-        fragment, 
-        queryString, 
-        first.params, 
-        first.queryParams, 
+        fragment,
+        queryString,
+        first.params,
+        first.queryParams,
         first.handler,
         parentInstruction
         );
@@ -123,9 +123,9 @@ export class Router{
         instruction.config = {};
         return first.handler(instruction);
       }
-      
+
       return Promise.resolve(instruction);
-    } else{
+    } else {
       //log('Route Not Found');
       return Promise.resolve(null);
     }
@@ -139,8 +139,8 @@ export class Router{
     return this.recognizer.generate(name, params);
   }
 
-  addRoute(config, navModel={}){
-    if(!('zones' in config)){
+  addRoute(config, navModel={}) {
+    if (!('zones' in config)) {
       config.zones = {
         'default':{componentUrl:config.componentUrl}
       };
@@ -151,7 +151,7 @@ export class Router{
     this.routes.push(config);
     this.recognizer.add([{path:config.pattern, handler: config}]);
 
-    if(config.pattern){
+    if (config.pattern) {
       var withChild = JSON.parse(JSON.stringify(config));
       withChild.pattern += "/*childRoute";
       withChild.hasChildRouter = true;
@@ -161,7 +161,7 @@ export class Router{
 
     config.navModel = navModel;
 
-    if(('nav' in config || 'order' in navModel) 
+    if (('nav' in config || 'order' in navModel)
       && this.navigation.indexOf(navModel) === -1) {
       navModel.order = navModel.order || config.nav;
       navModel.href = navModel.href || config.href;
@@ -182,18 +182,18 @@ export class Router{
     }
   }
 
-  handleUnknownRoutes(config){
+  handleUnknownRoutes(config) {
     var catchAllPattern = "*path";
 
     var callback = (instruction) => {
-      return new Promise((resolve) =>{
+      return new Promise((resolve) => {
         if (!config) {
           instruction.config.componentUrl = instruction.fragment;
         } else if (typeof config == 'string') {
           instruction.config.componentUrl = config;
         } else if (typeof config == 'function') {
           var result = config(instruction);
-          
+
           if (result instanceof Promise) {
             result.then(() => {
               instruction.config.pattern = catchAllPattern;
@@ -211,7 +211,7 @@ export class Router{
       });
     };
 
-    this.childRecognizer.add([{path:catchAllPattern, handler: callback}]);
+    this.childRecognizer.add([{path: catchAllPattern, handler: callback}]);
   }
 
   reset() {
@@ -224,17 +224,17 @@ export class Router{
   };
 }
 
-function getBaseUrl(pattern, params, fragment){
-  if(!params){
+function getBaseUrl(pattern, params, fragment) {
+  if (!params) {
     return fragment;
   }
 
   var wildcardName = getWildCardName(pattern),
       path = params[wildcardName];
 
-  if(!path){
+  if (!path) {
     return fragment;
   }
 
-  return fragment.substring(0, fragment.lastIndexOf(path));
+  return fragment.substr(0, fragment.lastIndexOf(path));
 }

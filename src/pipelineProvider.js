@@ -5,14 +5,14 @@ import {ApplyModelBindersStep} from './modelBinding';
 import {LoadNewComponentsStep} from './componentLoading';
 import {CommitChangesStep} from './navigationContext';
 import {
-  CanDeactivatePreviousStep, 
-  CanActivateNextStep, 
-  DeactivatePreviousStep, 
+  CanDeactivatePreviousStep,
+  CanActivateNextStep,
+  DeactivatePreviousStep,
   ActivateNextStep
 } from './activation';
 
 export class PipelineProvider {
-  build(){
+  build() {
     return new Pipeline()
       .withStep(new BuildNavigationPlanStep())
       .withStep(new CanDeactivatePreviousStep()) //optional

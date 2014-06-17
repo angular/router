@@ -4,41 +4,41 @@ export var NO_CHANGE = 'no-change';
 export var INVOKE_LIFECYCLE = 'invoke-lifecycle';
 export var REPLACE = 'replace';
 
-export function buildNavigationPlan(navigationContext, forceLifecycleMinimum){
+export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
   var prev = navigationContext.prevInstruction;
   var next = navigationContext.nextInstruction;
   var plan = {};
 
-  if(prev){
+  if (prev) {
     var newParams = hasDifferentParameterValues(prev, next);
     var pending = [];
 
-    for(var zoneName in prev.zoneInstructions){
+    for (var zoneName in prev.zoneInstructions) {
       var prevZoneInstruction = prev.zoneInstructions[zoneName];
       var nextZoneConfig = next.config.zones[zoneName];
       var zonePlan = plan[zoneName] = {
-        name:zoneName,
-        config:nextZoneConfig,
-        prevComponent:prevZoneInstruction.component,
-        prevComponentUrl:prevZoneInstruction.componentUrl
+        name: zoneName,
+        config: nextZoneConfig,
+        prevComponent: prevZoneInstruction.component,
+        prevComponentUrl: prevZoneInstruction.componentUrl
       };
 
-      if(prevZoneInstruction.componentUrl != nextZoneConfig.componentUrl){
+      if (prevZoneInstruction.componentUrl != nextZoneConfig.componentUrl) {
         zonePlan.strategy = REPLACE;
-      } else if('determineActivationStrategy' in prevZoneInstruction.component.executionContext){
+      } else if ('determineActivationStrategy' in prevZoneInstruction.component.executionContext) {
         zonePlan.strategy = prevZoneInstruction.component.executionContext.determineActivationStrategy(...next.lifecycleArgs); //TODO: should we tell them if the parent had a lifecycle min change?
-      } else if(newParams || forceLifecycleMinimum){
+      } else if (newParams || forceLifecycleMinimum) {
         zonePlan.strategy = INVOKE_LIFECYCLE;
-      }else{
+      } else {
         zonePlan.strategy = NO_CHANGE;
       }
 
-      if(zonePlan.strategy !== REPLACE && prevZoneInstruction.childRouter){
+      if (zonePlan.strategy !== REPLACE && prevZoneInstruction.childRouter) {
         var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
-        var task = prevZoneInstruction.childRouter.createNavigationInstruction(path, next).then((childInstruction) =>{
+        var task = prevZoneInstruction.childRouter.createNavigationInstruction(path, next).then((childInstruction) => {
           zonePlan.childNavigationContext = prevZoneInstruction.childRouter.createNavigationContext(childInstruction);
 
-          return buildNavigationPlan(zonePlan.childNavigationContext, zonePlan.strategy == INVOKE_LIFECYCLE).then((childPlan) =>{
+          return buildNavigationPlan(zonePlan.childNavigationContext, zonePlan.strategy == INVOKE_LIFECYCLE).then((childPlan) => {
             zonePlan.childNavigationContext.plan = childPlan;
           });
         });
@@ -47,11 +47,11 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum){
       }
     }
 
-    return Promise.all(pending).then(() =>{
+    return Promise.all(pending).then(() => {
       return plan;
     });
   }else{
-    for(var zoneName in next.config.zones){
+    for (var zoneName in next.config.zones) {
       plan[zoneName] = {
         name:zoneName,
         strategy:REPLACE,
@@ -64,25 +64,25 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum){
 }
 
 export class BuildNavigationPlanStep {
-	run(navigationContext, next){
-    return buildNavigationPlan(navigationContext).then((plan) =>{
+	run(navigationContext, next) {
+    return buildNavigationPlan(navigationContext).then((plan) => {
       navigationContext.plan = plan;
       return next();
     });
 	}
 }
 
-function hasDifferentParameterValues(prev, next){
+function hasDifferentParameterValues(prev, next) {
   var prevParams = prev.params,
       nextParams = next.params,
       nextWildCardName = next.config.hasChildRouter ? getWildCardName(next.config.pattern) : null;
 
-  for(var key in nextParams){
-    if(key == nextWildCardName){
+  for (var key in nextParams) {
+    if (key == nextWildCardName) {
       continue;
     }
 
-    if(prevParams[key] != nextParams[key]){
+    if (prevParams[key] != nextParams[key]) {
       return true;
     }
   }

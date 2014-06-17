@@ -1,5 +1,5 @@
 export class ApplyModelBindersStep{
-	run(navigationContext, next){
+	run(navigationContext, next) {
 		//look at each channel and determine if there's a custom binder to be used
 		//to transform any of the lifecycleArgs
 

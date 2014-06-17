@@ -17,13 +17,13 @@ export class RouterZone {
     this.executionContext = executionContext;
   }
 
-  zoneNameChanged(name){
+  zoneNameChanged(name) {
     if ('router' in this.executionContext) {
       this.executionContext.router.registerZone(this, name);
     }
   }
 
-  process(zoneInstruction){
+  process(zoneInstruction) {
     this.tryRemoveView();
     this.view = zoneInstruction.component;
     this.viewPort.append(this.view);

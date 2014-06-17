@@ -1,5 +1,5 @@
 export class Redirect{
-  constructor(url){
+  constructor(url) {
     this.url = url;
   }
 }

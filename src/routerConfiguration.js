@@ -1,14 +1,14 @@
 import {extend, getWildcardPath} from './util';
 
 export class RouterConfiguration{
-  constructor(){
+  constructor() {
     this.instructions = [];
   }
 
   map(pattern, config) {
     if (Array.isArray(pattern)) {
       for (var i = 0; i < pattern.length; i++) {
-          this.map(pattern[i]);
+        this.map(pattern[i]);
       }
 
       return this;
@@ -16,9 +16,9 @@ export class RouterConfiguration{
 
     if (typeof pattern == 'string') {
       if (!config) {
-          config = {};
+        config = {};
       } else if (typeof config == 'string') {
-          config = { componentUrl: config };
+        config = { componentUrl: config };
       }
 
       config.pattern = pattern;
@@ -52,18 +52,18 @@ export class RouterConfiguration{
     return this;
   }
 
-  exportToRouter(router){
+  exportToRouter(router) {
     var instructions = this.instructions;
 
-    for(var i = 0, length = instructions.length; i < length; i++){
+    for (var i = 0, length = instructions.length; i < length; i++) {
       instructions[i](router);
     }
 
-    if(this.title){
+    if (this.title) {
       router.title = this.title;
     }
 
-    if(this.unknownRouteConfig){
+    if (this.unknownRouteConfig) {
       router.handleUnknownRoutes(this.unknownRouteConfig);
     }
   }
@@ -90,7 +90,7 @@ export class RouterConfiguration{
 
   deriveTitle(config) {
     var value = config.name;
-    return value.substring(0, 1).toUpperCase() + value.substring(1);
+    return value.substr(0, 1).toUpperCase() + value.substr(1);
   }
 
   deriveComponentUrl(config) {
@@ -111,5 +111,5 @@ function ensureConfigValue(config, property, getter) {
 function stripParametersFromPattern(pattern) {
   var colonIndex = pattern.indexOf(':');
   var length = colonIndex > 0 ? colonIndex - 1 : pattern.length;
-  return pattern.substring(0, length);
+  return pattern.substr(0, length);
 }

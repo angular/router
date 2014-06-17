@@ -14,7 +14,7 @@ export function extend(obj) {
 	return obj;
 }
 
-export function getWildCardName(pattern){
+export function getWildCardName(pattern) {
   var wildcardIndex = pattern.lastIndexOf('*');
   return pattern.substr(wildcardIndex + 1);
 }

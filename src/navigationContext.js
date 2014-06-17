@@ -8,7 +8,7 @@ export class NavigationContext {
     this.prevInstruction = router.currentInstruction;
   }
 
-  commitChanges(){
+  commitChanges() {
     var next = this.nextInstruction,
         prev = this.prevInstruction,
         zoneInstructions = next.zoneInstructions,
@@ -16,7 +16,7 @@ export class NavigationContext {
 
     router.currentInstruction = next;
 
-    if(prev){
+    if (prev) {
       prev.config.navModel.isActive = false;
     }
 
@@ -25,40 +25,40 @@ export class NavigationContext {
     router.refreshBaseUrl();
     router.refreshNavigation();
 
-    for(var zoneName in zoneInstructions){
+    for (var zoneName in zoneInstructions) {
       var zoneInstruction = zoneInstructions[zoneName];
       var zone = router.zones[zoneName];
 
-      if(zone){
+      if (zone) {
         makeProcessor(zoneInstruction)(zone);
-      }else{
+      } else {
         router.zones[zoneName] = makeProcessor(zoneInstruction);
       }
     }
   }
 
-  buildTitle(separator=' | '){
+  buildTitle(separator=' | ') {
     var next = this.nextInstruction,
         title = next.config.navModel.title || '',
         zoneInstructions = next.zoneInstructions,
         childTitles = [];
 
-    for(var zoneName in zoneInstructions){
+    for (var zoneName in zoneInstructions) {
       var zoneInstruction = zoneInstructions[zoneName];
-      
-      if('childNavigationContext' in zoneInstruction){
+
+      if ('childNavigationContext' in zoneInstruction) {
         var childTitle = zoneInstruction.childNavigationContext.buildTitle(separator);
-        if(childTitle){
+        if (childTitle) {
           childTitles.push(childTitle);
         }
       }
     }
 
-    if(childTitles.length){
+    if (childTitles.length) {
       title = childTitles.join(separator) + (title ? separator : '') + title;
     }
 
-    if(this.router.title){
+    if (this.router.title) {
       title += (title ? separator : '') + this.router.title;
     }
 
@@ -66,12 +66,12 @@ export class NavigationContext {
   }
 }
 
-export class CommitChangesStep{
-  run(navigationContext, next){
+export class CommitChangesStep {
+  run(navigationContext, next) {
     navigationContext.commitChanges();
 
     var title = navigationContext.buildTitle();
-    if(title){
+    if (title) {
       document.title = title;
     }
 
@@ -79,13 +79,13 @@ export class CommitChangesStep{
   }
 }
 
-function makeProcessor(zoneInstruction){
-  return (zone) =>{
-    if(zoneInstruction.strategy === REPLACE){
+function makeProcessor(zoneInstruction) {
+  return (zone) => {
+    if (zoneInstruction.strategy === REPLACE) {
       zone.process(zoneInstruction);
     }
 
-    if('childNavigationContext' in zoneInstruction){
+    if ('childNavigationContext' in zoneInstruction) {
       zoneInstruction.childNavigationContext.commitChanges();
     }
   };
