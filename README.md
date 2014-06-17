@@ -1,32 +1,40 @@
 # Angular 2.0 Router
 
-This is a prototype of a new router for Angular 2.0. Its feature set is based on the router used by Durandal. This router has been ported to ES6. It has also had bugs fixed from Durandal's router and a few new features have been added to faciliate greater flexibility. The internals of the router have been re-designed to use a customizable async pipeline. The screen activator has also had a similar re-design. Generally speaking, it allows for tons of customization at almost every point, understands basic conventions, has sensible defaults, etc.
+A new router for Angular 2.0, written in ES6.
 
-> **Note:** This prototype should fullfill almost, if not all, the requirements mentioned in the Angular 2.0 router design doc.
+Its feature set is based on the router used by Durandal, but the design and implementation are
+totally different.
+It also aims to fulfill the requirements mentioned in the[Angular 2.0 router design document](https://docs.google.com/document/d/1I3UC0RrgCh9CKrLxeE4sxwmNSBl3oSXQGt9g3KZnTJI).
+
+The router's design is based around the idea of a customizable async pipeline and screen activator.
+Generally speaking, it allows for tons of customization at almost every point, understands basic
+conventions, and has sensible defaults.
+
 
 ## Setup
 
 1. Install [NodeJS](http://nodejs.org/)
-2. At the command prompt install [Gulp](http://gulpjs.com/) with `npm install -g gulp`
-3. At the command promit install [Bower](http://bower.io/) with `npm install -g bower`
-4. From the repo, install npm dependencies with `npm install`
-5. From the repo, install bower dependencies with `bower install`
+2. Install [Gulp](http://gulpjs.com/) with `npm install -g gulp`
+3. Install [Bower](http://bower.io/) with `npm install -g bower`
+4. Clone and `cd` into this repo.
+5. From the repo, install npm dependencies with `npm install`
+6. From the repo, install bower dependencies with `bower install`
 
 ## Running the Samples
 
-1. At the command prompt, start the development web server with `gulp build watch serve`
+1. Start the development server with `gulp build watch serve`
 2. Open a browser and navigate to [http://localhost:8000/temp/examples/index.html](http://localhost:8000/temp/examples/index.html)
 
 ## Development
 
-1. At the command prompt, install [Karma](http://karma-runner.github.io/) with `npm install -g karma`
-2. At the command prompt, install the cli for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
-3. At the command prompt, start karma with `karma start`
+1. Install [Karma](http://karma-runner.github.io/) with `npm install -g karma`
+2. Install the cli for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
+3. Start karma with `karma start`
 4. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
 
 ### Code Style Guide
 
-* Use 2 spaces as tab, see .editorconfig
+* Use 2 spaces as tab, see `.editorconfig`
 
 ## Features
 
