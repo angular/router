@@ -1,8 +1,8 @@
 import {extend, getWildcardPath} from './util';
 
 export class RouterConfiguration{
-  constructor(router){
-    this.router = router;
+  constructor(){
+    this.instructions = [];
   }
 
   map(pattern, config) {
@@ -30,24 +30,47 @@ export class RouterConfiguration{
   }
 
   mapRoute(config) {
-    if (Array.isArray(config.pattern)) {
-      var navModel = {};
+    this.instructions.push(router => {
+      if (Array.isArray(config.pattern)) {
+        var navModel = {};
 
-      for (var i = 0, length = config.pattern.length; i < length; i++) {
-        var current = extend({}, config);
-        current.pattern = config.pattern[i];
-        this.configureRoute(current, navModel);
+        for (var i = 0, length = config.pattern.length; i < length; i++) {
+          var current = extend({}, config);
+          current.pattern = config.pattern[i];
+          this.configureRoute(router, current, navModel);
+        }
+      } else {
+        this.configureRoute(router, extend({}, config));
       }
-    } else {
-      this.configureRoute(config);
-    }
+    });
 
     return this;
   }
 
-  configureRoute(config, navModel) {
+  mapUnknownRoutes(config) {
+    this.unknownRouteConfig = config;
+    return this;
+  }
+
+  exportToRouter(router){
+    var instructions = this.instructions;
+
+    for(var i = 0, length = instructions.length; i < length; i++){
+      instructions[i](router);
+    }
+
+    if(this.title){
+      router.title = this.title;
+    }
+
+    if(this.unknownRouteConfig){
+      router.handleUnknownRoutes(this.unknownRouteConfig);
+    }
+  }
+
+  configureRoute(router, config, navModel) {
     this.ensureDefaultsForRouteConfig(config);
-    this.router.addRoute(config, navModel);
+    router.addRoute(config, navModel);
   }
 
   ensureDefaultsForRouteConfig(config) {
@@ -72,11 +95,6 @@ export class RouterConfiguration{
 
   deriveComponentUrl(config) {
     return stripParametersFromPattern(config.pattern);
-  }
-
-  mapUnknownRoutes(config) {
-    this.router.handleUnknownRoutes(callback);
-    return this;
   }
 }
 

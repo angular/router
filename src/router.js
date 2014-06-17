@@ -11,7 +11,6 @@ export class Router{
   constructor() {
     this.zones = {};
     this.reset();
-    this.config = new RouterConfiguration(this);
     this.baseUrl = '';
   }
 
@@ -67,8 +66,15 @@ export class Router{
     }
   }
 
-  configure(callback){
-    callback(this.config);
+  configure(callbackOrConfig){
+    if(typeof callbackOrConfig == 'function'){
+      var config = new RouterConfiguration();
+      callbackOrConfig(config);
+      config.exportToRouter(this);
+    }else{
+      callbackOrConfig.exportToRouter(this);
+    }
+
     return this;
   }
 

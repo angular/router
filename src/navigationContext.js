@@ -58,8 +58,8 @@ export class NavigationContext {
       title = childTitles.join(separator) + (title ? separator : '') + title;
     }
 
-    if(this.router.config.title){
-      title += (title ? separator : '') + this.router.config.title;
+    if(this.router.title){
+      title += (title ? separator : '') + this.router.title;
     }
 
     return title;
