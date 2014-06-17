@@ -11,9 +11,9 @@ export class App {
       config.title = 'Router Demo';
 
       config.map([
-        { route: ['','welcome'], componentUrl: 'welcome', nav: true, title:'Home' },
-        { route: 'flickr', componentUrl: 'flickr', nav: true },
-        { route: 'settings', componentUrl: 'settings', nav: true }
+        { pattern: ['','welcome'],  componentUrl: 'welcome',  nav: true, title:'Home' },
+        { pattern: 'flickr',        componentUrl: 'flickr',   nav: true },
+        { pattern: 'settings',      componentUrl: 'settings', nav: true }
       ]);
     });
   }

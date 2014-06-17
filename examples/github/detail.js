@@ -13,8 +13,8 @@ export class Detail {
 
     this.router.configure((config)=>{
       config.map([
-        { route: ['','comments'], componentUrl: 'comments', nav:true, title:'Comments' },
-        { route: 'events', componentUrl: 'events', nav:true }
+        { pattern: ['','comments'], componentUrl: 'comments', nav:true, title:'Comments' },
+        { pattern: 'events',        componentUrl: 'events',   nav:true }
       ]);
     });
   }

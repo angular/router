@@ -14,13 +14,13 @@ export function extend(obj) {
 	return obj;
 }
 
-export function getWildCardName(route){
-  var wildcardIndex = route.lastIndexOf('*');
-  return route.substr(wildcardIndex + 1);
+export function getWildCardName(pattern){
+  var wildcardIndex = pattern.lastIndexOf('*');
+  return pattern.substr(wildcardIndex + 1);
 }
 
-export function getWildcardPath(route, params, qs) {
-  var wildcardName = getWildCardName(route),
+export function getWildcardPath(pattern, params, qs) {
+  var wildcardName = getWildCardName(pattern),
       path = params[wildcardName];
 
   if (qs) {

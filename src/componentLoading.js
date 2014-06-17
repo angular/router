@@ -80,7 +80,7 @@ function loadComponent(navigationContext, zonePlan){
   	if(controller.router){
       controller.router.injector = component.injector;
 
-  		var path = getWildcardPath(next.config.route, next.params, next.queryString);
+  		var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
 
       return controller.router.createNavigationInstruction(path, next).then((childInstruction) =>{
         zonePlan.childNavigationContext = controller.router.createNavigationContext(childInstruction);

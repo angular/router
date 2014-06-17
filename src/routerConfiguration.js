@@ -5,37 +5,37 @@ export class RouterConfiguration{
     this.router = router;
   }
 
-  map(route, config) {
-    if (Array.isArray(route)) {
-      for (var i = 0; i < route.length; i++) {
-          this.map(route[i]);
+  map(pattern, config) {
+    if (Array.isArray(pattern)) {
+      for (var i = 0; i < pattern.length; i++) {
+          this.map(pattern[i]);
       }
 
       return this;
     }
 
-    if (typeof route == 'string') {
+    if (typeof pattern == 'string') {
       if (!config) {
           config = {};
       } else if (typeof config == 'string') {
           config = { componentUrl: config };
       }
 
-      config.route = route;
+      config.pattern = pattern;
     } else {
-      config = route;
+      config = pattern;
     }
 
     return this.mapRoute(config);
   }
 
   mapRoute(config) {
-    if (Array.isArray(config.route)) {
+    if (Array.isArray(config.pattern)) {
       var navModel = {};
 
-      for (var i = 0, length = config.route.length; i < length; i++) {
+      for (var i = 0, length = config.pattern.length; i < length; i++) {
         var current = extend({}, config);
-        current.route = config.route[i];
+        current.pattern = config.pattern[i];
         this.configureRoute(current, navModel);
       }
     } else {
@@ -52,16 +52,16 @@ export class RouterConfiguration{
 
   ensureDefaultsForRouteConfig(config) {
     config.name =  ensureConfigValue(config, 'name', this.deriveName);
-    config.route = ensureConfigValue(config, 'route', this.deriveRoute);
+    config.pattern = ensureConfigValue(config, 'pattern', this.derivePattern);
     config.title = ensureConfigValue(config, 'title', this.deriveTitle);
     config.componentUrl = ensureConfigValue(config, 'componentUrl', this.deriveComponentUrl);
   }
 
   deriveName(config) {
-    return config.title || (config.route ? stripParametersFromRoute(config.route) : config.componentUrl);
+    return config.title || (config.pattern ? stripParametersFromPattern(config.pattern) : config.componentUrl);
   }
 
-  deriveRoute(config) {
+  derivePattern(config) {
     return config.componentUrl || config.name;
   }
 
@@ -71,7 +71,7 @@ export class RouterConfiguration{
   }
 
   deriveComponentUrl(config) {
-    return stripParametersFromRoute(config.route);
+    return stripParametersFromPattern(config.pattern);
   }
 
   mapUnknownRoutes(config) {
@@ -90,8 +90,8 @@ function ensureConfigValue(config, property, getter) {
   return getter(config);
 }
 
-function stripParametersFromRoute(route) {
-  var colonIndex = route.indexOf(':');
-  var length = colonIndex > 0 ? colonIndex - 1 : route.length;
-  return route.substring(0, length);
+function stripParametersFromPattern(pattern) {
+  var colonIndex = pattern.indexOf(':');
+  var length = colonIndex > 0 ? colonIndex - 1 : pattern.length;
+  return pattern.substring(0, length);
 }

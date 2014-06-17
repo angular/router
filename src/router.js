@@ -38,7 +38,7 @@ export class Router{
   refreshBaseUrl(){
     if(this.parent){
       var baseUrl = getBaseUrl(
-        this.parent.currentInstruction.config.route,
+        this.parent.currentInstruction.config.pattern,
         this.parent.currentInstruction.params,
         this.parent.currentInstruction.fragment
       );
@@ -141,13 +141,13 @@ export class Router{
     }
 
     this.routes.push(config);
-    this.recognizer.add([{path:config.route, handler: config}]);
+    this.recognizer.add([{path:config.pattern, handler: config}]);
 
-    if(config.route){
+    if(config.pattern){
       var withChild = JSON.parse(JSON.stringify(config));
-      withChild.route += "/*childRoute";
+      withChild.pattern += "/*childRoute";
       withChild.hasChildRouter = true;
-      this.childRecognizer.add([{path:withChild.route, handler: withChild}]);
+      this.childRecognizer.add([{path:withChild.pattern, handler: withChild}]);
       withChild.navModel = navModel;
     }
 
@@ -162,7 +162,7 @@ export class Router{
       navModel.config = config;
 
       if (!config.href) {
-        navModel.relativeHref = config.route;
+        navModel.relativeHref = config.pattern;
         navModel.href = '';
       }
 
@@ -176,7 +176,7 @@ export class Router{
   }
 
   handleUnknownRoutes(config){
-    var catchAllRoute = "*path";
+    var catchAllPattern = "*path";
 
     var callback = (instruction) => {
       return new Promise((resolve) =>{
@@ -189,7 +189,7 @@ export class Router{
           
           if (result instanceof Promise) {
             result.then(() => {
-              instruction.config.route = catchAllRoute;
+              instruction.config.pattern = catchAllPattern;
               resolve(instruction);
             });
 
@@ -199,12 +199,12 @@ export class Router{
           instruction.config = config;
         }
 
-        instruction.config.route = catchAllRoute;
+        instruction.config.pattern = catchAllPattern;
         resolve(instruction);
       });
     };
 
-    this.childRecognizer.add([{path:catchAllRoute, handler: callback}]);
+    this.childRecognizer.add([{path:catchAllPattern, handler: callback}]);
   }
 
   reset() {
@@ -217,12 +217,12 @@ export class Router{
   };
 }
 
-function getBaseUrl(route, params, fragment){
+function getBaseUrl(pattern, params, fragment){
   if(!params){
     return fragment;
   }
 
-  var wildcardName = getWildCardName(route),
+  var wildcardName = getWildCardName(pattern),
       path = params[wildcardName];
 
   if(!path){

@@ -34,7 +34,7 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum){
       }
 
       if(zonePlan.strategy !== REPLACE && prevZoneInstruction.childRouter){
-        var path = getWildcardPath(next.config.route, next.params, next.queryString);
+        var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
         var task = prevZoneInstruction.childRouter.createNavigationInstruction(path, next).then((childInstruction) =>{
           zonePlan.childNavigationContext = prevZoneInstruction.childRouter.createNavigationContext(childInstruction);
 
@@ -75,7 +75,7 @@ export class BuildNavigationPlanStep {
 function hasDifferentParameterValues(prev, next){
   var prevParams = prev.params,
       nextParams = next.params,
-      nextWildCardName = next.config.hasChildRouter ? getWildCardName(next.config.route) : null;
+      nextWildCardName = next.config.hasChildRouter ? getWildCardName(next.config.pattern) : null;
 
   for(var key in nextParams){
     if(key == nextWildCardName){

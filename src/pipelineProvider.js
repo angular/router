@@ -19,6 +19,7 @@ export class PipelineProvider {
       .withStep(new LoadNewComponentsStep())
       .withStep(new ApplyModelBindersStep()) //optional
       .withStep(new CanActivateNextStep()) //optional
+      //NOTE: app state changes start below - point of no return
       .withStep(new DeactivatePreviousStep()) //optional
       .withStep(new ActivateNextStep()) //optional
       .withStep(new CommitChangesStep());
