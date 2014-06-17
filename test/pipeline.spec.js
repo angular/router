@@ -1,4 +1,3 @@
-import {PromiseBackend} from '../node_modules/deferred/src/PromiseMock';
 import {Pipeline, COMPLETED, REJECTED, CANCELLED} from '../src/pipeline';
 
 describe('Pipeline', () => {
