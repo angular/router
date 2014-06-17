@@ -133,12 +133,14 @@ export class Router{
     return this.recognizer.generate(name, params);
   }
 
-  addRoute(config, navModel = {}){
+  addRoute(config, navModel={}){
     if(!('zones' in config)){
       config.zones = {
         'default':{componentUrl:config.componentUrl}
       };
     }
+
+    navModel.title = navModel.title || config.title;
 
     this.routes.push(config);
     this.recognizer.add([{path:config.pattern, handler: config}]);
@@ -155,7 +157,6 @@ export class Router{
 
     if(('nav' in config || 'order' in navModel) 
       && this.navigation.indexOf(navModel) === -1) {
-      navModel.title = navModel.title || config.title;
       navModel.order = navModel.order || config.nav;
       navModel.href = navModel.href || config.href;
       navModel.isActive = false;

@@ -19,8 +19,9 @@ export class Detail {
     });
   }
 
-  activate(params){
+  activate(params, qs, config){
     return this.service.issue(params.id).then((issue) =>{
+      config.navModel.title = 'Issue ' + params.id.toString();
       this.issue = issue;
     });
   }

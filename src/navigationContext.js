@@ -36,6 +36,47 @@ export class NavigationContext {
       }
     }
   }
+
+  buildTitle(separator=' | '){
+    var next = this.nextInstruction,
+        title = next.config.navModel.title || '',
+        zoneInstructions = next.zoneInstructions,
+        childTitles = [];
+
+    for(var zoneName in zoneInstructions){
+      var zoneInstruction = zoneInstructions[zoneName];
+      
+      if('childNavigationContext' in zoneInstruction){
+        var childTitle = zoneInstruction.childNavigationContext.buildTitle(separator);
+        if(childTitle){
+          childTitles.push(childTitle);
+        }
+      }
+    }
+
+    if(childTitles.length){
+      title = childTitles.join(separator) + (title ? separator : '') + title;
+    }
+
+    if(this.router.config.title){
+      title += (title ? separator : '') + this.router.config.title;
+    }
+
+    return title;
+  }
+}
+
+export class CommitChangesStep{
+  run(navigationContext, next){
+    navigationContext.commitChanges();
+
+    var title = navigationContext.buildTitle();
+    if(title){
+      document.title = title;
+    }
+
+    return next();
+  }
 }
 
 function makeProcessor(zoneInstruction){
@@ -49,30 +90,3 @@ function makeProcessor(zoneInstruction){
     }
   };
 }
-
-export class CommitChangesStep{
-  run(navigationContext, next){
-    navigationContext.commitChanges();
-
-    //update title?
-
-    return next();
-  }
-}
-
-function updateDocumentTitle(instruction) {
-  var title = instruction.config.title;
-
-  //TODO: dispose previous title watch
-
-  if (title) {
-    //TODO: setup new title watch
-    if (this.title) {
-      document.title = title + " | " + this.title;
-    } else {
-      document.title = title;
-    }
-  } else if (this.title) {
-    document.title = this.title;
-  }
-};

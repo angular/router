@@ -8,6 +8,8 @@ export class App {
     this.router = new AppRouter(new PipelineProvider());
 
     this.router.configure((config)=>{
+      config.title = 'Angular Issues';
+
       config.map([
         { pattern: ['','issues'], componentUrl: 'overview', title:'Issues' },
         { pattern: 'issues/:id',  componentUrl: 'detail' }
