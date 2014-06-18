@@ -2,12 +2,12 @@ import {TemplateDirective, View, ViewPort, ViewFactory} from 'templating';
 import {Injector, Inject} from 'di';
 
 @TemplateDirective({
-  selector: 'router-zone',
+  selector: 'router-view-port',
   observe: {
-    'zoneName': 'zoneNameChanged'
+    'viewPortName': 'viewPortNameChanged'
   }
 })
-export class RouterZone {
+export class RouterViewPort {
   @Inject(ViewFactory, ViewPort, 'executionContext', Injector)
   constructor(viewFactory, viewPort, executionContext, injector) {
     this.viewFactory = viewFactory;
@@ -17,15 +17,15 @@ export class RouterZone {
     this.executionContext = executionContext;
   }
 
-  zoneNameChanged(name) {
+  viewPortNameChanged(name) {
     if ('router' in this.executionContext) {
-      this.executionContext.router.registerZone(this, name);
+      this.executionContext.router.registerViewPort(this, name);
     }
   }
 
-  process(zoneInstruction) {
+  process(viewPortInstruction) {
     this.tryRemoveView();
-    this.view = zoneInstruction.component;
+    this.view = viewPortInstruction.component;
     this.viewPort.append(this.view);
   }
 

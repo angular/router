@@ -18,7 +18,7 @@ export function loadNewComponents(navigationContext) {
 
 	for (var i = 0, len = toLoad.length; i < len; i++) {
 		var current = toLoad[i];
-		loadPromises.push(loadComponent(current.navigationContext, current.zonePlan));
+		loadPromises.push(loadComponent(current.navigationContext, current.viewPortPlan));
 	}
 
 	return Promise.all(loadPromises);
@@ -30,29 +30,29 @@ function determineWhatToLoad(navigationContext, toLoad) {
 
 	toLoad = toLoad || [];
 
-	for (var zoneName in plan) {
-		var zonePlan = plan[zoneName];
+	for (var viewPortName in plan) {
+		var viewPortPlan = plan[viewPortName];
 
-		if (zonePlan.strategy == REPLACE) {
+		if (viewPortPlan.strategy == REPLACE) {
 			toLoad.push({
-				zonePlan: zonePlan,
+				viewPortPlan: viewPortPlan,
 				navigationContext: navigationContext
 			});
 
-			if (zonePlan.childNavigationContext) {
-				determineWhatToLoad(zonePlan.childNavigationContext, toLoad);
+			if (viewPortPlan.childNavigationContext) {
+				determineWhatToLoad(viewPortPlan.childNavigationContext, toLoad);
 			}
 		} else {
-			var zoneInstruction = next.addZoneInstruction(
-          zoneName,
-          zonePlan.strategy,
-          zonePlan.prevComponentUrl,
-          zonePlan.prevComponent
+			var viewPortInstruction = next.addViewPortInstruction(
+          viewPortName,
+          viewPortPlan.strategy,
+          viewPortPlan.prevComponentUrl,
+          viewPortPlan.prevComponent
           );
 
-      if (zonePlan.childNavigationContext) {
-        zoneInstruction.childNavigationContext = zonePlan.childNavigationContext;
-        determineWhatToLoad(zonePlan.childNavigationContext, toLoad);
+      if (viewPortPlan.childNavigationContext) {
+        viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
+        determineWhatToLoad(viewPortPlan.childNavigationContext, toLoad);
       }
 		}
 	}
@@ -60,17 +60,17 @@ function determineWhatToLoad(navigationContext, toLoad) {
 	return toLoad;
 }
 
-function loadComponent(navigationContext, zonePlan) {
-	var componentUrl = zonePlan.config.componentUrl;
+function loadComponent(navigationContext, viewPortPlan) {
+	var componentUrl = viewPortPlan.config.componentUrl;
 	var next = navigationContext.nextInstruction;
 
-	return resolveComponentInstance(navigationContext.router, zonePlan).then((component) => {
+	return resolveComponentInstance(navigationContext.router, viewPortPlan).then((component) => {
     component.injector = component._injector._children[0];
     component.executionContext = component.injector.get('executionContext');
 
-		var zoneInstruction = next.addZoneInstruction(
-      zonePlan.name,
-      zonePlan.strategy,
+		var viewPortInstruction = next.addViewPortInstruction(
+      viewPortPlan.name,
+      viewPortPlan.strategy,
       componentUrl,
       component
       );
@@ -83,24 +83,24 @@ function loadComponent(navigationContext, zonePlan) {
   		var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
 
       return controller.router.createNavigationInstruction(path, next).then((childInstruction) => {
-        zonePlan.childNavigationContext = controller.router.createNavigationContext(childInstruction);
+        viewPortPlan.childNavigationContext = controller.router.createNavigationContext(childInstruction);
 
-        return buildNavigationPlan(zonePlan.childNavigationContext).then((childPlan) => {
-          zonePlan.childNavigationContext.plan = childPlan;
-          zoneInstruction.childNavigationContext = zonePlan.childNavigationContext;
-          return loadNewComponents(zonePlan.childNavigationContext);
+        return buildNavigationPlan(viewPortPlan.childNavigationContext).then((childPlan) => {
+          viewPortPlan.childNavigationContext.plan = childPlan;
+          viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
+          return loadNewComponents(viewPortPlan.childNavigationContext);
         });
       });
   	}
   });
 }
 
-function resolveComponentInstance(router, zonePlan) {
-  var zone = router.zones[zonePlan.name],
-      injector = (zone && zone.injector) || router.injector._root,
+function resolveComponentInstance(router, viewPortPlan) {
+  var viewPort = router.viewPorts[viewPortPlan.name],
+      injector = (viewPort && viewPort.injector) || router.injector._root,
       loader = injector.get(ComponentLoader);
 
-  var url = zonePlan.config.componentUrl + '.html';
+  var url = viewPortPlan.config.componentUrl + '.html';
 
 	return new Promise((resolve, reject) => {
     loader.loadFromTemplateUrl({

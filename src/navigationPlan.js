@@ -13,33 +13,34 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
     var newParams = hasDifferentParameterValues(prev, next);
     var pending = [];
 
-    for (var zoneName in prev.zoneInstructions) {
-      var prevZoneInstruction = prev.zoneInstructions[zoneName];
-      var nextZoneConfig = next.config.zones[zoneName];
-      var zonePlan = plan[zoneName] = {
-        name: zoneName,
-        config: nextZoneConfig,
-        prevComponent: prevZoneInstruction.component,
-        prevComponentUrl: prevZoneInstruction.componentUrl
+    for (var viewPortName in prev.viewPortInstructions) {
+      var prevViewPortInstruction = prev.viewPortInstructions[viewPortName];
+      var nextViewPortConfig = next.config.viewPorts[viewPortName];
+      var viewPortPlan = plan[viewPortName] = {
+        name: viewPortName,
+        config: nextViewPortConfig,
+        prevComponent: prevViewPortInstruction.component,
+        prevComponentUrl: prevViewPortInstruction.componentUrl
       };
 
-      if (prevZoneInstruction.componentUrl != nextZoneConfig.componentUrl) {
-        zonePlan.strategy = REPLACE;
-      } else if ('determineActivationStrategy' in prevZoneInstruction.component.executionContext) {
-        zonePlan.strategy = prevZoneInstruction.component.executionContext.determineActivationStrategy(...next.lifecycleArgs); //TODO: should we tell them if the parent had a lifecycle min change?
+      if (prevViewPortInstruction.componentUrl != nextViewPortConfig.componentUrl) {
+        viewPortPlan.strategy = REPLACE;
+      } else if ('determineActivationStrategy' in prevViewPortInstruction.component.executionContext) {
+         //TODO: should we tell them if the parent had a lifecycle min change?
+        viewPortPlan.strategy = prevViewPortInstruction.component.executionContext.determineActivationStrategy(...next.lifecycleArgs);
       } else if (newParams || forceLifecycleMinimum) {
-        zonePlan.strategy = INVOKE_LIFECYCLE;
+        viewPortPlan.strategy = INVOKE_LIFECYCLE;
       } else {
-        zonePlan.strategy = NO_CHANGE;
+        viewPortPlan.strategy = NO_CHANGE;
       }
 
-      if (zonePlan.strategy !== REPLACE && prevZoneInstruction.childRouter) {
+      if (viewPortPlan.strategy !== REPLACE && prevViewPortInstruction.childRouter) {
         var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
-        var task = prevZoneInstruction.childRouter.createNavigationInstruction(path, next).then((childInstruction) => {
-          zonePlan.childNavigationContext = prevZoneInstruction.childRouter.createNavigationContext(childInstruction);
+        var task = prevViewPortInstruction.childRouter.createNavigationInstruction(path, next).then((childInstruction) => {
+          viewPortPlan.childNavigationContext = prevViewPortInstruction.childRouter.createNavigationContext(childInstruction);
 
-          return buildNavigationPlan(zonePlan.childNavigationContext, zonePlan.strategy == INVOKE_LIFECYCLE).then((childPlan) => {
-            zonePlan.childNavigationContext.plan = childPlan;
+          return buildNavigationPlan(viewPortPlan.childNavigationContext, viewPortPlan.strategy == INVOKE_LIFECYCLE).then((childPlan) => {
+            viewPortPlan.childNavigationContext.plan = childPlan;
           });
         });
 
@@ -51,11 +52,11 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
       return plan;
     });
   }else{
-    for (var zoneName in next.config.zones) {
-      plan[zoneName] = {
-        name:zoneName,
-        strategy:REPLACE,
-        config:next.config.zones[zoneName]
+    for (var viewPortName in next.config.viewPorts) {
+      plan[viewPortName] = {
+        name: viewPortName,
+        strategy: REPLACE,
+        config: next.config.viewPorts[viewPortName]
       };
     }
 

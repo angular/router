@@ -9,20 +9,20 @@ RouteRecognizer = RouteRecognizer['default'];
 
 export class Router {
   constructor() {
-    this.zones = {};
+    this.viewPorts = {};
     this.reset();
     this.baseUrl = '';
   }
 
-  registerZone(zone, name) {
-    name = name || zone.name || 'default';
+  registerViewPort(viewPort, name) {
+    name = name || viewPort.name || 'default';
 
-    if (typeof this.zones[name] == 'function') {
-      var callback = this.zones[name];
-      this.zones[name] = zone;
-      callback(zone);
+    if (typeof this.viewPorts[name] == 'function') {
+      var callback = this.viewPorts[name];
+      this.viewPorts[name] = viewPort;
+      callback(viewPort);
     } else {
-      this.zones[name] = zone;
+      this.viewPorts[name] = viewPort;
 
       if ('activate' in this) {
         if (!this.isActive) {
@@ -140,9 +140,11 @@ export class Router {
   }
 
   addRoute(config, navModel={}) {
-    if (!('zones' in config)) {
-      config.zones = {
-        'default':{componentUrl:config.componentUrl}
+    if (!('viewPorts' in config)) {
+      config.viewPorts = {
+        'default': {
+          componentUrl: config.componentUrl
+        }
       };
     }
 
@@ -178,40 +180,41 @@ export class Router {
       }
 
       this.navigation.push(navModel);
-      this.navigation = this.navigation.sort((a, b) => { return a.order - b.order; });
+      this.navigation = this.navigation.sort((a, b) => a.order - b.order);
     }
   }
 
   handleUnknownRoutes(config) {
     var catchAllPattern = "*path";
 
-    var callback = (instruction) => {
-      return new Promise((resolve) => {
-        if (!config) {
-          instruction.config.componentUrl = instruction.fragment;
-        } else if (typeof config == 'string') {
-          instruction.config.componentUrl = config;
-        } else if (typeof config == 'function') {
-          var result = config(instruction);
+    var callback = (instruction) => new Promise((resolve) => {
+      if (!config) {
+        instruction.config.componentUrl = instruction.fragment;
+      } else if (typeof config == 'string') {
+        instruction.config.componentUrl = config;
+      } else if (typeof config == 'function') {
+        var result = config(instruction);
 
-          if (result instanceof Promise) {
-            result.then(() => {
-              instruction.config.pattern = catchAllPattern;
-              resolve(instruction);
-            });
+        if (result instanceof Promise) {
+          result.then(() => {
+            instruction.config.pattern = catchAllPattern;
+            resolve(instruction);
+          });
 
-            return;
-          }
-        } else {
-          instruction.config = config;
+          return;
         }
+      } else {
+        instruction.config = config;
+      }
 
-        instruction.config.pattern = catchAllPattern;
-        resolve(instruction);
-      });
-    };
+      instruction.config.pattern = catchAllPattern;
+      resolve(instruction);
+    });
 
-    this.childRecognizer.add([{path: catchAllPattern, handler: callback}]);
+    this.childRecognizer.add([{
+      path: catchAllPattern,
+      handler: callback
+    }]);
   }
 
   reset() {

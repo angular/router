@@ -2,6 +2,6 @@
 
 export {Router} from './router';
 export {AppRouter} from './appRouter';
-export {RouterZone} from './routerZone';
+export {RouterViewPort} from './routerViewPort';
 export {PipelineProvider} from './pipelineProvider';
 export {Redirect} from './redirect';

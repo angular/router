@@ -11,7 +11,7 @@ export class CanDeactivatePreviousStep {
 
 export class CanActivateNextStep {
   run(navigationContext, next) {
-    return processActivatableZones(navigationContext, 'canActivate', next);
+    return processActivatableViewPorts(navigationContext, 'canActivate', next);
   }
 }
 
@@ -23,7 +23,7 @@ export class DeactivatePreviousStep {
 
 export class ActivateNextStep {
   run(navigationContext, next) {
-    return processActivatableZones(navigationContext, 'activate', next, true);
+    return processActivatableViewPorts(navigationContext, 'activate', next, true);
   }
 }
 
@@ -60,12 +60,12 @@ function processDeactivatableControllers(plan, callbackName, next, ignoreResult)
 function findDeactivatableControllers(plan, callbackName, list) {
   list = list || [];
 
-  for (var zoneName in plan) {
-    var zonePlan = plan[zoneName];
-    var prevComponent = zonePlan.prevComponent;
+  for (var viewPortName in plan) {
+    var viewPortPlan = plan[viewPortName];
+    var prevComponent = viewPortPlan.prevComponent;
 
-    if ((zonePlan.strategy == INVOKE_LIFECYCLE ||
-        zonePlan.strategy == REPLACE) &&
+    if ((viewPortPlan.strategy == INVOKE_LIFECYCLE ||
+        viewPortPlan.strategy == REPLACE) &&
         prevComponent) {
 
       var controller = prevComponent.executionContext;
@@ -75,8 +75,8 @@ function findDeactivatableControllers(plan, callbackName, list) {
       }
     }
 
-    if (zonePlan.childNavigationContext) {
-      findDeactivatableControllers(zonePlan.childNavigationContext.plan, callbackName, list);
+    if (viewPortPlan.childNavigationContext) {
+      findDeactivatableControllers(viewPortPlan.childNavigationContext.plan, callbackName, list);
     } else if (prevComponent) {
       addPreviousDeactivatableControllers(prevComponent, callbackName, list);
     }
@@ -89,11 +89,11 @@ function addPreviousDeactivatableControllers(component, callbackName, list) {
   var controller = component.executionContext;
 
   if (controller.router && controller.router.currentInstruction) {
-    var zoneInstructions = controller.router.currentInstruction.zoneInstructions;
+    var viewPortInstructions = controller.router.currentInstruction.viewPortInstructions;
 
-    for (var zoneName in zoneInstructions) {
-      var zoneInstruction = zoneInstructions[zoneName];
-      var prevComponent = zoneInstruction.component;
+    for (var viewPortName in viewPortInstructions) {
+      var viewPortInstruction = viewPortInstructions[viewPortName];
+      var prevComponent = viewPortInstruction.component;
       var prevController = prevComponent.executionContext;
 
       if (callbackName in prevController) {
@@ -105,9 +105,9 @@ function addPreviousDeactivatableControllers(component, callbackName, list) {
   }
 }
 
-function processActivatableZones(navigationContext, callbackName, next, ignoreResult) {
-  var zones = findActivatableZones(navigationContext, callbackName),
-      length = zones.length,
+function processActivatableViewPorts(navigationContext, callbackName, next, ignoreResult) {
+  var viewPorts = findActivatableViewPorts(navigationContext, callbackName),
+      length = viewPorts.length,
       i = -1; //query from top down
 
   function inspect(val) {
@@ -122,8 +122,8 @@ function processActivatableZones(navigationContext, callbackName, next, ignoreRe
     i++;
 
     if (i < length) {
-      var zoneInstruction = zones[i];
-      var boolOrPromise = zoneInstruction.component.executionContext[callbackName](...zoneInstruction.lifecycleArgs);
+      var viewPortInstruction = viewPorts[i];
+      var boolOrPromise = viewPortInstruction.component.executionContext[callbackName](...viewPortInstruction.lifecycleArgs);
 
       if (boolOrPromise instanceof Promise) {
         return boolOrPromise.then(inspect);
@@ -138,23 +138,23 @@ function processActivatableZones(navigationContext, callbackName, next, ignoreRe
   return iterate();
 }
 
-function findActivatableZones(navigationContext, callbackName, list) {
+function findActivatableViewPorts(navigationContext, callbackName, list) {
   var plan = navigationContext.plan;
   var next = navigationContext.nextInstruction;
 
   list = list || [];
 
-  Object.keys(plan).filter((zoneName) => {
-    var zonePlan = plan[zoneName];
-    var zoneInstruction = next.zoneInstructions[zoneName];
+  Object.keys(plan).filter((viewPortName) => {
+    var viewPortPlan = plan[viewPortName];
+    var viewPortInstruction = next.viewPortInstructions[viewPortName];
 
-    if ((zonePlan.strategy === INVOKE_LIFECYCLE || zonePlan.strategy === REPLACE) &&
-        callbackName in zoneInstruction.component.executionContext) {
-      list.push(zoneInstruction);
+    if ((viewPortPlan.strategy === INVOKE_LIFECYCLE || viewPortPlan.strategy === REPLACE) &&
+        callbackName in viewPortInstruction.component.executionContext) {
+      list.push(viewPortInstruction);
     }
 
-    if (zonePlan.childNavigationContext) {
-      findActivatableZones(zonePlan.childNavigationContext, callbackName, list);
+    if (viewPortPlan.childNavigationContext) {
+      findActivatableViewPorts(viewPortPlan.childNavigationContext, callbackName, list);
     }
   });
 

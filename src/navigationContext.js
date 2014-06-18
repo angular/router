@@ -11,7 +11,7 @@ export class NavigationContext {
   commitChanges() {
     var next = this.nextInstruction,
         prev = this.prevInstruction,
-        zoneInstructions = next.zoneInstructions,
+        viewPortInstructions = next.viewPortInstructions,
         router = this.router;
 
     router.currentInstruction = next;
@@ -25,14 +25,14 @@ export class NavigationContext {
     router.refreshBaseUrl();
     router.refreshNavigation();
 
-    for (var zoneName in zoneInstructions) {
-      var zoneInstruction = zoneInstructions[zoneName];
-      var zone = router.zones[zoneName];
+    for (var viewPortName in viewPortInstructions) {
+      var viewPortInstruction = viewPortInstructions[viewPortName];
+      var viewPort = router.viewPorts[viewPortName];
 
-      if (zone) {
-        makeProcessor(zoneInstruction)(zone);
+      if (viewPort) {
+        makeProcessor(viewPortInstruction)(viewPort);
       } else {
-        router.zones[zoneName] = makeProcessor(zoneInstruction);
+        router.viewPorts[viewPortName] = makeProcessor(viewPortInstruction);
       }
     }
   }
@@ -40,14 +40,14 @@ export class NavigationContext {
   buildTitle(separator=' | ') {
     var next = this.nextInstruction,
         title = next.config.navModel.title || '',
-        zoneInstructions = next.zoneInstructions,
+        viewPortInstructions = next.viewPortInstructions,
         childTitles = [];
 
-    for (var zoneName in zoneInstructions) {
-      var zoneInstruction = zoneInstructions[zoneName];
+    for (var viewPortName in viewPortInstructions) {
+      var viewPortInstruction = viewPortInstructions[viewPortName];
 
-      if ('childNavigationContext' in zoneInstruction) {
-        var childTitle = zoneInstruction.childNavigationContext.buildTitle(separator);
+      if ('childNavigationContext' in viewPortInstruction) {
+        var childTitle = viewPortInstruction.childNavigationContext.buildTitle(separator);
         if (childTitle) {
           childTitles.push(childTitle);
         }
@@ -79,14 +79,14 @@ export class CommitChangesStep {
   }
 }
 
-function makeProcessor(zoneInstruction) {
-  return (zone) => {
-    if (zoneInstruction.strategy === REPLACE) {
-      zone.process(zoneInstruction);
+function makeProcessor(viewPortInstruction) {
+  return (viewPort) => {
+    if (viewPortInstruction.strategy === REPLACE) {
+      viewPort.process(viewPortInstruction);
     }
 
-    if ('childNavigationContext' in zoneInstruction) {
-      zoneInstruction.childNavigationContext.commitChanges();
+    if ('childNavigationContext' in viewPortInstruction) {
+      viewPortInstruction.childNavigationContext.commitChanges();
     }
   };
 }
