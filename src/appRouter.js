@@ -114,14 +114,10 @@ function handleLinkClick(evt) {
 function targetIsThisWindow(target) {
   var targetWindow = target.getAttribute('target');
 
-  if (!targetWindow ||
+  return !targetWindow ||
       targetWindow === window.name ||
       targetWindow === '_self' ||
-      (targetWindow === 'top' && window === window.top)) {
-      return true;
-  }
-
-  return false;
+      (targetWindow === 'top' && window === window.top);
 }
 
 function reconstructUrl(instruction) {

@@ -35,8 +35,8 @@ function determineWhatToLoad(navigationContext, toLoad) {
 
 		if (zonePlan.strategy == REPLACE) {
 			toLoad.push({
-				zonePlan:zonePlan,
-				navigationContext:navigationContext
+				zonePlan: zonePlan,
+				navigationContext: navigationContext
 			});
 
 			if (zonePlan.childNavigationContext) {
@@ -64,7 +64,7 @@ function loadComponent(navigationContext, zonePlan) {
 	var componentUrl = zonePlan.config.componentUrl;
 	var next = navigationContext.nextInstruction;
 
-	return resolveComponentInstance(navigationContext.router, zonePlan).then(function(component) {
+	return resolveComponentInstance(navigationContext.router, zonePlan).then((component) => {
     component.injector = component._injector._children[0];
     component.executionContext = component.injector.get('executionContext');
 
@@ -106,17 +106,17 @@ function resolveComponentInstance(router, zonePlan) {
     loader.loadFromTemplateUrl({
       templateUrl: url,
       done: ({directive})=> {
+        @Provide(Router)
+        function childRouterProvider() {
+          return router.createChild();
+        }
 
-      @Provide(Router)
-      function childRouterProvider() {
-        return router.createChild();
+        var modules = [childRouterProvider],
+            component = createComponent(injector, directive, modules);
+
+        resolve(component);
       }
-
-      var modules = [childRouterProvider],
-          component = createComponent(injector, directive, modules);
-
-      resolve(component);
-    }});
+    });
   });
 }
 

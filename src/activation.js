@@ -64,8 +64,10 @@ function findDeactivatableControllers(plan, callbackName, list) {
     var zonePlan = plan[zoneName];
     var prevComponent = zonePlan.prevComponent;
 
-    if ((zonePlan.strategy == INVOKE_LIFECYCLE
-      || zonePlan.strategy == REPLACE) && prevComponent) {
+    if ((zonePlan.strategy == INVOKE_LIFECYCLE ||
+        zonePlan.strategy == REPLACE) &&
+        prevComponent) {
+
       var controller = prevComponent.executionContext;
 
       if (callbackName in controller) {
@@ -75,7 +77,7 @@ function findDeactivatableControllers(plan, callbackName, list) {
 
     if (zonePlan.childNavigationContext) {
       findDeactivatableControllers(zonePlan.childNavigationContext.plan, callbackName, list);
-    }else if (prevComponent) {
+    } else if (prevComponent) {
       addPreviousDeactivatableControllers(prevComponent, callbackName, list);
     }
   }
@@ -142,30 +144,25 @@ function findActivatableZones(navigationContext, callbackName, list) {
 
   list = list || [];
 
-  for (var zoneName in plan) {
+  Object.keys(plan).filter((zoneName) => {
     var zonePlan = plan[zoneName];
     var zoneInstruction = next.zoneInstructions[zoneName];
 
-    if (zonePlan.strategy == INVOKE_LIFECYCLE || zonePlan.strategy == REPLACE) {
-      if (callbackName in zoneInstruction.component.executionContext) {
-        list.push(zoneInstruction);
-      }
+    if ((zonePlan.strategy === INVOKE_LIFECYCLE || zonePlan.strategy === REPLACE) &&
+        callbackName in zoneInstruction.component.executionContext) {
+      list.push(zoneInstruction);
     }
 
     if (zonePlan.childNavigationContext) {
       findActivatableZones(zonePlan.childNavigationContext, callbackName, list);
     }
-  }
+  });
 
   return list;
 }
 
 function shouldContinue(output) {
-  if (output instanceof Error) {
-    return false;
-  }
-
-  if (output instanceof Redirect) {
+  if (output instanceof Error || output instanceof Redirect) {
     return false;
   }
 
