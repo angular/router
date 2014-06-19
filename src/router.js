@@ -5,7 +5,9 @@ import {RouterConfiguration} from './routerConfiguration';
 import {getWildCardName} from './util';
 import {history} from './history';
 
-RouteRecognizer = RouteRecognizer['default'];
+//TODO(Rob): fix the way you are importing in the examples so we can remove this
+RouteRecognizer = typeof RouteRecognizer === 'function' ?
+    RouteRecognizer : RouteRecognizer['default'];
 
 export class Router {
   constructor() {
