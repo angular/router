@@ -19,9 +19,9 @@ export class LoadNewComponentsStep {
 export function loadNewComponents(componentLoader, viewFactory, navigationContext) {
   var toLoad = determineWhatToLoad(navigationContext);
   var loadPromises = toLoad.map(current => loadComponent(
-    componentLoader, 
-    viewFactory, 
-    current.navigationContext, 
+    componentLoader,
+    viewFactory,
+    current.navigationContext,
     current.viewPortPlan
     )
   );
@@ -71,8 +71,8 @@ function loadComponent(componentLoader, viewFactory, navigationContext, viewPort
 
   return resolveComponentInstance(
     componentLoader,
-    viewFactory, 
-    navigationContext.router, 
+    viewFactory,
+    navigationContext.router,
     viewPortPlan
     ).then(component => {
 
@@ -98,10 +98,10 @@ function loadComponent(componentLoader, viewFactory, navigationContext, viewPort
         return buildNavigationPlan(viewPortPlan.childNavigationContext).then((childPlan) => {
           viewPortPlan.childNavigationContext.plan = childPlan;
           viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
-          
+
           return loadNewComponents(
-            componentLoader, 
-            viewFactory, 
+            componentLoader,
+            viewFactory,
             viewPortPlan.childNavigationContext
             );
         });
@@ -128,7 +128,7 @@ function resolveComponentInstance(componentLoader, viewFactory, router, viewPort
           var component = viewFactory.createComponentView({
             component: directive,
             providers: [childRouterProvider],
-            viewPort: port
+            viewPort: port.viewPort
           });
 
           resolve(component);
