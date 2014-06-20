@@ -65,6 +65,8 @@ function loadComponent(navigationContext, viewPortPlan) {
 	var next = navigationContext.nextInstruction;
 
 	return resolveComponentInstance(navigationContext.router, viewPortPlan).then((component) => {
+
+    //TODO: remove this hack
     component.injector = component._injector._children[0];
     component.executionContext = component.injector.get('executionContext');
 
