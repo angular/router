@@ -14,12 +14,8 @@ export class LoadNewComponentsStep {
 
 export function loadNewComponents(navigationContext) {
   var toLoad = determineWhatToLoad(navigationContext);
-  var loadPromises = [];
-
-  for (var i = 0, len = toLoad.length; i < len; i++) {
-    var current = toLoad[i];
-    loadPromises.push(loadComponent(current.navigationContext, current.viewPortPlan));
-  }
+  var loadPromises = toLoad
+      .map((current) => loadComponent(current.navigationContext, current.viewPortPlan));
 
   return Promise.all(loadPromises);
 }
