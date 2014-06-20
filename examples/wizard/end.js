@@ -1,6 +1,6 @@
 import {ComponentDirective} from 'templating';
 import {Redirect} from 'router';
-import {Answers} from './app';
+import {Answers} from './index';
 
 @ComponentDirective
 export class End {

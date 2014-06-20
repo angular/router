@@ -1,5 +1,5 @@
 import {ComponentDirective} from 'templating';
-import {Answers} from './app';
+import {Answers} from './index';
 import {Inject} from 'di';
 import {Redirect} from 'router';
 
@@ -9,7 +9,7 @@ export class QuestionTwo{
     this.question = 'What...is your quest?';
     this.answers = Answers.instance;
   }
-  
+
   canActivate(){
     if(!this.answers.name){
       return new Redirect('one');

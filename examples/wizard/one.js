@@ -1,5 +1,5 @@
 import {ComponentDirective} from 'templating';
-import {Answers} from './app';
+import {Answers} from './index';
 import {Inject} from 'di';
 
 @ComponentDirective

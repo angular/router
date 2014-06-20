@@ -2,14 +2,13 @@ import {Inject} from 'di';
 import {Router} from 'router';
 import {ComponentDirective} from 'templating';
 import {GhService} from 'gh-service';
-import {Http} from '../http';
 
 @ComponentDirective
 export class Detail {
   @Inject(Router)
-  constructor(router) {
+  constructor(router:Router, service:GhService) {
     this.router = router;
-    this.service = new GhService(Http());
+    this.service = service;
 
     this.router.configure((config)=>{
       config.map([

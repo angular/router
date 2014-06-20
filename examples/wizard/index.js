@@ -14,8 +14,9 @@ Answers.instance = new Answers();
 
 @ComponentDirective({selector:'ng-app'})
 export class App {
-  constructor() {
-    this.router = new AppRouter(new PipelineProvider());
+  @Inject(AppRouter)
+  constructor(router) {
+    this.router = router;
 
     this.router.configure((config)=>{
       config.title = 'The Bridge of Death';

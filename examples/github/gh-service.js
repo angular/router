@@ -10,7 +10,7 @@ export class GhService {
   allIssues() {
     return this.http('https://api.github.com/repos/angular/angular.js/issues');
   }
-  
+
   issue(id) {
     return this.http(`https://api.github.com/repos/angular/angular.js/issues/${id}`);
   }

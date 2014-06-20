@@ -4,8 +4,7 @@ import {Router} from 'router';
 
 @ComponentDirective
 export class Welcome{
-  @Inject(Router)
-  constructor(router){
+  constructor(router:Router){
     this.heading = 'Settings';
     this.router = router;
 

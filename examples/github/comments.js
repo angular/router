@@ -1,11 +1,10 @@
 import {ComponentDirective} from 'templating';
 import {GhService} from 'gh-service';
-import {Http} from '../http';
 
 @ComponentDirective
 export class Comments {
-  constructor() {
-    this.service = new GhService(Http());
+  constructor(service:GhService) {
+    this.service = service;
   }
 
   activate(params){

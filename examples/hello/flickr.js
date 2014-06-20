@@ -1,14 +1,16 @@
 import {ComponentDirective} from 'templating';
 import {Jsonp} from './jsonp';
+import {Inject} from 'di';
 
 var url = 'http://api.flickr.com/services/feeds/photos_public.gne?tags=angularjs&tagmode=any&format=json';
 
 @ComponentDirective
 export class Flickr{
-	constructor(){
+  @Inject(Jsonp)
+	constructor(jsonp){
 		this.heading = 'Flickr';
 		this.images = [];
-    this.jsonp = Jsonp();
+    this.jsonp = jsonp;
 	}
 
   activate(){
