@@ -26,7 +26,7 @@ export class NgRepeat {
       var entry = changeRecord.additionsHead;
       while (entry) {
         addRow(entry.item);
-        entry = entry.nextAddedItem;
+        entry = entry.nextAddedRec;
       }
       return;
     }
