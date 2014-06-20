@@ -5,45 +5,45 @@ import {Provide} from 'di';
 import {ViewFactory, ComponentLoader} from 'templating';
 
 export class LoadNewComponentsStep {
-	run(navigationContext, next) {
-		return loadNewComponents(navigationContext)
-			.then(next)
-			.catch(next.cancel);
-	}
+  run(navigationContext, next) {
+    return loadNewComponents(navigationContext)
+      .then(next)
+      .catch(next.cancel);
+  }
 }
 
 export function loadNewComponents(navigationContext) {
-	var toLoad = determineWhatToLoad(navigationContext);
-	var loadPromises = [];
+  var toLoad = determineWhatToLoad(navigationContext);
+  var loadPromises = [];
 
-	for (var i = 0, len = toLoad.length; i < len; i++) {
-		var current = toLoad[i];
-		loadPromises.push(loadComponent(current.navigationContext, current.viewPortPlan));
-	}
+  for (var i = 0, len = toLoad.length; i < len; i++) {
+    var current = toLoad[i];
+    loadPromises.push(loadComponent(current.navigationContext, current.viewPortPlan));
+  }
 
-	return Promise.all(loadPromises);
+  return Promise.all(loadPromises);
 }
 
 function determineWhatToLoad(navigationContext, toLoad) {
-	var plan = navigationContext.plan;
-	var next = navigationContext.nextInstruction;
+  var plan = navigationContext.plan;
+  var next = navigationContext.nextInstruction;
 
-	toLoad = toLoad || [];
+  toLoad = toLoad || [];
 
-	for (var viewPortName in plan) {
-		var viewPortPlan = plan[viewPortName];
+  for (var viewPortName in plan) {
+    var viewPortPlan = plan[viewPortName];
 
-		if (viewPortPlan.strategy == REPLACE) {
-			toLoad.push({
-				viewPortPlan: viewPortPlan,
-				navigationContext: navigationContext
-			});
+    if (viewPortPlan.strategy == REPLACE) {
+      toLoad.push({
+        viewPortPlan: viewPortPlan,
+        navigationContext: navigationContext
+      });
 
-			if (viewPortPlan.childNavigationContext) {
-				determineWhatToLoad(viewPortPlan.childNavigationContext, toLoad);
-			}
-		} else {
-			var viewPortInstruction = next.addViewPortInstruction(
+      if (viewPortPlan.childNavigationContext) {
+        determineWhatToLoad(viewPortPlan.childNavigationContext, toLoad);
+      }
+    } else {
+      var viewPortInstruction = next.addViewPortInstruction(
           viewPortName,
           viewPortPlan.strategy,
           viewPortPlan.prevComponentUrl,
@@ -54,23 +54,23 @@ function determineWhatToLoad(navigationContext, toLoad) {
         viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
         determineWhatToLoad(viewPortPlan.childNavigationContext, toLoad);
       }
-		}
-	}
+    }
+  }
 
-	return toLoad;
+  return toLoad;
 }
 
 function loadComponent(navigationContext, viewPortPlan) {
-	var componentUrl = viewPortPlan.config.componentUrl;
-	var next = navigationContext.nextInstruction;
+  var componentUrl = viewPortPlan.config.componentUrl;
+  var next = navigationContext.nextInstruction;
 
-	return resolveComponentInstance(navigationContext.router, viewPortPlan).then((component) => {
+  return resolveComponentInstance(navigationContext.router, viewPortPlan).then((component) => {
 
     //TODO: remove this hack
     component.injector = component._injector._children[0];
     component.executionContext = component.injector.get('executionContext');
 
-		var viewPortInstruction = next.addViewPortInstruction(
+    var viewPortInstruction = next.addViewPortInstruction(
       viewPortPlan.name,
       viewPortPlan.strategy,
       componentUrl,
@@ -79,10 +79,10 @@ function loadComponent(navigationContext, viewPortPlan) {
 
     var controller = component.executionContext;
 
-  	if (controller.router) {
+    if (controller.router) {
       controller.router.injector = component.injector;
 
-  		var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
+      var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
 
       return controller.router.createNavigationInstruction(path, next).then((childInstruction) => {
         viewPortPlan.childNavigationContext = controller.router.createNavigationContext(childInstruction);
@@ -93,7 +93,7 @@ function loadComponent(navigationContext, viewPortPlan) {
           return loadNewComponents(viewPortPlan.childNavigationContext);
         });
       });
-  	}
+    }
   });
 }
 
@@ -104,7 +104,7 @@ function resolveComponentInstance(router, viewPortPlan) {
 
   var url = viewPortPlan.config.componentUrl + '.html';
 
-	return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     loader.loadFromTemplateUrl({
       templateUrl: url,
       done: ({directive})=> {
