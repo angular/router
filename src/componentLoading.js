@@ -2,20 +2,29 @@ import {REPLACE, buildNavigationPlan} from './navigationPlan';
 import {getWildcardPath} from './util';
 import {Router} from './router';
 import {Provide} from 'di';
-import {ViewFactory, ComponentLoader} from 'templating';
 
 export class LoadNewComponentsStep {
+  constructor(componentLoader, viewFactory){
+    this.componentLoader = componentLoader;
+    this.viewFactory = viewFactory;
+  }
+
   run(navigationContext, next) {
-    return loadNewComponents(navigationContext)
+    return loadNewComponents(this.componentLoader, this.viewFactory, navigationContext)
       .then(next)
       .catch(next.cancel);
   }
 }
 
-export function loadNewComponents(navigationContext) {
+export function loadNewComponents(componentLoader, viewFactory, navigationContext) {
   var toLoad = determineWhatToLoad(navigationContext);
-  var loadPromises = toLoad
-      .map((current) => loadComponent(current.navigationContext, current.viewPortPlan));
+  var loadPromises = toLoad.map(current => loadComponent(
+    componentLoader, 
+    viewFactory, 
+    current.navigationContext, 
+    current.viewPortPlan
+    )
+  );
 
   return Promise.all(loadPromises);
 }
@@ -56,15 +65,19 @@ function determineWhatToLoad(navigationContext, toLoad) {
   return toLoad;
 }
 
-function loadComponent(navigationContext, viewPortPlan) {
+function loadComponent(componentLoader, viewFactory, navigationContext, viewPortPlan) {
   var componentUrl = viewPortPlan.config.componentUrl;
   var next = navigationContext.nextInstruction;
 
-  return resolveComponentInstance(navigationContext.router, viewPortPlan).then((component) => {
+  return resolveComponentInstance(
+    componentLoader,
+    viewFactory, 
+    navigationContext.router, 
+    viewPortPlan
+    ).then(component => {
 
     //TODO: remove this hack
-    component.injector = component._injector._children[0];
-    component.executionContext = component.injector.get('executionContext');
+    component.executionContext = component._injector._children[0].get('executionContext');
 
     var viewPortInstruction = next.addViewPortInstruction(
       viewPortPlan.name,
@@ -76,53 +89,57 @@ function loadComponent(navigationContext, viewPortPlan) {
     var controller = component.executionContext;
 
     if (controller.router) {
-      controller.router.injector = component.injector;
-
       var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
 
       return controller.router.createNavigationInstruction(path, next).then((childInstruction) => {
-        viewPortPlan.childNavigationContext = controller.router.createNavigationContext(childInstruction);
+        viewPortPlan.childNavigationContext = controller.router
+          .createNavigationContext(childInstruction);
 
         return buildNavigationPlan(viewPortPlan.childNavigationContext).then((childPlan) => {
           viewPortPlan.childNavigationContext.plan = childPlan;
           viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
-          return loadNewComponents(viewPortPlan.childNavigationContext);
+          
+          return loadNewComponents(
+            componentLoader, 
+            viewFactory, 
+            viewPortPlan.childNavigationContext
+            );
         });
       });
     }
   });
 }
 
-function resolveComponentInstance(router, viewPortPlan) {
-  var viewPort = router.viewPorts[viewPortPlan.name],
-      injector = (viewPort && viewPort.injector) || router.injector._root,
-      loader = injector.get(ComponentLoader);
-
+function resolveComponentInstance(componentLoader, viewFactory, router, viewPortPlan) {
+  var viewPort = router.viewPorts[viewPortPlan.name];
   var url = viewPortPlan.config.componentUrl + '.html';
 
   return new Promise((resolve, reject) => {
-    loader.loadFromTemplateUrl({
+    componentLoader.loadFromTemplateUrl({
       templateUrl: url,
       done: ({directive})=> {
+
         @Provide(Router)
         function childRouterProvider() {
           return router.createChild();
         }
 
-        var modules = [childRouterProvider],
-            component = createComponent(injector, directive, modules);
+        function createComponent(port){
+          var component = viewFactory.createComponentView({
+            component: directive,
+            providers: [childRouterProvider],
+            viewPort: port
+          });
 
-        resolve(component);
+          resolve(component);
+        }
+
+        if(viewPort){
+          createComponent(viewPort);
+        }else{
+          router.viewPorts[viewPortPlan.name] = createComponent;
+        }
       }
     });
-  });
-}
-
-function createComponent(injector, componentType, modules) {
-  var viewFactory = injector.get(ViewFactory);
-
-  return viewFactory.createComponentView({
-    component: componentType,
-    providers: modules
   });
 }

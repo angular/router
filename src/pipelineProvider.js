@@ -1,4 +1,5 @@
-import {Provide} from 'di';
+import {Provide, Inject} from 'di';
+import {ViewFactory, ComponentLoader} from 'templating';
 import {Pipeline} from './pipeline';
 import {BuildNavigationPlanStep} from './navigationPlan';
 import {ApplyModelBindersStep} from './modelBinding';
@@ -12,11 +13,17 @@ import {
 } from './activation';
 
 export class PipelineProvider {
-  build() {
+  @Inject(ComponentLoader, ViewFactory)
+  constructor(componentLoader, viewFactory){
+    this.componentLoader = componentLoader;
+    this.viewFactory = viewFactory;
+  }
+
+  build(componentLoader, viewFactory) {
     return new Pipeline()
       .withStep(new BuildNavigationPlanStep())
       .withStep(new CanDeactivatePreviousStep()) //optional
-      .withStep(new LoadNewComponentsStep())
+      .withStep(new LoadNewComponentsStep(this.componentLoader, this.viewFactory))
       .withStep(new ApplyModelBindersStep()) //optional
       .withStep(new CanActivateNextStep()) //optional
       //NOTE: app state changes start below - point of no return

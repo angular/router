@@ -17,7 +17,7 @@ export class Router {
   }
 
   registerViewPort(viewPort, name) {
-    name = name || viewPort.name || 'default';
+    name = name || 'default';
 
     if (typeof this.viewPorts[name] == 'function') {
       var callback = this.viewPorts[name];
