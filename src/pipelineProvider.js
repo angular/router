@@ -1,5 +1,4 @@
-import {Provide, Inject} from 'di';
-import {ComponentLoader} from 'templating';
+import {Inject, Injector} from 'di';
 import {Pipeline} from './pipeline';
 import {BuildNavigationPlanStep} from './navigationPlan';
 import {ApplyModelBindersStep} from './modelBinding';
@@ -13,21 +12,25 @@ import {
 } from './activation';
 
 export class PipelineProvider {
-  @Inject(ComponentLoader)
-  constructor(componentLoader){
-    this.componentLoader = componentLoader;
+  @Inject(Injector)
+  constructor(injector){
+    this.injector = injector;
+    this.steps = [
+      BuildNavigationPlanStep,
+      CanDeactivatePreviousStep, //optional
+      LoadNewComponentsStep,
+      ApplyModelBindersStep, //optional
+      CanActivateNextStep, //optional
+      //NOTE: app state changes start below - point of no return
+      DeactivatePreviousStep, //optional
+      ActivateNextStep, //optional
+      CommitChangesStep
+    ];
   }
 
-  build(componentLoader, viewFactory) {
-    return new Pipeline()
-      .withStep(new BuildNavigationPlanStep())
-      .withStep(new CanDeactivatePreviousStep()) //optional
-      .withStep(new LoadNewComponentsStep(this.componentLoader))
-      .withStep(new ApplyModelBindersStep()) //optional
-      .withStep(new CanActivateNextStep()) //optional
-      //NOTE: app state changes start below - point of no return
-      .withStep(new DeactivatePreviousStep()) //optional
-      .withStep(new ActivateNextStep()) //optional
-      .withStep(new CommitChangesStep());
+  createPipeline() {
+    var pipeline = new Pipeline();
+    this.steps.forEach(step => pipeline.withStep(this.injector.get(step)));
+    return pipeline;
   }
 }

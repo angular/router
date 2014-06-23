@@ -1,9 +1,11 @@
 import {REPLACE, buildNavigationPlan} from './navigationPlan';
 import {getWildcardPath} from './util';
 import {Router} from './router';
-import {Provide} from 'di';
+import {Provide, Inject} from 'di';
+import {ComponentLoader} from 'templating';
 
 export class LoadNewComponentsStep {
+  @Inject(ComponentLoader)
   constructor(componentLoader){
     this.componentLoader = componentLoader;
   }
