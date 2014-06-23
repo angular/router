@@ -58,13 +58,13 @@ export class Pipeline {
       return Promise.resolve(createResult(ctx, next));
     };
 
-    next.cancel = (reason) => {
+    next.cancel = reason => {
       next.status = CANCELLED;
       next.output = reason;
       return Promise.resolve(createResult(ctx, next));
     };
 
-    next.reject = (error) => {
+    next.reject = error => {
       next.status = REJECTED;
       next.output = error;
       return Promise.reject(createResult(ctx, next));

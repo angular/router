@@ -29,10 +29,12 @@ export class NavigationContext {
       var viewPortInstruction = viewPortInstructions[viewPortName];
       var viewPort = router.viewPorts[viewPortName];
 
-      if (viewPort) {
-        makeProcessor(viewPortInstruction)(viewPort);
-      } else {
-        router.viewPorts[viewPortName] = makeProcessor(viewPortInstruction);
+      if (viewPortInstruction.strategy === REPLACE) {
+        viewPort.process(viewPortInstruction);
+      }
+
+      if ('childNavigationContext' in viewPortInstruction) {
+        viewPortInstruction.childNavigationContext.commitChanges();
       }
     }
   }
@@ -77,16 +79,4 @@ export class CommitChangesStep {
 
     return next();
   }
-}
-
-function makeProcessor(viewPortInstruction) {
-  return (viewPort) => {
-    if (viewPortInstruction.strategy === REPLACE) {
-      viewPort.process(viewPortInstruction);
-    }
-
-    if ('childNavigationContext' in viewPortInstruction) {
-      viewPortInstruction.childNavigationContext.commitChanges();
-    }
-  };
 }

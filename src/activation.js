@@ -144,7 +144,7 @@ function findActivatableViewPorts(navigationContext, callbackName, list) {
 
   list = list || [];
 
-  Object.keys(plan).filter((viewPortName) => {
+  Object.keys(plan).filter(viewPortName => {
     var viewPortPlan = plan[viewPortName];
     var viewPortInstruction = next.viewPortInstructions[viewPortName];
 

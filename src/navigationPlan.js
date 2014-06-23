@@ -36,10 +36,10 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
 
       if (viewPortPlan.strategy !== REPLACE && prevViewPortInstruction.childRouter) {
         var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
-        var task = prevViewPortInstruction.childRouter.createNavigationInstruction(path, next).then((childInstruction) => {
+        var task = prevViewPortInstruction.childRouter.createNavigationInstruction(path, next).then(childInstruction => {
           viewPortPlan.childNavigationContext = prevViewPortInstruction.childRouter.createNavigationContext(childInstruction);
 
-          return buildNavigationPlan(viewPortPlan.childNavigationContext, viewPortPlan.strategy == INVOKE_LIFECYCLE).then((childPlan) => {
+          return buildNavigationPlan(viewPortPlan.childNavigationContext, viewPortPlan.strategy == INVOKE_LIFECYCLE).then(childPlan => {
             viewPortPlan.childNavigationContext.plan = childPlan;
           });
         });
@@ -66,7 +66,7 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
 
 export class BuildNavigationPlanStep {
 	run(navigationContext, next) {
-    return buildNavigationPlan(navigationContext).then((plan) => {
+    return buildNavigationPlan(navigationContext).then(plan => {
       navigationContext.plan = plan;
       return next();
     });

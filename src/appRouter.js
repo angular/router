@@ -16,7 +16,7 @@ export class AppRouter extends Router {
   }
 
   loadUrl(url) {
-    return this.createNavigationInstruction(url).then((instruction) => {
+    return this.createNavigationInstruction(url).then(instruction => {
       if (instruction != null) {
         return this.queueInstruction(instruction);
       }
@@ -24,7 +24,7 @@ export class AppRouter extends Router {
   }
 
   queueInstruction(instruction) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       instruction.resolve = resolve;
       this.queue.unshift(instruction);
       this.dequeueInstruction();
@@ -48,7 +48,7 @@ export class AppRouter extends Router {
     var context = this.createNavigationContext(instruction);
     var pipeline = this.pipelineProvider.createPipeline();
 
-    pipeline.run(context).then((result) => {
+    pipeline.run(context).then(result => {
       this.isNavigating = false;
 
       if (result.completed) {

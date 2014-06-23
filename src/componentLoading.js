@@ -90,11 +90,11 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
     if (controller.router) {
       var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
 
-      return controller.router.createNavigationInstruction(path, next).then((childInstruction) => {
+      return controller.router.createNavigationInstruction(path, next).then(childInstruction => {
         viewPortPlan.childNavigationContext = controller.router
           .createNavigationContext(childInstruction);
 
-        return buildNavigationPlan(viewPortPlan.childNavigationContext).then((childPlan) => {
+        return buildNavigationPlan(viewPortPlan.childNavigationContext).then(childPlan => {
           viewPortPlan.childNavigationContext.plan = childPlan;
           viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
 
