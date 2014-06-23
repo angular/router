@@ -110,7 +110,11 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
 
 function resolveComponentInstance(componentLoader, router, viewPortPlan) {
   var routerViewPort = router.viewPorts[viewPortPlan.name];
-  var url = viewPortPlan.config.componentUrl + '.html';
+  var url = viewPortPlan.config.componentUrl;
+
+  if(url.indexOf('.html') == -1){
+    url += '.html';
+  }
 
   return new Promise((resolve, reject) => {
     componentLoader.loadFromTemplateUrl({
