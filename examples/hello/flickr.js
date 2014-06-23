@@ -1,6 +1,6 @@
+import {Inject} from 'di';
 import {ComponentDirective} from 'templating';
 import {Jsonp} from './jsonp';
-import {Inject} from 'di';
 
 var url = 'http://api.flickr.com/services/feeds/photos_public.gne?tags=angularjs&tagmode=any&format=json';
 

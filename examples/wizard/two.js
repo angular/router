@@ -1,13 +1,12 @@
 import {ComponentDirective} from 'templating';
 import {Answers} from './index';
-import {Inject} from 'di';
 import {Redirect} from 'router';
 
 @ComponentDirective
 export class QuestionTwo{
-  constructor(){
+  constructor(answers:Answers){
     this.question = 'What...is your quest?';
-    this.answers = Answers.instance;
+    this.answers = answers;
   }
 
   canActivate(){

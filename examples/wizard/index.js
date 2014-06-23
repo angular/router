@@ -1,6 +1,5 @@
-import {Inject} from 'di';
 import {ComponentDirective} from 'templating';
-import {AppRouter, PipelineProvider} from 'router';
+import {AppRouter} from 'router';
 
 export class Answers{
   constructor(){
@@ -10,12 +9,9 @@ export class Answers{
   }
 }
 
-Answers.instance = new Answers();
-
-@ComponentDirective({selector:'ng-app'})
+@ComponentDirective
 export class App {
-  @Inject(AppRouter)
-  constructor(router) {
+  constructor(router:AppRouter) {
     this.router = router;
 
     this.router.configure((config)=>{
@@ -23,7 +19,7 @@ export class App {
 
       config.map([
         { pattern: ['', 'intro'],   componentUrl: 'intro' },
-        { pattern: 'one',           componentUrl: 'one',   nav: true, title: 'Question 1'  },
+        { pattern: 'one',           componentUrl: 'one',   nav: true, title: 'Question 1' },
         { pattern: 'two',           componentUrl: 'two',   nav: true, title: 'Question 2' },
         { pattern: 'three',         componentUrl: 'three', nav: true, title: 'Question 3' },
         { pattern: 'end',           componentUrl: 'end' },

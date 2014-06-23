@@ -1,11 +1,10 @@
 import {ComponentDirective} from 'templating';
 import {Answers} from './index';
-import {Inject} from 'di';
 
 @ComponentDirective
 export class QuestionOne{
-  constructor(){
+  constructor(answers:Answers){
     this.question = 'What...is your name?';
-    this.answers = Answers.instance;
+    this.answers = answers;
   }
 }

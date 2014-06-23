@@ -1,11 +1,9 @@
-import {Inject} from 'di';
 import {ComponentDirective} from 'templating';
 import {AppRouter} from 'router';
 
 @ComponentDirective({selector:'ng-app'})
 export class App {
-  @Inject(AppRouter)
-  constructor(router) {
+  constructor(router:AppRouter) {
     this.router = router;
     this.router.configure((config)=>{
       config.title = 'Angular Issues';

@@ -1,11 +1,9 @@
-import {Inject} from 'di';
 import {Router} from 'router';
 import {ComponentDirective} from 'templating';
 import {GhService} from 'gh-service';
 
 @ComponentDirective
 export class Detail {
-  @Inject(Router)
   constructor(router:Router, service:GhService) {
     this.router = router;
     this.service = service;

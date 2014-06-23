@@ -1,4 +1,3 @@
-import {Inject} from 'di';
 import {ComponentDirective} from 'templating';
 import {Router} from 'router';
 

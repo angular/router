@@ -1,11 +1,11 @@
 import {ComponentDirective} from 'templating';
-import {Redirect} from 'router';
 import {Answers} from './index';
+import {Redirect} from 'router';
 
 @ComponentDirective
 export class End {
-  constructor(){
-    this.answers = Answers.instance;
+  constructor(answers:Answers){
+    this.answers = answers;
   }
 
   canActivate(){
