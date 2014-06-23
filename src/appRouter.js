@@ -1,5 +1,5 @@
-import {history} from './history';
 import {extend} from './util';
+import {History} from './history';
 import {Router} from './router';
 import {Inject, Provide} from 'di';
 import {PipelineProvider} from './pipelineProvider';
@@ -8,9 +8,10 @@ import {Redirect} from './redirect';
 @Provide(Router)
 @Provide(AppRouter)
 export class AppRouter extends Router {
-  @Inject(PipelineProvider)
-  constructor(pipelineProvider) {
-    super();
+  @Inject(History, PipelineProvider)
+  constructor(history, pipelineProvider) {
+    super(history);
+
     this.pipelineProvider = pipelineProvider;
     document.addEventListener('click', handleLinkClick.bind(this), true);
   }
@@ -52,16 +53,26 @@ export class AppRouter extends Router {
       this.isNavigating = false;
 
       if (result.completed) {
-        history.previousFragment = instruction.fragment;
+        this.history.previousFragment = instruction.fragment;
       } else if (result.output instanceof Redirect) {
         this.navigate(result.output.url, { trigger: true, replace: true });
       } else if (context.prevInstruction) {
-        this.navigate(history.previousFragment, false);
+        this.navigate(this.history.previousFragment, false);
       }
 
       instruction.resolve(result);
       this.dequeueInstruction();
     });
+  }
+
+  registerViewPort(viewPort, name) {
+    super.registerViewPort(viewPort, name);
+
+    if (!this.isActive) {
+      this.activate();
+    } else {
+      this.dequeueInstruction();
+    }
   }
 
   activate(options) {
@@ -71,13 +82,13 @@ export class AppRouter extends Router {
 
     this.isActive = true;
     this.options = extend({ routeHandler: this.loadUrl.bind(this) }, this.options, options);
-    history.activate(this.options);
+    this.history.activate(this.options);
     this.dequeueInstruction();
   }
 
   deactivate() {
     this.isActive = false;
-    history.deactivate();
+    this.history.deactivate();
   }
 
   reset() {
@@ -97,7 +108,7 @@ function handleLinkClick(evt) {
     return;
   }
 
-  if (history._hasPushState) {
+  if (this.history._hasPushState) {
     if (!evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && targetIsThisWindow(target)) {
       var href = target.getAttribute('href');
 
@@ -105,7 +116,7 @@ function handleLinkClick(evt) {
       // Stop the event bubbling to ensure the link will not cause a page refresh.
       if (href != null && !(href.charAt(0) === "#" || (/^[a-z]+:/i).test(href))) {
         evt.preventDefault();
-        history.navigate(href);
+        this.history.navigate(href);
       }
     }
   }
@@ -118,12 +129,4 @@ function targetIsThisWindow(target) {
       targetWindow === window.name ||
       targetWindow === '_self' ||
       (targetWindow === 'top' && window === window.top);
-}
-
-function reconstructUrl(instruction) {
-  if (!instruction.queryString) {
-    return instruction.fragment;
-  }
-
-  return instruction.fragment + '?' + instruction.queryString;
 }

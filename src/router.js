@@ -3,14 +3,14 @@ import {NavigationContext} from './navigationContext';
 import {NavigationInstruction} from './navigationInstruction';
 import {RouterConfiguration} from './routerConfiguration';
 import {getWildCardName} from './util';
-import {history} from './history';
 
 //TODO(Rob): fix the way you are importing in the examples so we can remove this
 RouteRecognizer = typeof RouteRecognizer === 'function' ?
     RouteRecognizer : RouteRecognizer['default'];
 
 export class Router {
-  constructor() {
+  constructor(history) {
+    this.history = history;
     this.viewPorts = {};
     this.reset();
     this.baseUrl = '';
@@ -25,14 +25,6 @@ export class Router {
       callback(viewPort);
     } else {
       this.viewPorts[name] = viewPort;
-
-      if ('activate' in this) {
-        if (!this.isActive) {
-          this.activate();
-        } else {
-          this.dequeueInstruction();
-        }
-      }
     }
   }
 
@@ -81,15 +73,15 @@ export class Router {
   }
 
   navigate(fragment, options) {
-    return history.navigate(fragment, options);
+    return this.history.navigate(fragment, options);
   }
 
   navigateBack() {
-    history.navigateBack();
+    this.history.navigateBack();
   }
 
   createChild() {
-    var childRouter = new Router();
+    var childRouter = new Router(this.history);
     childRouter.parent = this;
     return childRouter;
   }
