@@ -4,7 +4,7 @@ A new router for Angular 2.0, written in ES6.
 
 This router's feature set is derived from Durandal's router, but the design and implementation are
 very different.
-Additionally, this router aims to fulfill the requirements mentioned in the[Angular 2.0 router design document](https://docs.google.com/document/d/1I3UC0RrgCh9CKrLxeE4sxwmNSBl3oSXQGt9g3KZnTJI).
+Additionally, this router aims to fulfill the requirements mentioned in the [Angular 2.0 router design document](https://docs.google.com/document/d/1I3UC0RrgCh9CKrLxeE4sxwmNSBl3oSXQGt9g3KZnTJI).
 
 The router's design is based around the idea of a customizable async pipeline and screen activator.
 Generally speaking, the router allows for great customization at almost every point, understands basic conventions, and has sensible defaults.
@@ -43,7 +43,7 @@ Generally speaking, the router allows for great customization at almost every po
 * "Not Found" routes are automatically handled. This can be customized easily. Simple convention-based routing can also be hooked in.
 * Automatic construction of a "navigation model" which can be used to generate a navigation UI. Each item in the nav model has an href that can be data-bound. Href generation understands hash/pushState urls and router hierarchies. Each item in the nav model has a property `isActive` which reflects whether or not it is the current active route (useful in styling a nav).
 * The router can update the document title correctly (even with child routers).
-* The core off the router consists of a fully customizable internal asynchronous pipeline. Want to add security? Just add a step to the pipeline and guard route access, cancel routing, redirect or allow navigation easily at any point. Want to automatically load model data based on route parameters and type annotations? Just add a step to the pipeline. Teach Angular about your app and let it do the work for you.
+* The core of the router consists of a fully customizable internal asynchronous pipeline. Want to add security? Just add a step to the pipeline and guard route access, cancel routing, redirect or allow navigation easily at any point. Want to automatically load model data based on route parameters and type annotations? Just add a step to the pipeline. Teach Angular about your app and let it do the work for you.
 * A consistent async programming model via promises is used throughout.
 * The router understand the notion of "screen activation" for components, enabling them to allow/reject navigation into or out of a component. Lifecycle hooks include: canActivate, activate, canDeactivate and deactivate. Components can implement any or none of these hooks and can return promises or boolean values to control navigation. Components can also return other "primitives" understood by the router, such as a Redirect command object. You can also "teach" the activation mechanism about new primitives.
 * The router uses the activator mechanism to pass parameters to a component. The canActivate and activate callbacks recieve the route parameters, parsed query string parameters and route config which they can use to control navigation or load model data.
@@ -56,7 +56,7 @@ Generally speaking, the router allows for great customization at almost every po
 * Fully integrated with DI. In particular, this helps set up child router scenarios.
 * Full dynamic loading of components.
 * Has a custom TemplateDirective `router-view-port` which serves as a composition site for the router's active component.
-* Support sibling router view ports.
+* Supports sibling router view ports.
 
 ## To Do
 * Tests!!! (Coming Soon)
