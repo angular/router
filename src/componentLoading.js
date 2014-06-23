@@ -4,23 +4,21 @@ import {Router} from './router';
 import {Provide} from 'di';
 
 export class LoadNewComponentsStep {
-  constructor(componentLoader, viewFactory){
+  constructor(componentLoader){
     this.componentLoader = componentLoader;
-    this.viewFactory = viewFactory;
   }
 
   run(navigationContext, next) {
-    return loadNewComponents(this.componentLoader, this.viewFactory, navigationContext)
+    return loadNewComponents(this.componentLoader, navigationContext)
       .then(next)
       .catch(next.cancel);
   }
 }
 
-export function loadNewComponents(componentLoader, viewFactory, navigationContext) {
+export function loadNewComponents(componentLoader, navigationContext) {
   var toLoad = determineWhatToLoad(navigationContext);
   var loadPromises = toLoad.map(current => loadComponent(
     componentLoader,
-    viewFactory,
     current.navigationContext,
     current.viewPortPlan
     )
@@ -65,13 +63,12 @@ function determineWhatToLoad(navigationContext, toLoad) {
   return toLoad;
 }
 
-function loadComponent(componentLoader, viewFactory, navigationContext, viewPortPlan) {
+function loadComponent(componentLoader, navigationContext, viewPortPlan) {
   var componentUrl = viewPortPlan.config.componentUrl;
   var next = navigationContext.nextInstruction;
 
   return resolveComponentInstance(
     componentLoader,
-    viewFactory,
     navigationContext.router,
     viewPortPlan
     ).then(component => {
@@ -101,7 +98,6 @@ function loadComponent(componentLoader, viewFactory, navigationContext, viewPort
 
           return loadNewComponents(
             componentLoader,
-            viewFactory,
             viewPortPlan.childNavigationContext
             );
         });
@@ -110,8 +106,8 @@ function loadComponent(componentLoader, viewFactory, navigationContext, viewPort
   });
 }
 
-function resolveComponentInstance(componentLoader, viewFactory, router, viewPortPlan) {
-  var viewPort = router.viewPorts[viewPortPlan.name];
+function resolveComponentInstance(componentLoader, router, viewPortPlan) {
+  var routerViewPort = router.viewPorts[viewPortPlan.name];
   var url = viewPortPlan.config.componentUrl + '.html';
 
   return new Promise((resolve, reject) => {
@@ -124,18 +120,12 @@ function resolveComponentInstance(componentLoader, viewFactory, router, viewPort
           return router.createChild();
         }
 
-        function createComponent(port){
-          var component = viewFactory.createComponentView({
-            component: directive,
-            providers: [childRouterProvider],
-            viewPort: port.viewPort
-          });
-
-          resolve(component);
+        function createComponent(rvp){
+          resolve(rvp.getComponentInstance(directive, [childRouterProvider]));
         }
 
-        if(viewPort){
-          createComponent(viewPort);
+        if(routerViewPort){
+          createComponent(routerViewPort);
         }else{
           router.viewPorts[viewPortPlan.name] = createComponent;
         }
