@@ -27,7 +27,8 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
         viewPortPlan.strategy = REPLACE;
       } else if ('determineActivationStrategy' in prevViewPortInstruction.component.executionContext) {
          //TODO: should we tell them if the parent had a lifecycle min change?
-        viewPortPlan.strategy = prevViewPortInstruction.component.executionContext.determineActivationStrategy(...next.lifecycleArgs);
+        viewPortPlan.strategy = prevViewPortInstruction.component.executionContext
+          .determineActivationStrategy(...next.lifecycleArgs);
       } else if (newParams || forceLifecycleMinimum) {
         viewPortPlan.strategy = INVOKE_LIFECYCLE;
       } else {
@@ -36,21 +37,24 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
 
       if (viewPortPlan.strategy !== REPLACE && prevViewPortInstruction.childRouter) {
         var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
-        var task = prevViewPortInstruction.childRouter.createNavigationInstruction(path, next).then(childInstruction => {
-          viewPortPlan.childNavigationContext = prevViewPortInstruction.childRouter.createNavigationContext(childInstruction);
+        var task = prevViewPortInstruction.childRouter
+          .createNavigationInstruction(path, next).then(childInstruction => {
+            viewPortPlan.childNavigationContext = prevViewPortInstruction.childRouter
+              .createNavigationContext(childInstruction);
 
-          return buildNavigationPlan(viewPortPlan.childNavigationContext, viewPortPlan.strategy == INVOKE_LIFECYCLE).then(childPlan => {
-            viewPortPlan.childNavigationContext.plan = childPlan;
+            return buildNavigationPlan(
+              viewPortPlan.childNavigationContext, 
+              viewPortPlan.strategy == INVOKE_LIFECYCLE)
+              .then(childPlan => {
+                viewPortPlan.childNavigationContext.plan = childPlan;
+              });
           });
-        });
 
         pending.push(task);
       }
     }
 
-    return Promise.all(pending).then(() => {
-      return plan;
-    });
+    return Promise.all(pending).then(() => plan);
   }else{
     for (var viewPortName in next.config.viewPorts) {
       plan[viewPortName] = {
@@ -66,10 +70,11 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
 
 export class BuildNavigationPlanStep {
 	run(navigationContext, next) {
-    return buildNavigationPlan(navigationContext).then(plan => {
-      navigationContext.plan = plan;
-      return next();
-    });
+    return buildNavigationPlan(navigationContext)
+      .then(plan => {
+        navigationContext.plan = plan;
+        return next();
+      }).catch(next.cancel);
 	}
 }
 

@@ -42,9 +42,13 @@ function processDeactivatable(plan, callbackName, next, ignoreResult) {
 
   function iterate() {
     if (i--) {
-      var controller = infos[i];
-      var result = controller[callbackName]();
-      return processPotential(result, inspect);
+      try{
+        var controller = infos[i];
+        var result = controller[callbackName]();
+        return processPotential(result, inspect, next.cancel);
+      }catch(error){
+        return next.cancel(error);
+      }
     } else {
       return next();
     }
@@ -118,9 +122,13 @@ function processActivatable(navigationContext, callbackName, next, ignoreResult)
     i++;
 
     if (i < length) {
-      var current = infos[i];
-      var result = current.controller[callbackName](...current.lifecycleArgs);
-      return processPotential(result, val => inspect(val, current.router));
+      try{
+        var current = infos[i];
+        var result = current.controller[callbackName](...current.lifecycleArgs);
+        return processPotential(result, val => inspect(val, current.router), next.cancel);
+      }catch(error){
+        return next.cancel(error);
+      }
     } else {
       return next();
     }

@@ -17,11 +17,16 @@ export class AppRouter extends Router {
   }
 
   loadUrl(url) {
-    return this.createNavigationInstruction(url).then(instruction => {
-      if (instruction != null) {
+    return this.createNavigationInstruction(url)
+      .then(instruction => {
         return this.queueInstruction(instruction);
-      }
-    });
+      }).catch(error =>{
+        console.error(error);
+
+        if (this.history.previousFragment) {
+          this.navigate(this.history.previousFragment, false);
+        }
+      });
   }
 
   queueInstruction(instruction) {
@@ -54,11 +59,15 @@ export class AppRouter extends Router {
 
       if (result.completed) {
         this.history.previousFragment = instruction.fragment;
-      } 
+      }
+
+      if (result.output instanceof Error) {
+        console.error(result.output);
+      }
 
       if (isNavigationCommand(result.output)) {
         result.output.navigate(this);
-      } else if (!result.completed && context.prevInstruction) {
+      } else if (!result.completed && this.history.previousFragment) {
         this.navigate(this.history.previousFragment, false);
       }
 

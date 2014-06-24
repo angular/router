@@ -90,27 +90,26 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
     if (controller.router) {
       var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
 
-      return controller.router.createNavigationInstruction(path, next).then(childInstruction => {
-        viewPortPlan.childNavigationContext = controller.router
-          .createNavigationContext(childInstruction);
+      return controller.router.createNavigationInstruction(path, next)
+        .then(childInstruction => {
+          viewPortPlan.childNavigationContext = controller.router
+            .createNavigationContext(childInstruction);
 
-        return buildNavigationPlan(viewPortPlan.childNavigationContext).then(childPlan => {
-          viewPortPlan.childNavigationContext.plan = childPlan;
-          viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
+          return buildNavigationPlan(viewPortPlan.childNavigationContext)
+            .then(childPlan => {
+              viewPortPlan.childNavigationContext.plan = childPlan;
+              viewPortInstruction.childNavigationContext = viewPortPlan.childNavigationContext;
 
-          return loadNewComponents(
-            componentLoader,
-            viewPortPlan.childNavigationContext
-            );
+              return loadNewComponents(componentLoader, viewPortPlan.childNavigationContext);
+            });
         });
-      });
     }
   });
 }
 
 function resolveComponentInstance(componentLoader, router, viewPortPlan) {
-  var routerViewPort = router.viewPorts[viewPortPlan.name];
-  var url = viewPortPlan.config.componentUrl;
+  var possibleRouterViewPort = router.viewPorts[viewPortPlan.name],
+      url = viewPortPlan.config.componentUrl;
 
   if(url.indexOf('.html') == -1){
     url += '.html';
@@ -126,12 +125,17 @@ function resolveComponentInstance(componentLoader, router, viewPortPlan) {
           return router.createChild();
         }
 
-        function createComponent(rvp){
-          resolve(rvp.getComponentInstance(directive, [childRouterProvider]));
+        function createComponent(routerViewPort){
+          try{
+            var component = routerViewPort.getComponentInstance(directive, [childRouterProvider]);
+            resolve(component);
+          } catch(error){
+            reject(error);
+          }
         }
 
-        if(routerViewPort){
-          createComponent(routerViewPort);
+        if(possibleRouterViewPort){
+          createComponent(possibleRouterViewPort);
         }else{
           router.viewPorts[viewPortPlan.name] = createComponent;
         }

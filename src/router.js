@@ -120,8 +120,7 @@ export class Router {
 
       return Promise.resolve(instruction);
     } else {
-      //log('Route Not Found');
-      return Promise.resolve(null);
+      return Promise.reject(new Error(`Route Not Found: ${url}`));
     }
   }
 
@@ -181,7 +180,7 @@ export class Router {
   handleUnknownRoutes(config) {
     var catchAllPattern = "*path";
 
-    var callback = instruction => new Promise(resolve => {
+    var callback = instruction => new Promise((resolve, reject) => {
       function done(){
         instruction.config.pattern = catchAllPattern;
         resolve(instruction);
@@ -194,7 +193,7 @@ export class Router {
         instruction.config.componentUrl = config;
         done();
       } else if (typeof config == 'function') {
-        processPotential(config(instruction), done);
+        processPotential(config(instruction), done, reject);
       } else {
         instruction.config = config;
         done();
