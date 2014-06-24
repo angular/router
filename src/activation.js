@@ -42,13 +42,8 @@ function processDeactivatable(plan, callbackName, next, ignoreResult) {
   function iterate() {
     if (i--) {
       var controller = infos[i];
-      var boolOrPromise = controller[callbackName]();
-
-      if (boolOrPromise instanceof Promise) {
-        return boolOrPromise.then(inspect);
-      } else {
-        return inspect(boolOrPromise);
-      }
+      var result = controller[callbackName]();
+      return processResult(result, inspect);
     } else {
       return next();
     }
@@ -123,13 +118,8 @@ function processActivatable(navigationContext, callbackName, next, ignoreResult)
 
     if (i < length) {
       var current = infos[i];
-      var boolOrPromise = current.controller[callbackName](...current.lifecycleArgs);
-
-      if (boolOrPromise instanceof Promise) {
-        return boolOrPromise.then(val => inspect(val, current.router));
-      } else {
-        return inspect(boolOrPromise, current.router);
-      }
+      var result = current.controller[callbackName](...current.lifecycleArgs);
+      return processResult(result, val => inspect(val, current.router));
     } else {
       return next();
     }
@@ -169,6 +159,14 @@ function findActivatable(navigationContext, callbackName, list, router) {
   });
 
   return list;
+}
+
+function processResult(obj, callback){
+  if(obj instanceof Promise || (obj && typeof obj.then === 'function')){
+    return obj.then(callback);
+  }else{
+    return callback(obj);
+  }
 }
 
 function shouldContinue(output, router) {
