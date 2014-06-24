@@ -1,5 +1,6 @@
 import {INVOKE_LIFECYCLE, REPLACE} from './navigationPlan';
 import {isNavigationCommand} from './navigationCommand';
+import {processPotential} from './util';
 
 export var affirmations = ['yes', 'ok', 'true'];
 
@@ -43,7 +44,7 @@ function processDeactivatable(plan, callbackName, next, ignoreResult) {
     if (i--) {
       var controller = infos[i];
       var result = controller[callbackName]();
-      return processResult(result, inspect);
+      return processPotential(result, inspect);
     } else {
       return next();
     }
@@ -119,7 +120,7 @@ function processActivatable(navigationContext, callbackName, next, ignoreResult)
     if (i < length) {
       var current = infos[i];
       var result = current.controller[callbackName](...current.lifecycleArgs);
-      return processResult(result, val => inspect(val, current.router));
+      return processPotential(result, val => inspect(val, current.router));
     } else {
       return next();
     }
@@ -159,14 +160,6 @@ function findActivatable(navigationContext, callbackName, list, router) {
   });
 
   return list;
-}
-
-function processResult(obj, callback){
-  if(obj instanceof Promise || (obj && typeof obj.then === 'function')){
-    return obj.then(callback);
-  }else{
-    return callback(obj);
-  }
 }
 
 function shouldContinue(output, router) {

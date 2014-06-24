@@ -2,7 +2,7 @@ import RouteRecognizer from 'route-recognizer';
 import {NavigationContext} from './navigationContext';
 import {NavigationInstruction} from './navigationInstruction';
 import {RouterConfiguration} from './routerConfiguration';
-import {getWildCardName} from './util';
+import {getWildCardName, processPotential} from './util';
 
 //TODO(Rob): fix the way you are importing in the examples so we can remove this
 RouteRecognizer = typeof RouteRecognizer === 'function' ?
@@ -181,28 +181,24 @@ export class Router {
   handleUnknownRoutes(config) {
     var catchAllPattern = "*path";
 
-    var callback = (instruction) => new Promise((resolve) => {
-      if (!config) {
-        instruction.config.componentUrl = instruction.fragment;
-      } else if (typeof config == 'string') {
-        instruction.config.componentUrl = config;
-      } else if (typeof config == 'function') {
-        var result = config(instruction);
-
-        if (result instanceof Promise) {
-          result.then(() => {
-            instruction.config.pattern = catchAllPattern;
-            resolve(instruction);
-          });
-
-          return;
-        }
-      } else {
-        instruction.config = config;
+    var callback = instruction => new Promise(resolve => {
+      function done(){
+        instruction.config.pattern = catchAllPattern;
+        resolve(instruction);
       }
 
-      instruction.config.pattern = catchAllPattern;
-      resolve(instruction);
+      if (!config) {
+        instruction.config.componentUrl = instruction.fragment;
+        done();
+      } else if (typeof config == 'string') {
+        instruction.config.componentUrl = config;
+        done();
+      } else if (typeof config == 'function') {
+        processPotential(config(instruction), done);
+      } else {
+        instruction.config = config;
+        done();
+      }
     });
 
     this.childRecognizer.add([{
