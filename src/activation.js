@@ -1,35 +1,35 @@
 import {INVOKE_LIFECYCLE, REPLACE} from './navigationPlan';
-import {Redirect} from './redirect';
+import {isNavigationCommand} from './navigationCommand';
 
 export var affirmations = ['yes', 'ok', 'true'];
 
 export class CanDeactivatePreviousStep {
   run(navigationContext, next) {
-    return processDeactivatableControllers(navigationContext.plan, 'canDeactivate', next);
+    return processDeactivatable(navigationContext.plan, 'canDeactivate', next);
   }
 }
 
 export class CanActivateNextStep {
   run(navigationContext, next) {
-    return processActivatableViewPorts(navigationContext, 'canActivate', next);
+    return processActivatable(navigationContext, 'canActivate', next);
   }
 }
 
 export class DeactivatePreviousStep {
   run(navigationContext, next) {
-    return processDeactivatableControllers(navigationContext.plan, 'deactivate', next, true);
+    return processDeactivatable(navigationContext.plan, 'deactivate', next, true);
   }
 }
 
 export class ActivateNextStep {
   run(navigationContext, next) {
-    return processActivatableViewPorts(navigationContext, 'activate', next, true);
+    return processActivatable(navigationContext, 'activate', next, true);
   }
 }
 
-function processDeactivatableControllers(plan, callbackName, next, ignoreResult) {
-  var controllers = findDeactivatableControllers(plan, callbackName),
-      i = controllers.length; //query from inside out
+function processDeactivatable(plan, callbackName, next, ignoreResult) {
+  var infos = findDeactivatable(plan, callbackName),
+      i = infos.length; //query from inside out
 
   function inspect(val) {
     if (ignoreResult || shouldContinue(val)) {
@@ -41,7 +41,7 @@ function processDeactivatableControllers(plan, callbackName, next, ignoreResult)
 
   function iterate() {
     if (i--) {
-      var controller = controllers[i];
+      var controller = infos[i];
       var boolOrPromise = controller[callbackName]();
 
       if (boolOrPromise instanceof Promise) {
@@ -57,7 +57,7 @@ function processDeactivatableControllers(plan, callbackName, next, ignoreResult)
   return iterate();
 }
 
-function findDeactivatableControllers(plan, callbackName, list) {
+function findDeactivatable(plan, callbackName, list) {
   list = list || [];
 
   for (var viewPortName in plan) {
@@ -76,16 +76,16 @@ function findDeactivatableControllers(plan, callbackName, list) {
     }
 
     if (viewPortPlan.childNavigationContext) {
-      findDeactivatableControllers(viewPortPlan.childNavigationContext.plan, callbackName, list);
+      findDeactivatable(viewPortPlan.childNavigationContext.plan, callbackName, list);
     } else if (prevComponent) {
-      addPreviousDeactivatableControllers(prevComponent, callbackName, list);
+      addPreviousDeactivatable(prevComponent, callbackName, list);
     }
   }
 
   return list;
 }
 
-function addPreviousDeactivatableControllers(component, callbackName, list) {
+function addPreviousDeactivatable(component, callbackName, list) {
   var controller = component.executionContext;
 
   if (controller.router && controller.router.currentInstruction) {
@@ -100,18 +100,18 @@ function addPreviousDeactivatableControllers(component, callbackName, list) {
         list.push(prevController);
       }
 
-      addPreviousDeactivatableControllers(prevComponent, callbackName, list)
+      addPreviousDeactivatable(prevComponent, callbackName, list)
     }
   }
 }
 
-function processActivatableViewPorts(navigationContext, callbackName, next, ignoreResult) {
-  var viewPorts = findActivatableViewPorts(navigationContext, callbackName),
-      length = viewPorts.length,
+function processActivatable(navigationContext, callbackName, next, ignoreResult) {
+  var infos = findActivatable(navigationContext, callbackName),
+      length = infos.length,
       i = -1; //query from top down
 
-  function inspect(val) {
-    if (ignoreResult || shouldContinue(val)) {
+  function inspect(val, router) {
+    if (ignoreResult || shouldContinue(val, router)) {
       return iterate();
     } else {
       return next.cancel(val);
@@ -122,13 +122,13 @@ function processActivatableViewPorts(navigationContext, callbackName, next, igno
     i++;
 
     if (i < length) {
-      var viewPortInstruction = viewPorts[i];
-      var boolOrPromise = viewPortInstruction.component.executionContext[callbackName](...viewPortInstruction.lifecycleArgs);
+      var current = infos[i];
+      var boolOrPromise = current.controller[callbackName](...current.lifecycleArgs);
 
       if (boolOrPromise instanceof Promise) {
-        return boolOrPromise.then(inspect);
+        return boolOrPromise.then(val => inspect(val, current.router));
       } else {
-        return inspect(boolOrPromise);
+        return inspect(boolOrPromise, current.router);
       }
     } else {
       return next();
@@ -138,7 +138,7 @@ function processActivatableViewPorts(navigationContext, callbackName, next, igno
   return iterate();
 }
 
-function findActivatableViewPorts(navigationContext, callbackName, list) {
+function findActivatable(navigationContext, callbackName, list, router) {
   var plan = navigationContext.plan;
   var next = navigationContext.nextInstruction;
 
@@ -147,23 +147,38 @@ function findActivatableViewPorts(navigationContext, callbackName, list) {
   Object.keys(plan).filter(viewPortName => {
     var viewPortPlan = plan[viewPortName];
     var viewPortInstruction = next.viewPortInstructions[viewPortName];
+    var controller = viewPortInstruction.component.executionContext;
 
-    if ((viewPortPlan.strategy === INVOKE_LIFECYCLE || viewPortPlan.strategy === REPLACE) &&
-        callbackName in viewPortInstruction.component.executionContext) {
-      list.push(viewPortInstruction);
+    if ((viewPortPlan.strategy === INVOKE_LIFECYCLE || viewPortPlan.strategy === REPLACE) 
+      && callbackName in controller) {
+      list.push({
+        controller:controller,
+        lifecycleArgs:viewPortInstruction.lifecycleArgs,
+        router:router
+      });
     }
 
     if (viewPortPlan.childNavigationContext) {
-      findActivatableViewPorts(viewPortPlan.childNavigationContext, callbackName, list);
+      findActivatable(
+        viewPortPlan.childNavigationContext, 
+        callbackName, 
+        list, 
+        controller.router || router
+      );
     }
   });
 
   return list;
 }
 
-function shouldContinue(output) {
-  if (output instanceof Error || output instanceof Redirect) {
+function shouldContinue(output, router) {
+  if (output instanceof Error) {
     return false;
+  }
+
+  if(isNavigationCommand(output)){
+    output.router = router;
+    return !!output.shouldContinueProcessing;
   }
 
   if (typeof output == 'string') {

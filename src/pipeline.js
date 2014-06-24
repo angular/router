@@ -53,8 +53,9 @@ export class Pipeline {
       }
     };
 
-    next.complete = () => {
+    next.complete = output => {
       next.status = COMPLETED;
+      next.output = output;
       return Promise.resolve(createResult(ctx, next));
     };
 

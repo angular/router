@@ -3,7 +3,7 @@ import {History} from './history';
 import {Router} from './router';
 import {Inject, Provide} from 'di';
 import {PipelineProvider} from './pipelineProvider';
-import {Redirect} from './redirect';
+import {isNavigationCommand} from './navigationCommand';
 
 @Provide(Router)
 @Provide(AppRouter)
@@ -54,9 +54,11 @@ export class AppRouter extends Router {
 
       if (result.completed) {
         this.history.previousFragment = instruction.fragment;
-      } else if (result.output instanceof Redirect) {
-        this.navigate(result.output.url, { trigger: true, replace: true });
-      } else if (context.prevInstruction) {
+      } 
+
+      if (isNavigationCommand(result.output)) {
+        result.output.navigate(this);
+      } else if (!result.completed && context.prevInstruction) {
         this.navigate(this.history.previousFragment, false);
       }
 
