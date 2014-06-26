@@ -28,7 +28,7 @@ export class PipelineProvider {
     ];
   }
 
-  createPipeline() {
+  createPipeline(navigationContext) {
     var pipeline = new Pipeline();
     this.steps.forEach(step => pipeline.withStep(this.injector.get(step)));
     return pipeline;

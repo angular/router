@@ -52,7 +52,7 @@ export class AppRouter extends Router {
     this.isNavigating = true;
 
     var context = this.createNavigationContext(instruction);
-    var pipeline = this.pipelineProvider.createPipeline();
+    var pipeline = this.pipelineProvider.createPipeline(context);
 
     pipeline.run(context).then(result => {
       this.isNavigating = false;
