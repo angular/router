@@ -2,7 +2,7 @@ import RouteRecognizer from 'route-recognizer';
 import {NavigationContext} from './navigationContext';
 import {NavigationInstruction} from './navigationInstruction';
 import {RouterConfiguration} from './routerConfiguration';
-import {getWildCardName, processPotential} from './util';
+import {getWildCardName, processPotential, combinePath} from './util';
 
 //TODO(Rob): fix the way you are importing in the examples so we can remove this
 RouteRecognizer = typeof RouteRecognizer === 'function' ?
@@ -73,6 +73,7 @@ export class Router {
   }
 
   navigate(fragment, options) {
+    fragment = combinePath(fragment, this.baseUrl);
     return this.history.navigate(fragment, options);
   }
 

@@ -49,3 +49,19 @@ export function processPotential(obj, resolve, reject){
     }
   }
 }
+
+export function combinePath(path, base){
+  var baseParts = (base || '').split('/'),
+      relativeParts = path.split('/'),
+      firstPart = relativeParts[0];
+
+  if(firstPart === '.'){
+    relativeParts.shift();
+  }else if(firstPart === '..'){
+    relativeParts.filter(x => x === '..').forEach(() => baseParts.pop());
+  }else{
+    return path;
+  }
+
+  return baseParts.join('/') + '/' + relativeParts.join('/');
+}
