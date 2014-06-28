@@ -13,7 +13,7 @@ var path = {
     'expressionist': './node_modules/expressionist/src/**/*.js',
     'di': './node_modules/di/src/**/*.js',
     'rtts-assert': './node_modules/rtts-assert/src/**/*.js',
-    'templating': './node_modules/templating/src/**/*.js'
+    'templating': './node_modules/templating/src/lib/**/*.js'
   }
 };
 

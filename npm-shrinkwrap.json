@@ -24,7 +24,7 @@
     },
     "templating": {
       "version": "0.0.1",
-      "from": "git://github.com/angular/templating#custom-element",
+      "from": "git://github.com/angular/templating#master",
       "dependencies": {}
     },
     "zone.js": {

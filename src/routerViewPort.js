@@ -15,7 +15,7 @@ export class RouterViewPort {
     }
   }
 
-  getComponentInstance(directive, providers){
+  createComponentView(directive, providers){
     return this.viewFactory.createComponentView({
       component: directive,
       providers: providers,

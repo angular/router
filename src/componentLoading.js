@@ -69,23 +69,20 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
   var componentUrl = viewPortPlan.config.componentUrl;
   var next = navigationContext.nextInstruction;
 
-  return resolveComponentInstance(
+  return resolveComponentView(
     componentLoader,
     navigationContext.router,
     viewPortPlan
-    ).then(component => {
-
-    //TODO: remove this hack
-    component.executionContext = component._injector._children[0].get('executionContext');
+    ).then(componentView => {
 
     var viewPortInstruction = next.addViewPortInstruction(
       viewPortPlan.name,
       viewPortPlan.strategy,
       componentUrl,
-      component
+      componentView
       );
 
-    var controller = component.executionContext;
+    var controller = componentView.executionContext;
 
     if (controller.router) {
       var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
@@ -107,7 +104,7 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
   });
 }
 
-function resolveComponentInstance(componentLoader, router, viewPortPlan) {
+function resolveComponentView(componentLoader, router, viewPortPlan) {
   var possibleRouterViewPort = router.viewPorts[viewPortPlan.name],
       url = viewPortPlan.config.componentUrl;
 
@@ -125,19 +122,20 @@ function resolveComponentInstance(componentLoader, router, viewPortPlan) {
           return router.createChild();
         }
 
-        function createComponent(routerViewPort){
+        function createComponentView(routerViewPort){
           try{
-            var component = routerViewPort.getComponentInstance(directive, [childRouterProvider]);
-            resolve(component);
+            var componentView = routerViewPort.createComponentView(directive, [childRouterProvider]);
+            componentView.executionContext = componentView.injector.get(directive);
+            resolve(componentView);
           } catch(error){
             reject(error);
           }
         }
 
         if(possibleRouterViewPort){
-          createComponent(possibleRouterViewPort);
+          createComponentView(possibleRouterViewPort);
         }else{
-          router.viewPorts[viewPortPlan.name] = createComponent;
+          router.viewPorts[viewPortPlan.name] = createComponentView;
         }
       }
     });
