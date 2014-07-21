@@ -26,7 +26,7 @@ export class RouterViewPort {
   process(viewPortInstruction) {
     this.tryRemoveView();
     this.view = viewPortInstruction.component;
-    this.viewPort.append(this.view);
+    this.view.appendTo(this.viewPort);
   }
 
   tryRemoveView() {
