@@ -1,4 +1,4 @@
-import {extend, getWildcardPath} from './util';
+import {extend} from './util';
 
 export class RouterConfiguration{
   constructor() {

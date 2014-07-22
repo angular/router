@@ -46,7 +46,7 @@ export class AppRouter extends Router {
     this.queue = [];
 
     if (!instruction) {
-        return;
+      return;
     }
 
     this.isNavigating = true;
@@ -136,8 +136,8 @@ function handleLinkClick(evt) {
 function targetIsThisWindow(target) {
   var targetWindow = target.getAttribute('target');
 
-  return !targetWindow ||
-      targetWindow === window.name ||
-      targetWindow === '_self' ||
-      (targetWindow === 'top' && window === window.top);
+  return !targetWindow || 
+    targetWindow === window.name ||
+    targetWindow === '_self' ||
+    (targetWindow === 'top' && window === window.top);
 }
