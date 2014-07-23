@@ -1,5 +1,4 @@
 import {REPLACE, buildNavigationPlan} from './navigationPlan';
-import {getWildcardPath} from './util';
 import {PlatformComponentLoader} from './platformComponentLoader';
 
 export class LoadNewComponentsStep {
@@ -82,7 +81,7 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
     var controller = component.executionContext;
 
     if (controller.router) {
-      var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
+      var path = next.getWildcardPath();
 
       return controller.router.createNavigationInstruction(path, next)
         .then(childInstruction => {

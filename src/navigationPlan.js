@@ -1,5 +1,3 @@
-import {getWildcardPath, getWildCardName} from './util';
-
 export var NO_CHANGE = 'no-change';
 export var INVOKE_LIFECYCLE = 'invoke-lifecycle';
 export var REPLACE = 'replace';
@@ -36,7 +34,7 @@ export function buildNavigationPlan(navigationContext, forceLifecycleMinimum) {
       }
 
       if (viewPortPlan.strategy !== REPLACE && prevViewPortInstruction.childRouter) {
-        var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
+        var path = next.getWildcardPath();
         var task = prevViewPortInstruction.childRouter
           .createNavigationInstruction(path, next).then(childInstruction => {
             viewPortPlan.childNavigationContext = prevViewPortInstruction.childRouter
@@ -81,7 +79,7 @@ export class BuildNavigationPlanStep {
 function hasDifferentParameterValues(prev, next) {
   var prevParams = prev.params,
       nextParams = next.params,
-      nextWildCardName = next.config.hasChildRouter ? getWildCardName(next.config.pattern) : null;
+      nextWildCardName = next.config.hasChildRouter ? next.getWildCardName() : null;
 
   for (var key in nextParams) {
     if (key == nextWildCardName) {

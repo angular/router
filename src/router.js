@@ -2,7 +2,7 @@ import RouteRecognizer from 'route-recognizer';
 import {NavigationContext} from './navigationContext';
 import {NavigationInstruction} from './navigationInstruction';
 import {RouterConfiguration} from './routerConfiguration';
-import {getWildCardName, processPotential, combinePath} from './util';
+import {processPotential, combinePath} from './util';
 
 //TODO(Rob): fix the way you are importing in the examples so we can remove this
 RouteRecognizer = typeof RouteRecognizer === 'function' ?
@@ -30,12 +30,7 @@ export class Router {
 
   refreshBaseUrl() {
     if (this.parent) {
-      var baseUrl = getBaseUrl(
-        this.parent.currentInstruction.config.pattern,
-        this.parent.currentInstruction.params,
-        this.parent.currentInstruction.fragment
-      );
-
+      var baseUrl = this.parent.currentInstruction.getBaseUrl();
       this.baseUrl = this.parent.baseUrl + baseUrl;
     }
   }
@@ -182,22 +177,23 @@ export class Router {
     var catchAllPattern = "*path";
 
     var callback = instruction => new Promise((resolve, reject) => {
-      function done(){
-        instruction.config.pattern = catchAllPattern;
-        resolve(instruction);
+      function done(inst){
+        inst = inst || instruction;
+        inst.config.pattern = catchAllPattern;
+        resolve(inst);
       }
 
       if (!config) {
         instruction.config.componentUrl = instruction.fragment;
-        done();
+        done(instruction);
       } else if (typeof config == 'string') {
         instruction.config.componentUrl = config;
-        done();
+        done(instruction);
       } else if (typeof config == 'function') {
         processPotential(config(instruction), done, reject);
       } else {
         instruction.config = config;
-        done();
+        done(instruction);
       }
     });
 
@@ -215,19 +211,4 @@ export class Router {
     this.isNavigating = false;
     this.navigation = [];
   };
-}
-
-function getBaseUrl(pattern, params, fragment) {
-  if (!params) {
-    return fragment;
-  }
-
-  var wildcardName = getWildCardName(pattern),
-      path = params[wildcardName];
-
-  if (!path) {
-    return fragment;
-  }
-
-  return fragment.substr(0, fragment.lastIndexOf(path));
 }

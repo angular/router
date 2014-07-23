@@ -14,22 +14,6 @@ export function extend(obj) {
 	return obj;
 }
 
-export function getWildCardName(pattern) {
-  var wildcardIndex = pattern.lastIndexOf('*');
-  return pattern.substr(wildcardIndex + 1);
-}
-
-export function getWildcardPath(pattern, params, qs) {
-  var wildcardName = getWildCardName(pattern),
-      path = params[wildcardName];
-
-  if (qs) {
-    path += "?" + qs;
-  }
-
-  return path;
-}
-
 export function processPotential(obj, resolve, reject){
   if(obj && typeof obj.then === 'function'){
     var dfd = obj.then(resolve);

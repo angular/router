@@ -23,4 +23,35 @@ export class NavigationInstruction {
       lifecycleArgs: this.lifecycleArgs.slice()
     };
   }
+
+  getWildCardName() {
+    var wildcardIndex = this.config.pattern.lastIndexOf('*');
+    return this.config.pattern.substr(wildcardIndex + 1);
+  }
+
+  getWildcardPath() {
+    var wildcardName = this.getWildCardName(),
+        path = this.params[wildcardName];
+
+    if (this.queryString) {
+      path += "?" + this.queryString;
+    }
+
+    return path;
+  }
+
+  getBaseUrl() {
+    if (!this.params) {
+      return this.fragment;
+    }
+
+    var wildcardName = this.getWildCardName(),
+        path = this.params[wildcardName];
+
+    if (!path) {
+      return this.fragment;
+    }
+
+    return this.fragment.substr(0, this.fragment.lastIndexOf(path));
+  }
 }
