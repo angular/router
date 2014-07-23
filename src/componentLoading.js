@@ -1,12 +1,9 @@
 import {REPLACE, buildNavigationPlan} from './navigationPlan';
 import {getWildcardPath} from './util';
-import {Router} from './router';
-import {Provide, Inject} from 'di';
-import {ComponentLoader} from 'templating';
+import {PlatformComponentLoader} from './platformComponentLoader';
 
 export class LoadNewComponentsStep {
-  @Inject(ComponentLoader)
-  constructor(componentLoader){
+  constructor(componentLoader:PlatformComponentLoader){
     this.componentLoader = componentLoader;
   }
 
@@ -105,34 +102,26 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
 }
 
 function resolveComponentView(componentLoader, router, viewPortPlan) {
-  var possibleRouterViewPort = router.viewPorts[viewPortPlan.name],
-      url = viewPortPlan.config.componentUrl;
+  var possibleRouterViewPort = router.viewPorts[viewPortPlan.name];
 
-  if(url.indexOf('.html') == -1){
-    url += '.html';
-  }
+  return componentLoader.loadComponent(viewPortPlan.config).then(directive => {
+    return new Promise((resolve, reject) => {
+      function createChildRouter() {
+        return router.createChild();
+      }
 
-  return new Promise((resolve, reject) => {
-    componentLoader.loadFromTemplateUrl({
-      templateUrl: url,
-      done: ({directive})=> {
-        function createChildRouter() {
-          return router.createChild();
+      function getComponent(routerViewPort){
+        try{
+          resolve(routerViewPort.getComponent(directive, createChildRouter));
+        } catch(error){
+          reject(error);
         }
+      }
 
-        function getComponent(routerViewPort){
-          try{
-            resolve(routerViewPort.getComponent(directive, createChildRouter));
-          } catch(error){
-            reject(error);
-          }
-        }
-
-        if(possibleRouterViewPort){
-          getComponent(possibleRouterViewPort);
-        }else{
-          router.viewPorts[viewPortPlan.name] = getComponent;
-        }
+      if(possibleRouterViewPort){
+        getComponent(possibleRouterViewPort);
+      }else{
+        router.viewPorts[viewPortPlan.name] = getComponent;
       }
     });
   });

@@ -1,5 +1,5 @@
 import {TemplateDirective, View, ViewPort, ViewFactory, InitAttrs} from 'templating';
-import {Injector, Inject, Provide} from 'di';
+import {Inject, Provide} from 'di';
 import {Router} from './router';
 
 @TemplateDirective({selector: 'router-view-port'})
