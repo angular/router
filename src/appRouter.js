@@ -1,17 +1,12 @@
 import {extend} from './util';
 import {History} from './history';
 import {Router} from './router';
-import {Inject, Provide} from 'di';
 import {PipelineProvider} from './pipelineProvider';
 import {isNavigationCommand} from './navigationCommand';
 
-@Provide(Router)
-@Provide(AppRouter)
 export class AppRouter extends Router {
-  @Inject(History, PipelineProvider)
-  constructor(history, pipelineProvider) {
+  constructor(history:History, pipelineProvider:PipelineProvider) {
     super(history);
-
     this.pipelineProvider = pipelineProvider;
     document.addEventListener('click', handleLinkClick.bind(this), true);
   }

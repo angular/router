@@ -1,4 +1,4 @@
-import {TemplateDirective, View, ViewPort, ViewFactory, InitAttrs} from 'templating';
+import {TemplateDirective, ViewPort, ViewFactory, InitAttrs} from 'templating';
 import {Inject, Provide} from 'di';
 import {Router} from './router';
 

@@ -1,4 +1,4 @@
-import {Inject, Injector} from 'di';
+import {Injector} from 'di';
 import {Pipeline} from './pipeline';
 import {BuildNavigationPlanStep} from './navigationPlan';
 import {ApplyModelBindersStep} from './modelBinding';
@@ -12,8 +12,7 @@ import {
 } from './activation';
 
 export class PipelineProvider {
-  @Inject(Injector)
-  constructor(injector){
+  constructor(injector:Injector){
     this.injector = injector;
     this.steps = [
       BuildNavigationPlanStep,
