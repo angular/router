@@ -1,9 +1,10 @@
 import {TemplateDirective, View, ViewPort, ViewFactory, InitAttrs} from 'templating';
-import {Injector, Inject} from 'di';
+import {Injector, Inject, Provide} from 'di';
+import {Router} from './router';
 
 @TemplateDirective({selector: 'router-view-port'})
 export class RouterViewPort {
-  @Inject(ViewFactory, ViewPort, 'executionContext', Injector, InitAttrs)
+  @Inject(ViewFactory, ViewPort, 'executionContext', InitAttrs)
   constructor(viewFactory, viewPort, executionContext, attrs) {
     this.viewFactory = viewFactory;
     this.viewPort = viewPort;
@@ -15,12 +16,18 @@ export class RouterViewPort {
     }
   }
 
-  createComponentView(directive, providers){
-    return this.viewFactory.createComponentView({
+  getComponent(directive, createChildRouter){
+    createChildRouter.annotations = [new Provide(Router)];
+
+    var component = this.viewFactory.createComponentView({
       component: directive,
-      providers: providers,
+      providers: [createChildRouter],
       viewPort: this.viewPort
     });
+
+    component.executionContext = component.injector.get(directive);
+
+    return component;
   }
 
   process(viewPortInstruction) {

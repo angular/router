@@ -73,16 +73,16 @@ function loadComponent(componentLoader, navigationContext, viewPortPlan) {
     componentLoader,
     navigationContext.router,
     viewPortPlan
-    ).then(componentView => {
+    ).then(component => {
 
     var viewPortInstruction = next.addViewPortInstruction(
       viewPortPlan.name,
       viewPortPlan.strategy,
       componentUrl,
-      componentView
+      component
       );
 
-    var controller = componentView.executionContext;
+    var controller = component.executionContext;
 
     if (controller.router) {
       var path = getWildcardPath(next.config.pattern, next.params, next.queryString);
@@ -116,26 +116,22 @@ function resolveComponentView(componentLoader, router, viewPortPlan) {
     componentLoader.loadFromTemplateUrl({
       templateUrl: url,
       done: ({directive})=> {
-
-        @Provide(Router)
-        function childRouterProvider() {
+        function createChildRouter() {
           return router.createChild();
         }
 
-        function createComponentView(routerViewPort){
+        function getComponent(routerViewPort){
           try{
-            var componentView = routerViewPort.createComponentView(directive, [childRouterProvider]);
-            componentView.executionContext = componentView.injector.get(directive);
-            resolve(componentView);
+            resolve(routerViewPort.getComponent(directive, createChildRouter));
           } catch(error){
             reject(error);
           }
         }
 
         if(possibleRouterViewPort){
-          createComponentView(possibleRouterViewPort);
+          getComponent(possibleRouterViewPort);
         }else{
-          router.viewPorts[viewPortPlan.name] = createComponentView;
+          router.viewPorts[viewPortPlan.name] = getComponent;
         }
       }
     });
