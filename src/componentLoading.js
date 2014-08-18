@@ -109,17 +109,17 @@ function resolveComponentView(componentLoader, router, viewPortPlan) {
         return router.createChild();
       }
 
-      function getComponent(routerViewPort){
-        try{
+      function getComponent(routerViewPort) {
+        try {
           resolve(routerViewPort.getComponent(directive, createChildRouter));
         } catch(error){
           reject(error);
         }
       }
 
-      if(possibleRouterViewPort){
+      if (possibleRouterViewPort) {
         getComponent(possibleRouterViewPort);
-      }else{
+      } else {
         router.viewPorts[viewPortPlan.name] = getComponent;
       }
     });
