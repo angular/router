@@ -146,7 +146,11 @@ export class Router {
       var withChild = JSON.parse(JSON.stringify(config));
       withChild.pattern += "/*childRoute";
       withChild.hasChildRouter = true;
-      this.childRecognizer.add([{path:withChild.pattern, handler: withChild}]);
+      this.childRecognizer.add([{
+        path: withChild.pattern,
+        handler: withChild
+      }]);
+
       withChild.navModel = navModel;
     }
 
