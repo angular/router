@@ -12,10 +12,9 @@ export class AppRouter extends Router {
   }
 
   loadUrl(url) {
-    return this.createNavigationInstruction(url)
-      .then(instruction => {
-        return this.queueInstruction(instruction);
-      }).catch(error =>{
+    return this.createNavigationInstruction(url).
+      then(instruction => this.queueInstruction(instruction)).
+      catch(error => {
         console.error(error);
 
         if (this.history.previousFragment) {
@@ -131,7 +130,7 @@ function handleLinkClick(evt) {
 function targetIsThisWindow(target) {
   var targetWindow = target.getAttribute('target');
 
-  return !targetWindow || 
+  return !targetWindow ||
     targetWindow === window.name ||
     targetWindow === '_self' ||
     (targetWindow === 'top' && window === window.top);
