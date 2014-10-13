@@ -14,7 +14,7 @@ export class Flickr{
 	}
 
   activate(){
-    return this.jsonp(url).then((result) =>{
+    return this.jsonp(url).then(result => {
       this.images = result.items;
     });
   }

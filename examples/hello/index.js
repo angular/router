@@ -6,7 +6,7 @@ export class App {
   constructor(router:AppRouter) {
     this.router = router;
 
-    this.router.configure((config)=>{
+    this.router.configure(config => {
       config.title = 'Router Demo';
 
       config.map([

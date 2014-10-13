@@ -14,7 +14,7 @@ export class App {
   constructor(router:AppRouter) {
     this.router = router;
 
-    this.router.configure((config)=>{
+    this.router.configure(config => {
       config.title = 'The Bridge of Death';
 
       config.map([

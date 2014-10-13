@@ -7,7 +7,7 @@ export class Welcome{
     this.heading = 'Settings';
     this.router = router;
 
-    router.configure((config) =>{
+    router.configure(config => {
       config.map([
         { pattern: ['','welcome'],  componentUrl: 'welcome',  nav: true, title:'Welcome' },
         { pattern: 'flickr',        componentUrl: 'flickr',   nav: true },
