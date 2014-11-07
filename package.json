@@ -2,13 +2,13 @@
   "name": "router",
   "version": "0.0.0",
   "description": "A Router Prototype for Angular 2.0",
-  "homepage": "https://github.com/vojtajina/atscript-playground",
+  "homepage": "https://github.com/angular/router",
   "repository": {
     "type": "git",
-    "url": "git://github.com/vojtajina/atscript-playground.git"
+    "url": "git://github.com/angular/router.git"
   },
   "bugs": {
-    "url": "https://github.com/vojtajina/atscript-playground/issues"
+    "url": "https://github.com/angular/router/issues"
   },
   "dependencies": {
     "requirejs": "^2.1.15",
