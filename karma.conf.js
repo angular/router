@@ -1,43 +1,36 @@
-var sharedConfig = require('pipe/karma');
+// Karma configuration
+// Generated on Fri Mar 14 2014 15:01:19 GMT-0700 (PDT)
+
+var traceurOptions = require('./config').traceur;
 
 module.exports = function(config) {
-  sharedConfig(config);
-  config.traceurPreprocessor.options.asyncFunctions = true;
-
   config.set({
-    // list of files / patterns to load in the browser
+    frameworks: ['jasmine', 'requirejs', 'traceur'],
+
     files: [
-      'node_modules/traceur/bin/traceur.js',
-      'utils/loader.js',
-      'test-main.js',
+      // The entry point that dynamically imports all the specs.
+      {pattern: 'test/main.js', included: true},
 
-      {pattern: 'src/**/*.js', included: false},
-      {pattern: 'test/**/*', included: false},
+      // All the specs and sources are included dynamically from `test/main.js`.
+      {pattern: 'src/**/*.ats', included: false},
+      {pattern: 'node_modules/route-recognizer/dist/route-recognizer.amd.js', included: false},
+      {pattern: 'test/**/*.ats', included: false},
 
-      {pattern: 'node_modules/di/src/**/*.js', included: false},
-      {pattern: 'node_modules/rtts-assert/src/**/*.js', included: false},
-      {pattern: 'node_modules/watchtower/src/**/*.js', included: false},
-      {pattern: 'node_modules/expressionist/src/**/*.js', included: false},
-      {pattern: 'node_modules/deferred/src/**/*.js', included: false},
-      {pattern: 'node_modules/route-recognizer/lib/**/*.js', included: false},
-      {pattern: 'node_modules/es6-shim/es6-shim.js', included: false}
+      // The runtime assertion library.
+      {pattern: 'node_modules/rtts-assert/dist/amd/assert.js', included: false}
     ],
 
     preprocessors: {
-      'src/**/*.js': ['traceur'],
-      'test/**/*.js': ['traceur'],
-      'node_modules/di/src/**/*.js': ['traceur'],
-      'node_modules/rtts-assert/src/**/*.js': ['traceur'],
-      'node_modules/watchtower/src/**/*.js': ['traceur'],
-      'node_modules/expressionist/src/**/*.js': ['traceur'],
-      'node_modules/deferred/src/**/*.js': ['traceur'],
-      'node_modules/route-recognizer/lib/**/*.js': ['traceur'],
+      '**/*.ats': ['traceur']
+    },
+
+    browsers: ['Chrome'],
+
+    traceurPreprocessor: {
+      options: traceurOptions,
+      transformPath: function(path) {
+        return path.replace(/\.ats$/, '.js');
+      }
     }
   });
-
-  config.sauceLabs.testName = 'router';
-
-  if (process.env.TRAVIS) {
-    config.sauceLabs.startConnect = false;
-  }
 };

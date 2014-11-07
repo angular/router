@@ -1,112 +1,48 @@
 var gulp = require('gulp');
-var pipe = require('pipe/gulp');
-var connect = require('gulp-connect');
 var traceur = require('gulp-traceur');
-var through = require('through2');
+var connect = require('gulp-connect');
+var rename = require('gulp-rename');
 
-var path = {
-  src: ['./src/**/*.js'],
-  examples: ['./examples/**/*.js'],
-  exampleTemplates: ['./examples/**/*.html'],
-  deps: {
-    'watchtower': './node_modules/watchtower/src/**/*.js',
-    'expressionist': './node_modules/expressionist/src/**/*.js',
-    'di': './node_modules/di/src/**/*.js',
-    'rtts-assert': './node_modules/rtts-assert/src/**/*.js',
-    'templating': './node_modules/templating/src/lib/**/*.js'
-  }
+var modulate = require('./scripts/angular-modulate');
+
+var TRACEUR_OPTIONS = require('./config').traceur;
+var PATH = {
+  SRC: './src/**/*.ats'
 };
 
-function rename(search, replace) {
-  return through.obj(function(file, enc, cb) {
-    file.path = file.path.replace(search, replace);
-    this.push(file);
-  });
-}
+gulp.task('build', ['transpile', 'angularify']);
 
-// TRANSPILE ES6
-gulp.task('build_source_amd', function() {
-  gulp.src(path.src)
-      .pipe(traceur(pipe.traceur()))
-      .pipe(gulp.dest('dist/amd'));
+gulp.task('transpile', function() {
+  return gulp.src(PATH.SRC)
+      .pipe(traceur(TRACEUR_OPTIONS))
+      .pipe(rename({extname: '.js'}))
+      .pipe(gulp.dest('build/src'));
 });
 
-gulp.task('build_source_es6', function() {
-  gulp.src(path.src)
-      .pipe(traceur(pipe.traceur({outputLanguage: 'es6'})))
-      .pipe(gulp.dest('dist/es6'));
+gulp.task('angularify', ['transpile'], function() {
+  return gulp.src('./src/router.ats')
+      .pipe(modulate({
+        moduleName: 'ngFuturisticRouter.generated'
+      }))
+      .pipe(rename({extname: '.es5.js'}))
+      .pipe(gulp.dest('build/src'));
 });
-
-gulp.task('build_examples', ['build_deps'], function() {
-  gulp.src(path.examples)
-      .pipe(traceur(pipe.traceur()))
-      .pipe(gulp.dest('temp/examples'));
-  gulp.src(path.exampleTemplates)
-      .pipe(gulp.dest('temp/examples'));
-});
-
-gulp.task('build_deps', function() {
-  for (var prop in path.deps) {
-    gulp.src(path.deps[prop])
-        .pipe(traceur(pipe.traceur()))
-        .pipe(gulp.dest('node_modules/' + prop + '/dist/amd'));
-  }
-});
-
-gulp.task('build_source_cjs', function() {
-  gulp.src(path.src)
-      .pipe(traceur(pipe.traceur({modules: 'commonjs'})))
-      .pipe(gulp.dest('dist/cjs'));
-});
-
-gulp.task('build', ['build_source_amd', 'build_source_cjs', 'build_source_es6', 'build_examples']);
 
 
 // WATCH FILES FOR CHANGES
 gulp.task('watch', function() {
-  gulp.watch([path.src], ['build_source_amd']);
-  gulp.watch([path.examples, path.exampleTemplates], ['build_examples']);
+  gulp.watch(PATH.SRC, ['build']);
 });
 
 
 // WEB SERVER
-gulp.task('serve', connect.server({
-  root: [__dirname],
-  port: 8000,
-  livereload: false,
-  open: false
-}));
-
-
-var clientify = require('clientify');
-var rename = function(search, replace) {
-  return through.obj(function(file, enc, done) {
-    file.path = file.path.replace(search, replace);
-    this.push(file);
-    done();
+gulp.task('serve', function() {
+  connect.server({
+    root: [__dirname],
+    port: 8000,
+    livereload: false
   });
-};
-
-// Move to package.json?
-var GITHUB_REPOS = [
-  'angular/watchtower.js',
-  'angular/expressionist.js',
-  'angular/zone.js',
-  'vojtajina/traceur-compiler#add-es6-pure-transformer-dist'
-];
-
-gulp.task('shrinkwrap', function() {
-  gulp.src('./package.json')
-    .pipe(through.obj(function(file, _, done) {
-      var pkg = JSON.parse(file.contents);
-      var stream = this;
-      clientify.shrinkwrap(pkg, GITHUB_REPOS).then(function(shrinkwrap) {
-        file.contents = new Buffer(JSON.stringify(shrinkwrap, null, '  '));
-        stream.push(file);
-        done();
-      }).done();
-    }))
-    .pipe(rename('package.json', 'npm-shrinkwrap.json'))
-    .pipe(gulp.dest('.'));
 });
 
+
+gulp.task('default', ['serve', 'watch']);

@@ -1,0 +1,126 @@
+/*
+ * Both the Angular 1.3 Router and Angular 2 Router use this
+ */
+
+import RouteRecognizer from 'route-recognizer';
+
+export class Router {
+  constructor(parent) {
+    this.parent = parent || null;
+    this.ports = {};
+    this.children = [];
+    this.context = null;
+
+    // this is a hack
+    this.recognizer = new (RouteRecognizer.default || RouteRecognizer)();
+  }
+
+
+  /*
+   * constructs a child router
+   */
+  childRouter() {
+    var child = new Router(this);
+    this.children.push(child);
+    return child;
+  }
+
+
+  /*
+   * object to notify of route changes
+   */
+  registerViewPort(view, name = 'default') {
+    this.ports[name] = view;
+  }
+
+
+  /*
+   * config
+   */
+  config(mapping) {
+    this.recognizer.add(mapping);
+  }
+
+
+  /*
+   * gets passed a context object
+   */
+  navigate(url:String) {
+    if (url === this.previousUrl) {
+      return Promise.resolve();
+    }
+    this.previousUrl = url;
+    var context = this.recognizer.recognize(url);
+    if (context == null || context.length < 1) {
+      return Promise.reject();
+    }
+
+    if (this.context === context[0]) {
+      return Promise.resolve();
+    }
+    this.context = context[0];
+    context.component = this.context.handler().component;
+
+    return this.canNavigate(context)
+               .then(status => (status && this.activatePorts(context)))
+               .then(() => this.previousContext = context);
+  }
+
+
+  /*
+   * given a context obj
+   * update viewports accordingly
+   */
+  activatePorts(context) {
+    forEach(this.ports, port => port.activate(context));
+    this.children.forEach(child => child.activatePorts(context));
+  }
+
+
+  /*
+   * given a context obj
+   * returns a Promise<bool> that represents
+   * whether this router and all the descendants can navigate
+   */
+  canNavigate(context) {
+    return Promise.all(this.gatherNagigationPredicates(context))
+                  .then(booleanReduction);
+  }
+
+
+  /*
+   * given a context obj
+   * returns an Array<Promise<bool>> that represents
+   * whether this router and all the descendants can navigate
+   */
+  gatherNagigationPredicates(context) {
+    return this.children.reduce(
+        (promises, child) => promises.concat(child.gatherNagigationPredicates(context)),
+        [this.navigationPredicate(context)]
+    );
+  }
+
+
+  /*
+   * whether or not this level of router can navigate
+   *
+   * returns a promise<bool>
+   */
+  navigationPredicate(context) {
+    return Promise.resolve(true);
+  }
+}
+
+function forEach(obj, fn) {
+  Object.keys(obj).forEach(key => fn(obj[key], key));
+}
+
+function mapObj(obj, fn) {
+  var result = [];
+  Object.keys(obj).forEach(key => result.push(fn(obj[key], key)));
+  return result;
+}
+
+function booleanReduction (arr) {
+  return arr.reduce((acc, val) => acc && val, true);
+}

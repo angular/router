@@ -1,0 +1,94 @@
+import {Router} from '../src/router';
+
+ddescribe('Router', () => {
+  var router,
+      view;
+
+  beforeEach(() => {
+    router = new Router();
+    router.config([
+      { path: '/', handler: x => ({component: 'user'}) }
+    ]);
+    view = makeMockComponent('root');
+    router.registerViewPort(view);
+  });
+
+  it('should work', () => {
+    expect(router).toBeDefined();
+  });
+
+  it('should activate viewports on navigation', sync(async () => {
+    await router.navigate('/');
+    expect(view.activate).toHaveBeenCalled();
+  }));
+
+  it('should not reactivate when called with the same URL', sync(async () => {
+    await router.navigate('/');
+    expect(view.activate).toHaveBeenCalled();
+
+    view.activate.calls.reset();
+    await router.navigate('/');
+    expect(view.activate).not.toHaveBeenCalled();
+  }));
+
+  it('should check if it can navigate', sync(async () => {
+    spyOn(router, 'navigationPredicate').and.callThrough();
+    var status = await router.canNavigate('/');
+
+    expect(status).toBe(true);
+    expect(router.navigationPredicate).toHaveBeenCalled();
+  }));
+
+
+  describe('with child routers', () => {
+    var child, childView;
+
+    beforeEach(() => {
+      child = router.childRouter();
+      childView = makeMockComponent('child');
+      child.registerViewPort(childView);
+    });
+
+    it('should check if it can navigate', sync(async () => {
+      spyOn(child, 'navigationPredicate').and.callThrough();
+      var status = await router.canNavigate('/');
+
+      expect(status).toBe(true);
+      expect(child.navigationPredicate).toHaveBeenCalled();
+    }));
+
+    it('should activate viewports on navigation', sync(async () => {
+      await router.navigate('/');
+
+      expect(view.activate).toHaveBeenCalled();
+      expect(childView.activate).toHaveBeenCalled();
+    }));
+
+    it('should not activate viewports if a predicate returns false', sync(async () => {
+      child.navigationPredicate = () => Promise.resolve(false);
+      await router.navigate('/');
+
+      expect(view.activate).not.toHaveBeenCalled();
+      expect(childView.activate).not.toHaveBeenCalled();
+    }));
+  });
+
+});
+
+function sync (fn) {
+  return async (done) => {
+    try {
+      await fn();
+    } catch (e) {
+      expect(e.stack).toBe('');
+    } finally {
+      done();
+    }
+  }
+}
+
+function makeMockComponent (name = '') {
+  return {
+    activate: jasmine.createSpy(name + ' activate component')
+  };
+}

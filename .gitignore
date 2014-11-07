@@ -1,7 +1,7 @@
 node_modules
 bower_components
 compiled
-dist
+build
 sauce_connect.log
 .idea
 .DS_STORE
