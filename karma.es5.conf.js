@@ -1,4 +1,7 @@
-// This runs the tests for Angular 1.x
+// This runs the tests for the router in Angular 1.x
+
+var sauceConfig = require('./config/karma.sauce.conf');
+var travisConfig = require('./config/karma.travis.conf');
 
 module.exports = function(config) {
   config.set({
@@ -18,4 +21,9 @@ module.exports = function(config) {
 
     browsers: ['Chrome']
   });
+
+  if (process.argv.indexOf('--sauce') > -1) {
+    sauceConfig(config);
+    travisConfig(config);
+  }
 };

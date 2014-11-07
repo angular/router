@@ -1,7 +1,8 @@
-// Karma configuration
-// Generated on Fri Mar 14 2014 15:01:19 GMT-0700 (PDT)
+// This runs the tests for the router in Angular 2.x
 
 var traceurOptions = require('./config').traceur;
+var sauceConfig = require('./config/karma.sauce.conf');
+var travisConfig = require('./config/karma.travis.conf');
 
 module.exports = function(config) {
   config.set({
@@ -33,4 +34,9 @@ module.exports = function(config) {
       }
     }
   });
+
+  if (process.argv.indexOf('--sauce') > -1) {
+    sauceConfig(config);
+    travisConfig(config);
+  }
 };
