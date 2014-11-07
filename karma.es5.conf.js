@@ -4,7 +4,7 @@ var sauceConfig = require('./config/karma.sauce.conf');
 var travisConfig = require('./config/karma.travis.conf');
 
 module.exports = function(config) {
-  config.set({
+  var options = {
     frameworks: ['jasmine'],
 
     files: [
@@ -20,10 +20,12 @@ module.exports = function(config) {
     ],
 
     browsers: ['Chrome']
-  });
+  };
 
   if (process.argv.indexOf('--sauce') > -1) {
-    sauceConfig(config);
-    travisConfig(config);
+    sauceConfig(options);
+    travisConfig(options);
   }
+
+  config.set(options);
 };

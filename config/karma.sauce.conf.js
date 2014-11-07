@@ -21,15 +21,12 @@ var CUSTOM_LAUNCHERS = {
   }
 };
 
-module.exports = function(config) {
-  config.set({
-    sauceLabs: {
-      testName: 'Angular Router Unit Tests',
-      startConnect: true
-    },
-    customLaunchers: CUSTOM_LAUNCHERS,
-    browsers: Object.keys(CUSTOM_LAUNCHERS),
-    reporters: ['dots', 'saucelabs'],
-    singleRun: true
-  });
+module.exports = function(options) {
+  options.sauceLabs = {
+    testName: 'Angular Router Unit Tests',
+    startConnect: true
+  };
+  options.customLaunchers = CUSTOM_LAUNCHERS;
+  options.browsers = Object.keys(CUSTOM_LAUNCHERS);
+  options.reporters = ['dots', 'saucelabs'];
 };

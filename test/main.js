@@ -1,6 +1,6 @@
 // The entry point for unit tests.
 
-var TEST_REGEXP = /_spec\.js$/;
+var TEST_REGEXP = /\.spec\.js$/;
 
 function pathToModule(path) {
   return path.replace(/^\/base\//, '').replace(/\.js$/, '');

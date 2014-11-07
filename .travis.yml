@@ -17,7 +17,7 @@ install:
 
 script:
   - gulp build
-  - karma start --single-run --sauce
-  - karma start --single-run --sauce karma.es5.conf.js
+  - karma start --sauce
+  - karma start karma.es5.conf.js --sauce
 
 after_script:
