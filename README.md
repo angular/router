@@ -1,7 +1,8 @@
 # The New Angular Router
 [![Build Status](https://travis-ci.org/angular/router.svg?branch=master)](https://travis-ci.org/angular/router)
 
-A new router for Angular 2.0, written in [AtScript].
+A new router for Angular 1.3 and 2.0, written with
+[AtScript](https://docs.google.com/document/d/11YUzC-1d0V1-Q3V0fQ7KSit97HnZoKVygDxpWzEYW0U/).
 
 This router's feature set is derived from Durandal's router, but the design and implementation are
 very different.
