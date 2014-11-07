@@ -20,8 +20,8 @@ install:
 
 script:
   - gulp build
-  - karma start --single-run --browsers SL_Chrome --reporters dots
-  - karma start --single-run --browsers SL_Chrome --reporters dots karma.es5.conf.js
+  - karma start --single-run --sauce
+  - karma start --single-run --sauce karma.es5.conf.js
   - ./scripts/run_protractor_tests.sh
 
 after_script:
