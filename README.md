@@ -1,41 +1,15 @@
-# Angular 2.0 Router
+# The New Angular Router
 
-A new router for Angular 2.0, written in ES6.
+A new router for Angular 2.0, written in [AtScript].
 
 This router's feature set is derived from Durandal's router, but the design and implementation are
 very different.
+
 Additionally, this router aims to fulfill the requirements mentioned in the [Angular 2.0 router design document](https://docs.google.com/document/d/1I3UC0RrgCh9CKrLxeE4sxwmNSBl3oSXQGt9g3KZnTJI).
 
 The router's design is based around the idea of a customizable async pipeline and screen activator.
-Generally speaking, the router allows for great customization at almost every point, understands basic conventions, and has sensible defaults.
-
-
-## Setup
-
-1. Install [NodeJS](http://nodejs.org/)
-2. Install [Gulp](http://gulpjs.com/) with `npm install -g gulp`
-3. Install [Bower](http://bower.io/) with `npm install -g bower`
-4. Clone and `cd` into this repo.
-5. From the repo, install npm dependencies with `npm install`
-6. From the repo, install bower dependencies with `bower install`
-
-
-## Running the Examples
-
-1. Start the development server with `gulp build watch serve`
-2. Open a browser and navigate to [http://localhost:8000/temp/examples/index.html](http://localhost:8000/temp/examples/index.html)
-
-
-## Development
-
-1. Install [Karma](http://karma-runner.github.io/) with `npm install -g karma`
-2. Install the cli for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
-3. Start karma with `karma start`
-4. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
-
-### Code Style Guide
-
-* Use 2 spaces as tab, see `.editorconfig`
+Generally speaking, the router allows for great customization at almost every point,
+understands basic conventions, and has sensible defaults.
 
 
 ## Features
@@ -84,29 +58,6 @@ router.configure(config => {
 
 
 
-## Implementation Details
 
-* Uses the [route-recognizer.js](https://github.com/tildeio/route-recognizer) library to match routes. This allows for static routes, named parameters, splats and query strings.
-
-* Uses a consistent async programming model with promises.
-
-* The async pipeline pulls from an internal instruction queue which handles "overlapping" route requests common in async scenarios. There are hooks provided to tap into the internal instruction data and control what the router is doing.
-
-* Fully integrated with DI. In particular, this helps set up child router scenarios.
-
-* Supports manipulating history for replacing, with or without triggering a route activation.
-
-### Screen Activator
-
-TODO: explain screen activator
-
-The router understands the notion of "screen activation" for components, enabling them to allow/reject navigation into or out of a component.
-
-* Lifecycle hooks include: `canActivate`, `activate`, `canDeactivate` and `deactivate`.
-* These hooks understand promises, as well as a few other "primitives" (for instance a `Redirect` command object).
-* You can "teach" the activation mechanism about new primitives.
-* The router uses the activator mechanism to pass parameters to a component. The `canActivate` and `activate` callbacks recieve the route parameters, parsed query string parameters and route config which they can use to control navigation or load model data.
-
-
-## To Do
-* Tests!!! (Coming Soon)
+## License
+Apache 2
