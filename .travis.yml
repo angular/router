@@ -22,6 +22,7 @@ script:
   - gulp build
   - gulp templates
   - karma start --single-run --browsers SL_Chrome --reporters dots
+  - karma start --single-run --browsers SL_Chrome --reporters dots karma.es5.conf.js
   - ./scripts/run_protractor_tests.sh
 
 after_script:
