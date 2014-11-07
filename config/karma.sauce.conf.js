@@ -25,10 +25,7 @@ module.exports = function(config) {
   config.set({
     sauceLabs: {
       testName: 'Angular Router Unit Tests',
-      startConnect: true,
-      options: {
-        'selenium-version': '2.37.0'
-      }
+      startConnect: true
     },
     customLaunchers: CUSTOM_LAUNCHERS,
     browsers: Object.keys(CUSTOM_LAUNCHERS),
