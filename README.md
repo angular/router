@@ -1,4 +1,5 @@
 # The New Angular Router
+[![Build Status](https://travis-ci.org/angular/router.svg?branch=master)](https://travis-ci.org/angular/router)
 
 A new router for Angular 2.0, written in [AtScript].
 
