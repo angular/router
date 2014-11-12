@@ -7,7 +7,7 @@ ddescribe('Router', () => {
   beforeEach(() => {
     router = new Router();
     router.config([
-      { path: '/', handler: x => ({component: 'user'}) }
+      { path: '/a', component: 'user' }
     ]);
     view = makeMockComponent('root');
     router.registerViewPort(view);
@@ -18,22 +18,22 @@ ddescribe('Router', () => {
   });
 
   it('should activate viewports on navigation', sync(async () => {
-    await router.navigate('/');
+    await router.navigate('/a');
     expect(view.activate).toHaveBeenCalled();
   }));
 
   it('should not reactivate when called with the same URL', sync(async () => {
-    await router.navigate('/');
+    await router.navigate('/a');
     expect(view.activate).toHaveBeenCalled();
 
     view.activate.calls.reset();
-    await router.navigate('/');
+    await router.navigate('/a');
     expect(view.activate).not.toHaveBeenCalled();
   }));
 
   it('should check if it can navigate', sync(async () => {
     spyOn(router, 'navigationPredicate').and.callThrough();
-    var status = await router.canNavigate('/');
+    var status = await router.canNavigate('/a');
 
     expect(status).toBe(true);
     expect(router.navigationPredicate).toHaveBeenCalled();
@@ -45,20 +45,23 @@ ddescribe('Router', () => {
 
     beforeEach(() => {
       child = router.childRouter();
+      child.config({
+        path: '/b', component: 'user'
+      });
       childView = makeMockComponent('child');
       child.registerViewPort(childView);
     });
 
     it('should check if it can navigate', sync(async () => {
       spyOn(child, 'navigationPredicate').and.callThrough();
-      var status = await router.canNavigate('/');
+      var status = await router.canNavigate('/a/b');
 
       expect(status).toBe(true);
       expect(child.navigationPredicate).toHaveBeenCalled();
     }));
 
     it('should activate viewports on navigation', sync(async () => {
-      await router.navigate('/');
+      await router.navigate('/a/b');
 
       expect(view.activate).toHaveBeenCalled();
       expect(childView.activate).toHaveBeenCalled();
@@ -66,7 +69,7 @@ ddescribe('Router', () => {
 
     it('should not activate viewports if a predicate returns false', sync(async () => {
       child.navigationPredicate = () => Promise.resolve(false);
-      await router.navigate('/');
+      await router.navigate('/a/b');
 
       expect(view.activate).not.toHaveBeenCalled();
       expect(childView.activate).not.toHaveBeenCalled();
@@ -89,6 +92,6 @@ function sync (fn) {
 
 function makeMockComponent (name = '') {
   return {
-    activate: jasmine.createSpy(name + ' activate component')
+    activate: jasmine.createSpy(name + ' activate component').and.returnValue(Promise.resolve())
   };
 }
