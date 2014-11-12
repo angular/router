@@ -22,7 +22,7 @@ describe('routerComponent', function () {
   }));
 
 
-  it('should get a root router instance', inject(function (router) {
+  it('should get the root router instance if it has no children', inject(function (router) {
     putIntoCache('router.html', '<div></div>');
     compile('<router-component component-name="router"></router-component>');
 
@@ -30,11 +30,11 @@ describe('routerComponent', function () {
   }));
 
 
-  it('should get a child router instance', inject(function (router) {
+  it('should get the root router instance if it has children', inject(function (router) {
     putIntoCache('router.html', '<div router-view-port></div>');
     compile('<router-component component-name="router"></router-component>');
 
-    expect(ctrlRouter.parent).toBe(router);
+    expect(ctrlRouter).toBe(router);
   }));
 
   function putIntoCache (name, template) {

@@ -5,17 +5,26 @@ describe('routerViewPort', function () {
   var elt,
       ctrl,
       ctrlRouter,
+      childCtrlRouter,
       $compile,
       $rootScope,
-      $templateCache;
+      $templateCache,
+      routerPassedToCtrl;
 
   beforeEach(module('ngFuturisticRouter'));
 
   beforeEach(module(function($controllerProvider) {
-    $controllerProvider.register('RouterController', function ($scope, router) {
+    $controllerProvider.register('RouterController', function (router) {
       ctrl = this;
       ctrlRouter = router;
     });
+    $controllerProvider.register('ChildRouterController', function (router) {
+      childCtrlRouter = router;
+      router.config([
+        { path: '/b', component: 'one' }
+      ]);
+    });
+
     $controllerProvider.register('UserController', UserController);
     $controllerProvider.register('GoodbyeController', UserController);
     $controllerProvider.register('OneController', boringController('number', 'one'));
@@ -32,6 +41,7 @@ describe('routerViewPort', function () {
     $templateCache = _$templateCache_;
   }));
 
+
   it('should work', inject(function (router) {
     put('router.html', '<div router-view-port></div>');
     put('user.html', '<div>hello {{name}}</div>');
@@ -39,7 +49,7 @@ describe('routerViewPort', function () {
     compile('<router-component component-name="router"></router-component>');
 
     router.config([
-      { path: '/', handler: handler({component: 'user'}) }
+      { path: '/', component: 'user' }
     ]);
 
     router.navigate('/');
@@ -48,12 +58,13 @@ describe('routerViewPort', function () {
     expect(elt.text()).toBe('hello blank');
   }));
 
+
   it('should transition between components', inject(function (router) {
     put('router.html', '<div router-view-port></div>');
     put('user.html', '<div>hello {{name}}</div>');
 
     router.config([
-      { path: '/user/:name', handler: handler({component: 'user'}) }
+      { path: '/user/:name', component: 'user' }
     ]);
     compile('<router-component component-name="router"></router-component>');
 
@@ -66,6 +77,7 @@ describe('routerViewPort', function () {
     expect(elt.text()).toBe('hello igor');
   }));
 
+
   it('should work with multiple named viewports', inject(function (router) {
     put('router.html', 'port 1: <div router-view-port="one"></div> | ' +
                        'port 2: <div router-view-port="two"></div>');
@@ -74,7 +86,7 @@ describe('routerViewPort', function () {
     put('two.html', '<div>{{number}}</div>');
 
     router.config([
-      { path: '/', handler: handler({component: {one: 'one', two: 'two'}}) }
+      { path: '/', component: {one: 'one', two: 'two'} }
     ]);
     compile('<router-component component-name="router"></router-component>');
 
@@ -83,8 +95,26 @@ describe('routerViewPort', function () {
     $rootScope.$digest();
 
     expect(elt.text()).toBe('port 1: one | port 2: two');
-
   }));
+
+
+  it('should give child components child routers', inject(function (router) {
+    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
+    put('childRouter.html', '<div>inner { <div router-view-port></div> }</div>');
+    put('one.html', '<div>{{number}}</div>');
+
+    router.config([
+      { path: '/a', component: 'childRouter' }
+    ]);
+    compile('<router-component component-name="router"></router-component>');
+
+
+    router.navigate('/a/b');
+    $rootScope.$digest();
+
+    expect(elt.text()).toBe('outer { inner { one } }');
+  }));
+
 
   function handler (obj) {
     return function () {

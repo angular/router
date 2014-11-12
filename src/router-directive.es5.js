@@ -5,7 +5,8 @@
 angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
   directive('routerComponent', routerComponentDirective).
   value('routeParams', {}).
-  directive('routerViewPort', routerViewPortDirective);
+  directive('routerViewPort', routerViewPortDirective).
+  directive('routerLink', routerLinkDirective);
 
 /*
  * A component is:
@@ -28,7 +29,9 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
   };
 
   function routerComponentLinkFn(scope, elt, attrs, ctrl) {
-    var parentRouter = (ctrl && ctrl.$$router) || router;
+    var childRouter = (ctrl && ctrl.$$router && ctrl.$$router.childRouter()) || router;
+    var parentRouter = childRouter.parent || childRouter;
+
     var componentName = attrs.routerComponent || attrs.componentName;
 
     var controllerName = componentName[0].toUpperCase() +
@@ -49,14 +52,9 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
         locals.routeParams = parentRouter.context.params;
       }
 
-      // if the template has router-view-ports then
-      // we should create a child router
-      if (template.indexOf('router-view-port') > -1) {
-        scope.$$routerComponentController.$$router =
-            locals.router =
-            parentRouter.childRouter();
-      }
+      scope.$$routerComponentController.$$router = locals.router = childRouter;
 
+      // TODO: the pipeline should probably be responsible for creating this...
       var ctrl = $controller(controllerName, locals);
 
       link(scope);
@@ -81,7 +79,7 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
  *
  * The value for the routerViewComponent is optional
  */
-function routerViewPortDirective($compile) {
+function routerViewPortDirective($compile, $templateRequest) {
   return {
     restrict: 'AE',
     require: '^^routerComponent',
@@ -95,14 +93,16 @@ function routerViewPortDirective($compile) {
 
     router.registerViewPort({
       activate: function (instruction) {
-        var componentName = typeof instruction.component === 'string' ?
-            instruction.component : instruction.component[name];
+        var component = instruction[0].handler.component;
+        var componentName = typeof component === 'string' ? component : component[name];
 
         var template = makeComponentString(componentName);
         elt.html(template);
         var link = $compile(elt.contents());
         ctrl.$$router.context = instruction[0];
         link(scope.$new());
+
+        return $templateRequest(componentName + '.html');
       }
     }, name);
   }
@@ -113,4 +113,25 @@ function makeComponentString(name) {
     '<router-component component-name="', name, '">',
     '</router-component>'
   ].join('');
+}
+
+function routerLinkDirective(router) {
+  return {
+    require: '^^routerComponent',
+    restrict: 'A',
+    link: routerLinkDirectiveLinkFn
+  };
+
+  function routerLinkDirectiveLinkFn(scope, elt, attrs, ctrl) {
+    // TODO: use this to generate hrefs
+    //var router = ctrl.$$router;
+
+    // if the element is an href, we should...
+    //if ()
+
+    elt.on('click', function (ev) {
+      router.navigate(attrs.href);
+      ev.preventDefault();
+    });
+  }
 }

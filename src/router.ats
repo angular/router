@@ -5,14 +5,17 @@
 import RouteRecognizer from 'route-recognizer';
 
 export class Router {
-  constructor(parent) {
+  constructor(parent, configPrefix) {
     this.parent = parent || null;
     this.ports = {};
     this.children = [];
     this.context = null;
 
     // this is a hack
-    this.recognizer = new (RouteRecognizer.default || RouteRecognizer)();
+    var RouteRecognizerConstructor = (RouteRecognizer.default || RouteRecognizer);
+
+    this.recognizer = new RouteRecognizerConstructor();
+    this.childRecognizer = new RouteRecognizerConstructor();
   }
 
 
@@ -38,7 +41,28 @@ export class Router {
    * config
    */
   config(mapping) {
-    this.recognizer.add(mapping);
+    if (mapping instanceof Array) {
+      return mapping.forEach(nav => this.config(nav));
+    }
+    var handler = mapping.component;
+
+    if (typeof handler === 'string') {
+      mapping.handler = { component: handler };
+    } else if (typeof handler === 'function') {
+      mapping.handler = handler();
+    } else if (!mapping.handler) {
+      mapping.handler = { component: handler };
+    }
+
+    this.recognizer.add([mapping]);
+
+    var withChild = copy(mapping);
+    withChild.path += '/*childRoute';
+    this.childRecognizer.add([{
+      path: withChild.path,
+      handler: withChild
+    }]);
+
   }
 
 
@@ -51,16 +75,27 @@ export class Router {
     }
     this.previousUrl = url;
     var context = this.recognizer.recognize(url);
+
+    if (context == null || context.length < 1) {
+      context = this.childRecognizer.recognize(url);
+    }
+
     if (context == null || context.length < 1) {
       return Promise.reject();
     }
 
+    // TODO: not sure if I can compare by identity here
     if (this.context === context[0]) {
       return Promise.resolve();
     }
     this.context = context[0];
-    context.component = this.context.handler().component;
 
+    // TODO: not sure what types of things to pass to the handler
+    //       the handler should represent a deserialization from params to resources,
+    //       but I think this is better owned by the pipeline
+    context.component = this.context.handler.component;
+
+    // TODO: this will become the pipeline
     return this.canNavigate(context)
                .then(status => (status && this.activatePorts(context)))
                .then(() => this.previousContext = context);
@@ -72,8 +107,14 @@ export class Router {
    * update viewports accordingly
    */
   activatePorts(context) {
-    forEach(this.ports, port => port.activate(context));
-    this.children.forEach(child => child.activatePorts(context));
+    var activations = mapObj(this.ports, port => port.activate(context));
+
+    Promise.all(activations).then(() => {
+      if (context[0].params.childRoute) {
+        var subNav = '/' + context[0].params.childRoute;
+        return Promise.all(this.children.map(child => child.navigate(subNav)));
+      }
+    });
   }
 
 
@@ -109,6 +150,10 @@ export class Router {
   navigationPredicate(context) {
     return Promise.resolve(true);
   }
+}
+
+function copy(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 function forEach(obj, fn) {
