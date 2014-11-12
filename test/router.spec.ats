@@ -45,9 +45,10 @@ ddescribe('Router', () => {
 
     beforeEach(() => {
       child = router.childRouter();
-      child.config({
-        path: '/b', component: 'user'
-      });
+      child.config([
+        { path: '/b', component: 'user' },
+        { path: '/c', component: 'user' }
+      ]);
       childView = makeMockComponent('child');
       child.registerViewPort(childView);
     });
@@ -64,6 +65,21 @@ ddescribe('Router', () => {
       await router.navigate('/a/b');
 
       expect(view.activate).toHaveBeenCalled();
+      expect(childView.activate).toHaveBeenCalled();
+    }));
+
+    it('should not activate parent viewports when the matched segment stays the same', sync(async () => {
+      await router.navigate('/a/b');
+
+      expect(view.activate).toHaveBeenCalled();
+      expect(childView.activate).toHaveBeenCalled();
+
+      view.activate.calls.reset();
+      childView.activate.calls.reset();
+
+      await router.navigate('/a/c');
+
+      expect(view.activate).not.toHaveBeenCalled();
       expect(childView.activate).toHaveBeenCalled();
     }));
 

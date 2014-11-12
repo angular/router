@@ -4,6 +4,8 @@
 
 import RouteRecognizer from 'route-recognizer';
 
+const CHILD_ROUTE_SUFFIX = '/*childRoute';
+
 export class Router {
   constructor(parent, configPrefix) {
     this.parent = parent || null;
@@ -57,7 +59,7 @@ export class Router {
     this.recognizer.add([mapping]);
 
     var withChild = copy(mapping);
-    withChild.path += '/*childRoute';
+    withChild.path += CHILD_ROUTE_SUFFIX;
     this.childRecognizer.add([{
       path: withChild.path,
       handler: withChild
@@ -76,11 +78,20 @@ export class Router {
     this.previousUrl = url;
     var context = this.recognizer.recognize(url);
 
-    if (context == null || context.length < 1) {
+
+    if (notMatched(context)) {
       context = this.childRecognizer.recognize(url);
+      var path = context[0].handler.path;
+      var segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
+
+      if (this.previousSegment === segment) {
+        return this.navigateChildren(context);
+      }
+      this.previousSegment = segment;
+
     }
 
-    if (context == null || context.length < 1) {
+    if (notMatched(context)) {
       return Promise.reject();
     }
 
@@ -102,6 +113,15 @@ export class Router {
   }
 
 
+  navigateChildren(context) {
+    if (context[0].params.childRoute) {
+      var subNav = '/' + context[0].params.childRoute;
+      return Promise.all(this.children.map(child => child.navigate(subNav)));
+    }
+    return Promise.resolve();
+  }
+
+
   /*
    * given a context obj
    * update viewports accordingly
@@ -109,12 +129,7 @@ export class Router {
   activatePorts(context) {
     var activations = mapObj(this.ports, port => port.activate(context));
 
-    return Promise.all(activations).then(() => {
-      if (context[0].params.childRoute) {
-        var subNav = '/' + context[0].params.childRoute;
-        return Promise.all(this.children.map(child => child.navigate(subNav)));
-      }
-    });
+    return Promise.all(activations).then(() => this.navigateChildren(context));
   }
 
 
@@ -154,6 +169,10 @@ export class Router {
 
 function copy(obj) {
   return JSON.parse(JSON.stringify(obj));
+}
+
+function notMatched(context) {
+  return context == null || context.length < 1;
 }
 
 function forEach(obj, fn) {
