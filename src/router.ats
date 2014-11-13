@@ -46,17 +46,17 @@ export class Router {
     if (mapping instanceof Array) {
       return mapping.forEach(nav => this.config(nav));
     }
-    var handler = mapping.component;
+    var component = mapping.component;
 
-    if (typeof handler === 'string') {
-      mapping.handler = { component: handler };
-    } else if (typeof handler === 'function') {
-      mapping.handler = handler();
+    if (typeof component === 'string') {
+      mapping.handler = { component: component };
+    } else if (typeof component === 'function') {
+      mapping.handler = component();
     } else if (!mapping.handler) {
-      mapping.handler = { component: handler };
+      mapping.handler = { component: component };
     }
 
-    this.recognizer.add([mapping]);
+    this.recognizer.add([mapping], { as: component });
 
     var withChild = copy(mapping);
     withChild.path += CHILD_ROUTE_SUFFIX;
@@ -64,7 +64,6 @@ export class Router {
       path: withChild.path,
       handler: withChild
     }]);
-
   }
 
 
@@ -78,9 +77,13 @@ export class Router {
     this.previousUrl = url;
     var context = this.recognizer.recognize(url);
 
-
     if (notMatched(context)) {
       context = this.childRecognizer.recognize(url);
+
+      if (notMatched(context)) {
+        return Promise.reject();
+      }
+
       var path = context[0].handler.path;
       var segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
 
@@ -88,7 +91,6 @@ export class Router {
         return this.navigateChildren(context);
       }
       this.previousSegment = segment;
-
     }
 
     if (notMatched(context)) {
@@ -106,6 +108,7 @@ export class Router {
     //       but I think this is better owned by the pipeline
     context.component = this.context.handler.component;
 
+
     // TODO: this will become the pipeline
     return this.canNavigate(context)
                .then(status => (status && this.activatePorts(context)))
@@ -121,6 +124,16 @@ export class Router {
     return Promise.resolve();
   }
 
+
+  generate(name, params) {
+    var router = this,
+        prefix = '';
+
+    while (router = router.parent) {
+      prefix += router.previousSegment;
+    }
+    return prefix + this.recognizer.generate(name, params);
+  }
 
   /*
    * given a context obj
