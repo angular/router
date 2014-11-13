@@ -116,12 +116,6 @@ describe('routerViewPort', function () {
   }));
 
 
-  function handler (obj) {
-    return function () {
-      return obj;
-    };
-  }
-
   function boringController (model, value) {
     return function ($scope) {
       $scope[model] = value;
