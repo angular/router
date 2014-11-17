@@ -4,7 +4,7 @@
 
 import RouteRecognizer from 'route-recognizer';
 
-const CHILD_ROUTE_SUFFIX = '/*childRoute';
+var CHILD_ROUTE_SUFFIX = '/*childRoute';
 
 export class Router {
   constructor(parent, configPrefix) {
