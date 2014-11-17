@@ -123,15 +123,18 @@ function routerLinkDirective(router) {
   };
 
   function routerLinkDirectiveLinkFn(scope, elt, attrs, ctrl) {
-    // TODO: use this to generate hrefs
-    //var router = ctrl.$$router;
+    var router = ctrl && ctrl.$$router;
+    if (!router) {
+      return;
+    }
 
-    // if the element is an href, we should...
-    //if ()
+    var url = router.generate(attrs.routerLink);
+    elt.attr('href', url);
 
     elt.on('click', function (ev) {
-      router.navigate(attrs.href);
+      router.navigate(url);
       ev.preventDefault();
     });
   }
+
 }

@@ -129,10 +129,20 @@ export class Router {
     var router = this,
         prefix = '';
 
+    while (router && !router.recognizer.hasRoute(name)) {
+      router = router.parent;
+    }
+
+    if (!router) {
+      throw new Error('Can not find route');
+    }
+
+    var path = router.recognizer.generate(name, params);
+
     while (router = router.parent) {
       prefix += router.previousSegment;
     }
-    return prefix + this.recognizer.generate(name, params);
+    return prefix + path;
   }
 
   /*

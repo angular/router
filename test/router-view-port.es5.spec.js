@@ -90,7 +90,6 @@ describe('routerViewPort', function () {
     ]);
     compile('<router-component component-name="router"></router-component>');
 
-
     router.navigate('/');
     $rootScope.$digest();
 
@@ -108,11 +107,27 @@ describe('routerViewPort', function () {
     ]);
     compile('<router-component component-name="router"></router-component>');
 
-
     router.navigate('/a/b');
     $rootScope.$digest();
 
     expect(elt.text()).toBe('outer { inner { one } }');
+  }));
+
+
+  it('should have links that correctly work', inject(function (router) {
+    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
+    put('one.html', '<div><a router-link="two">{{number}}</a></div>');
+
+    router.config([
+      { path: '/a', component: 'one' },
+      { path: '/b', component: 'two' }
+    ]);
+    compile('<router-component component-name="router"></router-component>');
+
+    router.navigate('/a');
+    $rootScope.$digest();
+
+    expect(elt.find('a').attr('href')).toBe('/b');
   }));
 
 

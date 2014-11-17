@@ -7,7 +7,7 @@ ddescribe('Router', () => {
   beforeEach(() => {
     router = new Router();
     router.config([
-      { path: '/a', component: 'user' }
+      { path: '/a', component: 'A' }
     ]);
     view = makeMockComponent('root');
     router.registerViewPort(view);
@@ -39,6 +39,10 @@ ddescribe('Router', () => {
     expect(router.navigationPredicate).toHaveBeenCalled();
   }));
 
+  it('should generate URLs', () => {
+    expect(router.generate('A', {})).toBe('/a');
+  });
+
 
   describe('with child routers', () => {
     var child, childView;
@@ -46,8 +50,8 @@ ddescribe('Router', () => {
     beforeEach(() => {
       child = router.childRouter();
       child.config([
-        { path: '/b', component: 'user' },
-        { path: '/c', component: 'user' }
+        { path: '/b', component: 'B' },
+        { path: '/c', component: 'C' }
       ]);
       childView = makeMockComponent('child');
       child.registerViewPort(childView);
@@ -89,6 +93,14 @@ ddescribe('Router', () => {
 
       expect(view.activate).not.toHaveBeenCalled();
       expect(childView.activate).not.toHaveBeenCalled();
+    }));
+
+    it('should generate URLs', sync(async () => {
+      // a child can't generate a route unless it has been navigated to
+      await router.navigate('/a/c');
+
+      expect(router.generate('A', {})).toBe('/a');
+      expect(child.generate('C', {})).toBe('/a/c');
     }));
   });
 
