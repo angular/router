@@ -115,7 +115,9 @@ function makeComponentString(name) {
   ].join('');
 }
 
-function routerLinkDirective(router) {
+var SOME_RE = /^(.+?)(?:\((.*)\))?$/;
+
+function routerLinkDirective(router, $location, $parse) {
   return {
     require: '^^routerComponent',
     restrict: 'A',
@@ -128,11 +130,35 @@ function routerLinkDirective(router) {
       return;
     }
 
-    var url = router.generate(attrs.routerLink);
-    elt.attr('href', url);
+    var link = attrs.routerLink || '';
+    var parts = link.match(SOME_RE);
+    var routeName = parts[1];
+    var routeParams = parts[2];
+    var url;
+
+    if (routeParams) {
+      var routeParamsGetter = $parse(routeParams);
+      // we can avoid adding a watcher if it's a literal
+      if (routeParamsGetter.constant) {
+        var params = routeParamsGetter();
+        url = router.generate(routeName, params);
+        elt.attr('href', url);
+      } else {
+        scope.$watch(function() {
+          return routeParamsGetter(scope, ctrl.one);
+        }, function(params) {
+          url = router.generate(routeName, params);
+          elt.attr('href', url);
+        }, true);
+      }
+    } else {
+      url = router.generate(routeName);
+      elt.attr('href', url);
+    }
 
     elt.on('click', function (ev) {
       router.navigate(url);
+      $location.path(url);
       ev.preventDefault();
     });
   }
