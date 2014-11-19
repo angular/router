@@ -150,7 +150,9 @@ export class Router {
    * update viewports accordingly
    */
   activatePorts(context) {
-    var activations = mapObj(this.ports, port => port.activate(context));
+    var activations = mapObj(this.ports,
+        port => Promise.resolve(port.deactivate && port.deactivate(context)).
+            then(port.activate(context)));
 
     return Promise.all(activations).then(() => this.navigateChildren(context));
   }

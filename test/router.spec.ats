@@ -72,6 +72,20 @@ ddescribe('Router', () => {
       expect(childView.activate).toHaveBeenCalled();
     }));
 
+    it('should deactivate children when navigating away', sync(async () => {
+      router.config([
+        { path: '/d', component: 'D' }
+      ]);
+
+      await router.navigate('/a/b');
+
+      expect(view.activate).toHaveBeenCalled();
+      expect(childView.activate).toHaveBeenCalled();
+
+      await router.navigate('/d');
+      expect(childView.deactivate).toHaveBeenCalled();
+    }));
+
     it('should not activate parent viewports when the matched segment stays the same', sync(async () => {
       await router.navigate('/a/b');
 
@@ -120,6 +134,7 @@ function sync (fn) {
 
 function makeMockComponent (name = '') {
   return {
-    activate: jasmine.createSpy(name + ' activate component').and.returnValue(Promise.resolve())
+    activate: jasmine.createSpy(name + ' activate component').and.returnValue(Promise.resolve()),
+    deactivate: jasmine.createSpy(name + ' deactivate component').and.returnValue(Promise.resolve())
   };
 }
