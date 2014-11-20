@@ -1,123 +1,139 @@
 import {Router} from '../src/router';
 
-ddescribe('Router', () => {
+describe('Router', () => {
   var router,
       view;
 
   beforeEach(() => {
     router = new Router();
-    router.config([
-      { path: '/a', component: 'A' }
-    ]);
     view = makeMockComponent('root');
     router.registerViewPort(view);
   });
 
-  it('should work', () => {
-    expect(router).toBeDefined();
-  });
+  describe('config', () => {
+    it('should renavigate after being configured', sync(async () => {
+      await router.navigate('/a');
+      expect(view.activate).not.toHaveBeenCalled();
 
-  it('should activate viewports on navigation', sync(async () => {
-    await router.navigate('/a');
-    expect(view.activate).toHaveBeenCalled();
-  }));
-
-  it('should not reactivate when called with the same URL', sync(async () => {
-    await router.navigate('/a');
-    expect(view.activate).toHaveBeenCalled();
-
-    view.activate.calls.reset();
-    await router.navigate('/a');
-    expect(view.activate).not.toHaveBeenCalled();
-  }));
-
-  it('should check if it can navigate', sync(async () => {
-    spyOn(router, 'navigationPredicate').and.callThrough();
-    var status = await router.canNavigate('/a');
-
-    expect(status).toBe(true);
-    expect(router.navigationPredicate).toHaveBeenCalled();
-  }));
-
-  it('should generate URLs', () => {
-    expect(router.generate('A', {})).toBe('/a');
-  });
-
-
-  describe('with child routers', () => {
-    var child, childView;
-
-    beforeEach(() => {
-      child = router.childRouter();
-      child.config([
-        { path: '/b', component: 'B' },
-        { path: '/c', component: 'C' }
+      await router.config([
+        { path: '/a', component: 'A' }
       ]);
-      childView = makeMockComponent('child');
-      child.registerViewPort(childView);
+      expect(view.activate).toHaveBeenCalled();
+    }));
+  });
+
+  describe('with a simple config', () => {
+    beforeEach(() => {
+      router.config([
+        { path: '/a', component: 'A' }
+      ]);
     });
 
-    it('should check if it can navigate', sync(async () => {
-      spyOn(child, 'navigationPredicate').and.callThrough();
-      var status = await router.canNavigate('/a/b');
-
-      expect(status).toBe(true);
-      expect(child.navigationPredicate).toHaveBeenCalled();
-    }));
+    it('should work', () => {
+      expect(router).toBeDefined();
+    });
 
     it('should activate viewports on navigation', sync(async () => {
-      await router.navigate('/a/b');
-
+      await router.navigate('/a');
       expect(view.activate).toHaveBeenCalled();
-      expect(childView.activate).toHaveBeenCalled();
     }));
 
-    it('should deactivate children when navigating away', sync(async () => {
-      router.config([
-        { path: '/d', component: 'D' }
-      ]);
-
-      await router.navigate('/a/b');
-
+    it('should not reactivate when called with the same URL', sync(async () => {
+      await router.navigate('/a');
       expect(view.activate).toHaveBeenCalled();
-      expect(childView.activate).toHaveBeenCalled();
-
-      await router.navigate('/d');
-      expect(childView.deactivate).toHaveBeenCalled();
-    }));
-
-    it('should not activate parent viewports when the matched segment stays the same', sync(async () => {
-      await router.navigate('/a/b');
-
-      expect(view.activate).toHaveBeenCalled();
-      expect(childView.activate).toHaveBeenCalled();
 
       view.activate.calls.reset();
-      childView.activate.calls.reset();
-
-      await router.navigate('/a/c');
-
+      await router.navigate('/a');
       expect(view.activate).not.toHaveBeenCalled();
-      expect(childView.activate).toHaveBeenCalled();
     }));
 
-    it('should not activate viewports if a predicate returns false', sync(async () => {
-      child.navigationPredicate = () => Promise.resolve(false);
-      await router.navigate('/a/b');
+    it('should check if it can navigate', sync(async () => {
+      spyOn(router, 'navigationPredicate').and.callThrough();
+      var status = await router.canNavigate('/a');
 
-      expect(view.activate).not.toHaveBeenCalled();
-      expect(childView.activate).not.toHaveBeenCalled();
+      expect(status).toBe(true);
+      expect(router.navigationPredicate).toHaveBeenCalled();
     }));
 
-    it('should generate URLs', sync(async () => {
-      // a child can't generate a route unless it has been navigated to
-      await router.navigate('/a/c');
-
+    it('should generate URLs', () => {
       expect(router.generate('A', {})).toBe('/a');
-      expect(child.generate('C', {})).toBe('/a/c');
-    }));
-  });
+    });
 
+
+    describe('with child routers', () => {
+      var child, childView;
+
+      beforeEach(() => {
+        child = router.childRouter();
+        child.config([
+          { path: '/b', component: 'B' },
+          { path: '/c', component: 'C' }
+        ]);
+        childView = makeMockComponent('child');
+        child.registerViewPort(childView);
+      });
+
+      it('should check if it can navigate', sync(async () => {
+        spyOn(child, 'navigationPredicate').and.callThrough();
+        var status = await router.canNavigate('/a/b');
+
+        expect(status).toBe(true);
+        expect(child.navigationPredicate).toHaveBeenCalled();
+      }));
+
+      it('should activate viewports on navigation', sync(async () => {
+        await router.navigate('/a/b');
+
+        expect(view.activate).toHaveBeenCalled();
+        expect(childView.activate).toHaveBeenCalled();
+      }));
+
+      it('should deactivate children when navigating away', sync(async () => {
+        router.config([
+          { path: '/d', component: 'D' }
+        ]);
+
+        await router.navigate('/a/b');
+
+        expect(view.activate).toHaveBeenCalled();
+        expect(childView.activate).toHaveBeenCalled();
+
+        await router.navigate('/d');
+        expect(childView.deactivate).toHaveBeenCalled();
+      }));
+
+      it('should not activate parent viewports when the matched segment stays the same', sync(async () => {
+        await router.navigate('/a/b');
+
+        expect(view.activate).toHaveBeenCalled();
+        expect(childView.activate).toHaveBeenCalled();
+
+        view.activate.calls.reset();
+        childView.activate.calls.reset();
+
+        await router.navigate('/a/c');
+
+        expect(view.activate).not.toHaveBeenCalled();
+        expect(childView.activate).toHaveBeenCalled();
+      }));
+
+      it('should not activate viewports if a predicate returns false', sync(async () => {
+        child.navigationPredicate = () => Promise.resolve(false);
+        await router.navigate('/a/b');
+
+        expect(view.activate).not.toHaveBeenCalled();
+        expect(childView.activate).not.toHaveBeenCalled();
+      }));
+
+      it('should generate URLs', sync(async () => {
+        // a child can't generate a route unless it has been navigated to
+        await router.navigate('/a/c');
+
+        expect(router.generate('A', {})).toBe('/a');
+        expect(child.generate('C', {})).toBe('/a/c');
+      }));
+    });
+  });
 });
 
 function sync (fn) {

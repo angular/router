@@ -64,14 +64,16 @@ export class Router {
       path: withChild.path,
       handler: withChild
     }]);
+
+    return this.renavigate();
   }
 
 
   /*
-   * gets passed a context object
+   * public API for navigating from a URL
    */
-  navigate(url:String) {
-    if (url === this.previousUrl) {
+  navigate(url:String, force:Boolean=false) {
+    if (!force && url === this.previousUrl) {
       return Promise.resolve();
     }
     this.previousUrl = url;
@@ -115,6 +117,13 @@ export class Router {
                .then(() => this.previousContext = context);
   }
 
+  renavigate() {
+    var router = this;
+    while (router.parent) {
+      router = router.parent;
+    }
+    return router.navigate(router.previousUrl, true);
+  }
 
   navigateChildren(context) {
     if (context[0].params.childRoute) {
