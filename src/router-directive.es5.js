@@ -5,6 +5,7 @@
 angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
   directive('routerComponent', routerComponentDirective).
   value('routeParams', {}).
+  provider('componentLoader', componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
   directive('routerLink', routerLinkDirective);
 
@@ -18,7 +19,7 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  *
  *
  */
-function routerComponentDirective($controller, $compile, $templateRequest, router) {
+function routerComponentDirective($controller, $compile, $templateRequest, router, componentLoader) {
   return {
     restrict: 'AE',
     scope: {},
@@ -34,11 +35,10 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
 
     var componentName = attrs.routerComponent || attrs.componentName;
 
-    var controllerName = componentName[0].toUpperCase() +
-                         componentName.substr(1) +
-                         'Controller';
+    var component = componentLoader(componentName);
+    var controllerName = component.controllerName;
 
-    $templateRequest(componentName + '.html').then(function(template) {
+    $templateRequest(component.template).then(function(template) {
 
       elt.html(template);
 
@@ -163,4 +163,38 @@ function routerLinkDirective(router, $location, $parse) {
     });
   }
 
+}
+
+/*
+ * This lets you set up your ~conventions~
+ */
+function componentLoaderProvider() {
+  var componentToCtrl = function componentToCtrlDefault(name) {
+    return name[0].toUpperCase() +
+        name.substr(1) +
+        'Controller';
+  };
+
+  var componentToTemplate = function componentToTemplateDefault(name) {
+    return name + '.html';
+  };
+
+  function componentLoader(name) {
+    return {
+      controllerName: componentToCtrl(name),
+      template: componentToTemplate(name),
+    };
+  }
+
+  return {
+    $get: function () {
+      return componentLoader;
+    },
+    setCtrlNameMapping: function(newFn) {
+      componentToCtrl = newFn;
+    },
+    setTemplateMapping: function(newFn) {
+      componentToTemplate = newFn;
+    }
+  };
 }
