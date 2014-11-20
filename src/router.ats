@@ -40,7 +40,7 @@ export class Router {
 
 
   /*
-   * config
+   * update the routing configuation and trigger a navigation
    */
   config(mapping) {
     if (mapping instanceof Array) {
