@@ -10,6 +10,10 @@ describe('Router', () => {
     router.registerViewPort(view);
   });
 
+  it('should initialize', () => {
+    expect(router).toBeDefined();
+  });
+
   describe('config', () => {
     it('should renavigate after being configured', sync(async () => {
       await router.navigate('/a');
@@ -27,10 +31,6 @@ describe('Router', () => {
       router.config([
         { path: '/a', component: 'A' }
       ]);
-    });
-
-    it('should work', () => {
-      expect(router).toBeDefined();
     });
 
     it('should activate viewports on navigation', sync(async () => {
