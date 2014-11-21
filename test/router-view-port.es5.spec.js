@@ -4,50 +4,42 @@ describe('routerViewPort', function () {
 
   var elt,
       ctrl,
-      ctrlRouter,
-      childCtrlRouter,
       $compile,
       $rootScope,
       $templateCache,
-      $controllerProvider,
-      routerPassedToCtrl;
+      $controllerProvider;
 
-  beforeEach(module('ngFuturisticRouter'));
+  beforeEach(function() {
+    module('ngFuturisticRouter');
+    module(function(_$controllerProvider_) {
+      $controllerProvider = _$controllerProvider_;
+    });
 
-  beforeEach(module(function(_$controllerProvider_) {
-    $controllerProvider = _$controllerProvider_;
+    inject(function(_$compile_, _$rootScope_, _$templateCache_) {
+      $compile = _$compile_;
+      $rootScope = _$rootScope_;
+      $templateCache = _$templateCache_;
+    });
+
+    put('router.html', '<div router-view-port></div>');
     $controllerProvider.register('RouterController', function (router) {
       ctrl = this;
-      ctrlRouter = router;
-    });
-    $controllerProvider.register('ChildRouterController', function (router) {
-      childCtrlRouter = router;
-      router.config([
-        { path: '/b', component: 'one' }
-      ]);
     });
 
-    $controllerProvider.register('UserController', UserController);
-    $controllerProvider.register('GoodbyeController', UserController);
-    $controllerProvider.register('OneController', boringController('number', 'one'));
-    $controllerProvider.register('TwoController', boringController('number', 'two'));
-
-    function UserController($scope, routeParams) {
-      $scope.name = routeParams.name || 'blank';
-    }
-  }));
-
-  beforeEach(inject(function(_$compile_, _$rootScope_, _$templateCache_) {
-    $compile = _$compile_;
-    $rootScope = _$rootScope_;
-    $templateCache = _$templateCache_;
-  }));
-
-
-  it('should work', inject(function (router) {
-    put('router.html', '<div router-view-port></div>');
     put('user.html', '<div>hello {{name}}</div>');
+    $controllerProvider.register('UserController', function($scope, routeParams) {
+      $scope.name = routeParams.name || 'blank';
+    });
 
+    put('one.html', '<div>{{number}}</div>');
+    $controllerProvider.register('OneController', boringController('number', 'one'));
+
+    put('two.html', '<div>{{number}}</div>');
+    $controllerProvider.register('TwoController', boringController('number', 'two'));
+  });
+
+
+  it('should work in a simple case', inject(function (router) {
     compile('<router-component component-name="router"></router-component>');
 
     router.config([
@@ -62,9 +54,6 @@ describe('routerViewPort', function () {
 
 
   it('should transition between components', inject(function (router) {
-    put('router.html', '<div router-view-port></div>');
-    put('user.html', '<div>hello {{name}}</div>');
-
     router.config([
       { path: '/user/:name', component: 'user' }
     ]);
@@ -84,9 +73,6 @@ describe('routerViewPort', function () {
     put('router.html', 'port 1: <div router-view-port="one"></div> | ' +
                        'port 2: <div router-view-port="two"></div>');
 
-    put('one.html', '<div>{{number}}</div>');
-    put('two.html', '<div>{{number}}</div>');
-
     router.config([
       { path: '/', component: {one: 'one', two: 'two'} }
     ]);
@@ -100,9 +86,17 @@ describe('routerViewPort', function () {
 
 
   it('should give child components child routers', inject(function (router) {
+    var childCtrlRouter;
+
+    $controllerProvider.register('ChildRouterController', function (router) {
+      childCtrlRouter = router;
+      router.config([
+        { path: '/b', component: 'one' }
+      ]);
+    });
+
     put('router.html', '<div>outer { <div router-view-port></div> }</div>');
     put('childRouter.html', '<div>inner { <div router-view-port></div> }</div>');
-    put('one.html', '<div>{{number}}</div>');
 
     router.config([
       { path: '/a', component: 'childRouter' }
