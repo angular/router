@@ -9,6 +9,7 @@ var CHILD_ROUTE_SUFFIX = '/*childRoute';
 export class Router {
   constructor(parent, configPrefix) {
     this.parent = parent || null;
+    this.navigating = false;
     this.ports = {};
     this.children = [];
     this.context = null;
@@ -73,6 +74,15 @@ export class Router {
    * public API for navigating from a URL
    */
   navigate(url:String, force:Boolean=false) {
+
+    // TODO: test this behavior
+    // we need this check because a navigation might cause additional config
+    // to be loaded and we dont want to kick off two navigations
+    // also maybe this should return a promise that resolves when the naviagation finishes
+    if (this.navigating) {
+      return Promise.resolve();
+    }
+
     if (!force && url === this.previousUrl) {
       return Promise.resolve();
     }
@@ -104,25 +114,29 @@ export class Router {
       return Promise.resolve();
     }
     this.context = context[0];
+    this.navigating = true;
 
     // TODO: not sure what types of things to pass to the handler
     //       the handler should represent a deserialization from params to resources,
     //       but I think this is better owned by the pipeline
     context.component = this.context.handler.component;
 
-
     // TODO: this will become the pipeline
     return this.canNavigate(context)
                .then(status => (status && this.activatePorts(context)))
+               .then(() => this.navigating = false)
                .then(() => this.previousContext = context);
   }
 
   renavigate() {
-    var router = this;
-    while (router.parent) {
-      router = router.parent;
+    if (this.navigating) {
+      return Promise.resolve();
     }
-    return router.navigate(router.previousUrl, true);
+    if (this.previousUrl) {
+      return this.navigate(this.previousUrl, true);
+    } else {
+      return Promise.resolve();
+    }
   }
 
   navigateChildren(context) {

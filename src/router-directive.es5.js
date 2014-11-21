@@ -79,7 +79,7 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
  *
  * The value for the routerViewComponent is optional
  */
-function routerViewPortDirective($compile, $templateRequest) {
+function routerViewPortDirective($compile, $templateRequest, componentLoader) {
   return {
     restrict: 'AE',
     require: '^^routerComponent',
@@ -102,7 +102,8 @@ function routerViewPortDirective($compile, $templateRequest) {
         ctrl.$$router.context = instruction[0];
         link(scope.$new());
 
-        return $templateRequest(componentName + '.html');
+        // TODO: this is a hack to avoid ordering constraint issues
+        return $templateRequest(componentLoader(componentName).template);
       }
     }, name);
   }
