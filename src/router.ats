@@ -148,7 +148,7 @@ export class Router {
   }
 
 
-  generate(name, params) {
+  generate(name:string, params) {
     var router = this,
         prefix = '';
 
