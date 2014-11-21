@@ -60,6 +60,11 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
       link(scope);
 
       scope[componentName] = ctrl;
+
+      if (ctrl.activate) {
+        ctrl.activate();
+      }
+
     });
 
   }

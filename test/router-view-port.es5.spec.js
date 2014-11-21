@@ -9,11 +9,13 @@ describe('routerViewPort', function () {
       $compile,
       $rootScope,
       $templateCache,
+      $controllerProvider,
       routerPassedToCtrl;
 
   beforeEach(module('ngFuturisticRouter'));
 
-  beforeEach(module(function($controllerProvider) {
+  beforeEach(module(function(_$controllerProvider_) {
+    $controllerProvider = _$controllerProvider_;
     $controllerProvider.register('RouterController', function (router) {
       ctrl = this;
       ctrlRouter = router;
@@ -162,6 +164,26 @@ describe('routerViewPort', function () {
     $rootScope.$digest();
 
     expect(elt.find('a').attr('href')).toBe('/b/one');
+  }));
+
+
+  it('should run the activate hook of controllers', inject(function (router) {
+    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
+    put('activate.html', 'hi');
+
+    $controllerProvider.register('ActivateController', ActivateController);
+    function ActivateController() {}
+    var spy = ActivateController.prototype.activate = jasmine.createSpy('activate');
+
+    router.config([
+      { path: '/a', component: 'activate' }
+    ]);
+    compile('<router-component component-name="router"></router-component>');
+
+    router.navigate('/a');
+    $rootScope.$digest();
+
+    expect(spy).toHaveBeenCalled();
   }));
 
 
