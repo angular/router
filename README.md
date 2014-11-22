@@ -38,15 +38,14 @@ understands basic conventions, and has sensible defaults.
 The router config is based on a Plain Old JavaScript Object:
 
 ```javascript
-router.configure(config => {
-  config.map([
-    { pattern: ['', 'intro'],   componentUrl: 'intro' },
-    { pattern: 'one',           componentUrl: 'one',   nav: true, title: 'Question 1' },
-    { pattern: 'two',           componentUrl: 'two',   nav: true, title: 'Question 2' },
-    { pattern: 'three',         componentUrl: 'three', nav: true, title: 'Question 3' },
-    { pattern: 'end',           componentUrl: 'end' },
-  ]);
-});
+router.config([
+  { path: '',       component: 'intro' },
+  { path: 'intro',  component: 'intro' },
+  { path: 'one',    component: 'one',   nav: true, title: 'Question 1' },
+  { path: 'two',    component: 'two',   nav: true, title: 'Question 2' },
+  { path: 'three',  component: 'three', nav: true, title: 'Question 3' },
+  { path: 'end',    component: 'end' },
+]);
 ```
 
 * The router also provides a configuration DSL on top of the raw config object.
