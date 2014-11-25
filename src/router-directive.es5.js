@@ -37,35 +37,35 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
 
     var component = componentLoader(componentName);
     var controllerName = component.controllerName;
+    var componentTemplate = component.template;
 
-    $templateRequest(component.template).then(function(template) {
+    var locals = {
+      $scope: scope
+    };
 
-      elt.html(template);
+    if (parentRouter.context) {
+      locals.routeParams = parentRouter.context.params;
+    }
 
-      var link = $compile(elt.contents());
+    scope.$$routerComponentController.$$router = locals.router = childRouter;
 
-      var locals = {
-        $scope: scope
-      };
+    // TODO: the pipeline should probably be responsible for creating this...
+    var ctrl = $controller(controllerName, locals);
+    scope[componentName] = ctrl;
 
-      if (parentRouter.context) {
-        locals.routeParams = parentRouter.context.params;
-      }
-
-      scope.$$routerComponentController.$$router = locals.router = childRouter;
-
-      // TODO: the pipeline should probably be responsible for creating this...
-      var ctrl = $controller(controllerName, locals);
-
-      link(scope);
-
-      scope[componentName] = ctrl;
-
-      if (ctrl.activate) {
-        ctrl.activate();
-      }
-
-    });
+    if (!ctrl.canActivate || ctrl.canActivate()) {
+      $templateRequest(componentTemplate).
+          then(function(template) {
+            elt.html(template);
+            var link = $compile(elt.contents());
+            link(scope);
+          }).
+          then(function() {
+            if (ctrl.activate) {
+              ctrl.activate();
+            }
+          });
+    }
 
   }
 }
