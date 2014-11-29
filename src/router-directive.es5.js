@@ -23,14 +23,17 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
   return {
     restrict: 'AE',
     scope: {},
-    require: '?^^routerComponent',
+    require: ['?^^routerComponent', '?^^routerViewPort'],
     link: routerComponentLinkFn,
     controller: function () {},
     controllerAs: '$$routerComponentController'
   };
 
-  function routerComponentLinkFn(scope, elt, attrs, ctrl) {
-    var childRouter = (ctrl && ctrl.$$router && ctrl.$$router.childRouter()) || router;
+  function routerComponentLinkFn(scope, elt, attrs, ctrls) {
+    var parentComponentCtrl = ctrls[0],
+        viewPortCtrl = ctrls[1];
+
+    var childRouter = (parentComponentCtrl && parentComponentCtrl.$$router && parentComponentCtrl.$$router.childRouter()) || router;
     var parentRouter = childRouter.parent || childRouter;
 
     var componentName = attrs.routerComponent || attrs.componentName;
@@ -64,6 +67,11 @@ function routerComponentDirective($controller, $compile, $templateRequest, route
             if (ctrl.activate) {
               ctrl.activate();
             }
+            if (ctrl.canDeactivate) {
+              viewPortCtrl.canDeactivate = function (){
+                return ctrl.canDeactivate();
+              }
+            }
           });
     }
 
@@ -88,7 +96,9 @@ function routerViewPortDirective($compile, $templateRequest, componentLoader) {
   return {
     restrict: 'AE',
     require: '^^routerComponent',
-    link: viewPortLink
+    link: viewPortLink,
+    controller: function() {},
+    controllerAs: '$$routerViewPort'
   };
 
   function viewPortLink(scope, elt, attrs, ctrl) {
@@ -109,6 +119,9 @@ function routerViewPortDirective($compile, $templateRequest, componentLoader) {
 
         // TODO: this is a hack to avoid ordering constraint issues
         return $templateRequest(componentLoader(componentName).template);
+      },
+      canDeactivate: function (instruction) {
+        return !scope.$$routerViewPort.canDeactivate || scope.$$routerViewPort.canDeactivate();
       }
     }, name);
   }

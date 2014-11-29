@@ -211,7 +211,11 @@ export class Router {
    * returns a promise<bool>
    */
   navigationPredicate(context) {
-    return Promise.resolve(true);
+    var canAllViewportsDeactivate = mapObj(this.ports,
+        port => Promise.resolve(!port.canDeactivate || port.canDeactivate(context)));
+
+    return Promise.all(canAllViewportsDeactivate).
+        then(booleanReduction);
   }
 }
 

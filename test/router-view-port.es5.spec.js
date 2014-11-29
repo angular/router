@@ -205,6 +205,33 @@ describe('routerViewPort', function () {
   }));
 
 
+  it('should not activate a component when canDeactivate returns false', inject(function (router) {
+    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
+    put('activate.html', 'hi');
+
+    $controllerProvider.register('ActivateController', ActivateController);
+    function ActivateController() {}
+    ActivateController.prototype.canDeactivate = function () {
+      return false;
+    };
+    var spy = ActivateController.prototype.activate = jasmine.createSpy('activate');
+
+    router.config([
+      { path: '/a', component: 'activate' },
+      { path: '/b', component: 'one' }
+    ]);
+    compile('<router-component component-name="router"></router-component>');
+
+    router.navigate('/a');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('outer { hi }');
+
+    router.navigate('/b');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('outer { hi }');
+  }));
+
+
   it('should activate a component when canActivate returns true', inject(function (router) {
     put('router.html', '<div>outer { <div router-view-port></div> }</div>');
     put('activate.html', 'hi');
