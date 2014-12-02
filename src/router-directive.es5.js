@@ -19,7 +19,20 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  *
  *
  */
-function routerComponentDirective($controller, $compile, $templateRequest, router, componentLoader) {
+function routerComponentDirective($controller, $compile, $rootScope, $location, $templateRequest, router, componentLoader) {
+  $rootScope.$watch(function () {
+    return $location.path();
+  }, function (newUrl) {
+    router.navigate(newUrl);
+  });
+
+  var nav = router.navigate;
+  router.navigate = function (url) {
+    return nav.call(this, url).then(function () {
+      $location.path(url);
+    });
+  }
+
   return {
     restrict: 'AE',
     scope: {},
@@ -137,11 +150,14 @@ function makeComponentString(name) {
 var SOME_RE = /^(.+?)(?:\((.*)\))?$/;
 
 function routerLinkDirective(router, $location, $parse) {
+  var rootRouter = router;
+
   return {
     require: '^^routerComponent',
     restrict: 'A',
     link: routerLinkDirectiveLinkFn
   };
+
 
   function routerLinkDirectiveLinkFn(scope, elt, attrs, ctrl) {
     var router = ctrl && ctrl.$$router;
@@ -176,9 +192,8 @@ function routerLinkDirective(router, $location, $parse) {
     }
 
     elt.on('click', function (ev) {
-      router.navigate(url);
-      $location.path(url);
       ev.preventDefault();
+      rootRouter.navigate(url);
     });
   }
 

@@ -256,6 +256,35 @@ describe('routerViewPort', function () {
   }));
 
 
+  it('should change location path', inject(function (router, $location) {
+    compile('<router-component component-name="router"></router-component>');
+
+    router.config([
+      { path: '/', component: 'user' }
+    ]);
+
+    spyOn($location, 'path').and.callThrough();
+    router.navigate('/');
+    $rootScope.$digest();
+
+    expect($location.path).toHaveBeenCalledWith('/');
+  }));
+
+
+  it('should navigate when location path changes', inject(function (router, $location) {
+    compile('<router-component component-name="router"></router-component>');
+
+    router.config([
+      { path: '/user', component: 'user' }
+    ]);
+
+    $location.path('/user');
+    $rootScope.$digest();
+
+    expect(elt.text()).toBe('hello blank');
+  }));
+
+
   function boringController (model, value) {
     return function ($scope) {
       $scope[model] = value;
