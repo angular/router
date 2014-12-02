@@ -1,7 +1,7 @@
 {
-  "name": "router",
+  "name": "angular-new-router",
   "version": "0.0.0",
-  "description": "A Router Prototype for Angular 2.0",
+  "description": "A new router for both Angular 1 and Angular 2",
   "homepage": "https://github.com/angular/router",
   "repository": {
     "type": "git",
