@@ -215,10 +215,24 @@ export class Router {
    * returns a promise<bool>
    */
   navigationPredicate(context) {
-    var canAllViewportsDeactivate = mapObj(this.ports,
-        port => Promise.resolve(!port.canDeactivate || port.canDeactivate(context)));
+    return this.viewportsCanDeactivate(context).
+        then(status => (status && this.viewportsCanActivate(context)));
+  }
 
-    return Promise.all(canAllViewportsDeactivate).
+  viewportsCanDeactivate(context) {
+    return this.queryViewports(context,
+        port => Promise.resolve(!port.canDeactivate || port.canDeactivate(context)));
+  }
+
+  viewportsCanActivate(context) {
+    return this.queryViewports(context,
+        port => Promise.resolve(!port.canActivate || port.canActivate(context)));
+  }
+
+  queryViewports(context, fn) {
+    var allViewportQueries = mapObj(this.ports, fn);
+
+    return Promise.all(allViewportQueries).
         then(booleanReduction);
   }
 }

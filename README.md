@@ -4,19 +4,15 @@
 A new router for Angular 1.3 and 2.0, written with
 [AtScript](https://docs.google.com/document/d/11YUzC-1d0V1-Q3V0fQ7KSit97HnZoKVygDxpWzEYW0U/).
 
-This router's feature set is derived from Durandal's router, but the design and implementation are
-very different.
+This router aims to fulfill the requirements mentioned in the [Angular 2.0 router design document](https://docs.google.com/document/d/1I3UC0RrgCh9CKrLxeE4sxwmNSBl3oSXQGt9g3KZnTJI).
 
-Additionally, this router aims to fulfill the requirements mentioned in the [Angular 2.0 router design document](https://docs.google.com/document/d/1I3UC0RrgCh9CKrLxeE4sxwmNSBl3oSXQGt9g3KZnTJI).
-
-The router's design is based around the idea of a customizable async pipeline and screen activator.
 Generally speaking, the router allows for great customization at almost every point,
 understands basic conventions, and has sensible defaults.
 
 
 ## Features
 
-* Supports sibling router "view ports" (think `ng-view`s in Angular 1.x).
+* Supports sibling "view ports" (think `ng-view`s in Angular 1.x).
 
 * Supports nested routers. This allows components to define sub-navigation and router hierarchies, completely encapsulating entire areas of an application if desired. This is important for large projects that are split across multiple teams.
 

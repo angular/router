@@ -55,6 +55,26 @@ describe('Router', () => {
       expect(router.navigationPredicate).toHaveBeenCalled();
     }));
 
+    it('should check the canActivate hook to see if it can navigate', sync(async () => {
+      view.canActivate = jasmine.createSpy('canActivate component').and.returnValue(true);
+      var status = await router.canNavigate('/a/b');
+      expect(status).toBe(true);
+
+      view.canActivate = jasmine.createSpy('canActivate component').and.returnValue(false);
+      status = await router.canNavigate('/a/b');
+      expect(status).toBe(false);
+    }));
+
+    it('should check the canDeactivate hook to see if it can navigate', sync(async () => {
+      view.canDeactivate = jasmine.createSpy('canDeactivate component').and.returnValue(true);
+      var status = await router.canNavigate('/a/b');
+      expect(status).toBe(true);
+
+      view.canDeactivate = jasmine.createSpy('canDeactivate component').and.returnValue(false);
+      status = await router.canNavigate('/a/b');
+      expect(status).toBe(false);
+    }));
+
     it('should generate URLs', () => {
       expect(router.generate('A', {})).toBe('/a');
     });
