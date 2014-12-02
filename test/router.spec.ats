@@ -59,6 +59,19 @@ describe('Router', () => {
       expect(router.generate('A', {})).toBe('/a');
     });
 
+    it('should navigate viewports registered after a navigation happens', sync(async () => {
+      router = new Router();
+      view = makeMockComponent('root');
+      router.config([
+        { path: '/a', component: 'A' }
+      ]);
+      await router.navigate('/a');
+      expect(view.activate).not.toHaveBeenCalled();
+
+      router.registerViewPort(view);
+      expect(view.activate).toHaveBeenCalled();
+    }));
+
 
     describe('with child routers', () => {
       var child, childView;
