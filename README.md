@@ -1,58 +1,55 @@
 # The New Angular Router
 [![Build Status](https://travis-ci.org/angular/router.svg?branch=master)](https://travis-ci.org/angular/router)
 
-A new router for Angular 1.3 and 2.0, written with
+A work-in-progress new router for Angular 1.3 and 2.0, written with
 [AtScript](https://docs.google.com/document/d/11YUzC-1d0V1-Q3V0fQ7KSit97HnZoKVygDxpWzEYW0U/).
+
+
+## State of this project
+
+Currently, the router is usable in Angular 1, but still missing many of the planned features.
+APIs will rapidly change, so I do not recommend using this in an important production app quite yet.
+
+See the [Progress Document](https://docs.google.com/document/d/1-DBXTHaeec6XH5qx2tKVrgrjiILy76_lSrjgJv95RJ4/edit#)
+for standup-style updates
+
+### Trying the router
+
+You can install the router via `npm`:
+
+```shell
+npm install angular-new-router
+```
+
+The documentation is pretty sparse. See the `examples/` directory in this repo
+and the [phone-kitten](https://github.com/btford/phone-kitten) demo app for now.
+
+
+## Goals
 
 This router aims to fulfill the requirements mentioned in the [Angular 2.0 router design document](https://docs.google.com/document/d/1I3UC0RrgCh9CKrLxeE4sxwmNSBl3oSXQGt9g3KZnTJI).
 
-Generally speaking, the router allows for great customization at almost every point,
-understands basic conventions, and has sensible defaults.
+Below is a short summary of these goals:
+
+* Have sensible conventions and defaults
+* Be customizable at almost every point
+* Support sibling "view ports" (like `ng-view`s in Angular 1.x's ngRoute)
+* Support nested routers
+  * Allow components to encapsulate entire parts of an application
+* Expose a "navigation model" which can be used to generate a navigation UI (like menus)
+  * Expose which route in the model is active (useful in styling/highlighting links in the menu)
+* Generate `href`s based on router hierarchies
+* Lazy-load components
+* Be able to reuse component instances
+* Use either push state or hash change mode
+* Handle updating the document title
 
 
-## Features
+## Prior Art
 
-* Supports sibling "view ports" (think `ng-view`s in Angular 1.x).
-
-* Supports nested routers. This allows components to define sub-navigation and router hierarchies, completely encapsulating entire areas of an application if desired. This is important for large projects that are split across multiple teams.
-
-* Exposes a "navigation model" which can be used to generate a navigation UI (think menus).
-  * Each item in the nav model has an href that can be data-bound. `href` generation understands hash/pushState urls and router hierarchies.
-  * Each item in the nav model has a property `isActive` which reflects whether or not it is the current active route (useful in styling a nav).
-
-* Provides a `router-view-port` TemplateDirective which serves as a composition site for the router's active component.
-
-* Can lazy-load components.
-
-* Can reuse component instances, even in complex hierarchies of routers. You can override the reuse behavior based on internal state or route parameters.
-
-* The router can run in push state or hash change mode.
-* Handles updating the document title (even with child routers).
-
-## Configuration
-
-The router config is based on a Plain Old JavaScript Object:
-
-```javascript
-router.config([
-  { path: '',       component: 'intro' },
-  { path: 'intro',  component: 'intro' },
-  { path: 'one',    component: 'one',   nav: true, title: 'Question 1' },
-  { path: 'two',    component: 'two',   nav: true, title: 'Question 2' },
-  { path: 'three',  component: 'three', nav: true, title: 'Question 3' },
-  { path: 'end',    component: 'end' },
-]);
-```
-
-* The router also provides a configuration DSL on top of the raw config object.
-* The router and config DSL are decoupled, so you can create your own DSL.
-* Reasonable, convention-based fallbacks. All conventions are customizable. "Not Found" routes are automatically handled. Simple convention-based routing can also be hooked in.
-
-* Customizable internal asynchronous pipeline.
-  * Want to add authentication? Just add a step to the pipeline that guards route access, cancel routing, redirect or allow navigation easily at any point.
-  * Want to automatically load model data based on route parameters and type annotations? Just add a step to the pipeline.
-
-
+* [Durandal Router](http://durandaljs.com/documentation/Using-The-Router.html)
+* [ngRoute from Angular 1.x](https://docs.angularjs.org/api/ngRoute)
+* [Route Recognizer](https://github.com/tildeio/route-recognizer)
 
 
 
