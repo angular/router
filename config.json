@@ -1,4 +1,7 @@
 {
+  "build": {
+    "dir": "dist"
+  },
   "traceur": {
     "modules": "amd",
     "script": false,

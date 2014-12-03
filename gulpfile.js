@@ -5,7 +5,9 @@ var rename = require('gulp-rename');
 
 var modulate = require('./scripts/angular-modulate');
 
+
 var TRACEUR_OPTIONS = require('./config').traceur;
+var BUILD_DIR = require('./config').build.dir;
 var PATH = {
   SRC: './src/**/*.ats'
 };
@@ -16,7 +18,7 @@ gulp.task('transpile', function() {
   return gulp.src(PATH.SRC)
       .pipe(traceur(TRACEUR_OPTIONS))
       .pipe(rename({extname: '.js'}))
-      .pipe(gulp.dest('build/src'));
+      .pipe(gulp.dest(BUILD_DIR));
 });
 
 gulp.task('angularify', ['transpile'], function() {
@@ -25,7 +27,7 @@ gulp.task('angularify', ['transpile'], function() {
         moduleName: 'ngFuturisticRouter.generated'
       }))
       .pipe(rename({extname: '.es5.js'}))
-      .pipe(gulp.dest('build/src'));
+      .pipe(gulp.dest(BUILD_DIR));
 });
 
 

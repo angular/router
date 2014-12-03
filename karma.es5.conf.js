@@ -1,5 +1,6 @@
 // This runs the tests for the router in Angular 1.x
 
+var buildDir = require('./config').build.dir;
 var sauceConfig = require('./config/karma.sauce.conf');
 var travisConfig = require('./config/karma.travis.conf');
 
@@ -13,7 +14,7 @@ module.exports = function(config) {
       'node_modules/angular/angular.js',
       'node_modules/angular-mocks/angular-mocks.js',
 
-      'build/src/*.es5.js',
+      buildDir + '/*.es5.js',
       'src/*.es5.js',
 
       'test/*.es5.spec.js'
