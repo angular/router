@@ -1,15 +1,18 @@
 # Contributing
 
-This doc explains how to build this module yourself
+This doc explains how to build the router module yourself
 
+## Releases
+
+Releases of this module live in the `dist` directory. Releases (tagged `vx.y.z`) of this module published on npm
+or will have up-to-date build artifacts checked in.
 
 ## Setup
 
 1. Install [NodeJS](http://nodejs.org/)
 2. Install [Gulp](http://gulpjs.com/) with `npm install -g gulp`
-3. Install [Bower](http://bower.io/) with `npm install -g bower`
-4. Clone and `cd` into this repo.
-5. Install dependencies with `npm install` and `bower install`
+3. Clone and `cd` into this repo.
+4. Install dependencies with `npm install` and `bower install`
 
 
 ## Running the Examples
@@ -25,6 +28,6 @@ This doc explains how to build this module yourself
 3. Start karma with `karma start`
 4. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
 
-### Code Style Guide
+## Code Style Guide
 
 * Use 2 spaces as tab, see `.editorconfig`
