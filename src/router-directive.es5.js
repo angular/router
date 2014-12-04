@@ -19,7 +19,7 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  *
  *
  */
-function routerComponentDirective($controller, $compile, $rootScope, $location, $templateRequest, router, componentLoader) {
+function routerComponentDirective($animate, $controller, $compile, $rootScope, $location, $templateRequest, router, componentLoader) {
   $rootScope.$watch(function () {
     return $location.path();
   }, function (newUrl) {
@@ -71,12 +71,12 @@ function routerComponentDirective($controller, $compile, $rootScope, $location, 
 
     if (!ctrl.canActivate || ctrl.canActivate()) {
       $templateRequest(componentTemplate).
-          then(function(template) {
-            elt.html(template);
+          then(function(child) {
+            var animationPromise = $animate.enter(child, elt);
+
             var link = $compile(elt.contents());
             link(scope);
-          }).
-          then(function() {
+
             if (ctrl.activate) {
               ctrl.activate();
             }
@@ -85,6 +85,7 @@ function routerComponentDirective($controller, $compile, $rootScope, $location, 
                 return ctrl.canDeactivate();
               }
             }
+            return animationPromise;
           });
     }
 
