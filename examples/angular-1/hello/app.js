@@ -15,6 +15,4 @@ function AppController(router) {
     { path: '/flickr',        component: 'flickr' },
     { path: '/settings',      component: 'settings' }
   ]);
-
-  router.navigate('/flickr');
 }
