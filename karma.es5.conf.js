@@ -12,6 +12,7 @@ module.exports = function(config) {
       'node_modules/traceur/bin/traceur-runtime.js',
 
       'node_modules/angular/angular.js',
+      'node_modules/angular-animate/angular-animate.js',
       'node_modules/angular-mocks/angular-mocks.js',
 
       buildDir + '/*.es5.js',
