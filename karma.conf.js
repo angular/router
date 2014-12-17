@@ -14,7 +14,7 @@ module.exports = function(config) {
 
       // All the specs and sources are included dynamically from `test/main.js`.
       {pattern: 'src/**/*.ats', included: false},
-      {pattern: 'node_modules/route-recognizer/dist/route-recognizer.amd.js', included: false},
+      {pattern: 'node_modules/route-recognizer/lib/**/*.js', included: false},
       {pattern: 'test/**/*.ats', included: false},
 
       // The runtime assertion library.
@@ -22,7 +22,8 @@ module.exports = function(config) {
     ],
 
     preprocessors: {
-      '**/*.ats': ['traceur']
+      '**/*.ats': ['traceur'],
+      'node_modules/route-recognizer/lib/**/*.js': ['traceur']
     },
 
     browsers: ['Chrome'],

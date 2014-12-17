@@ -13,12 +13,8 @@ export class Router {
     this.ports = {};
     this.children = [];
     this.context = null;
-
-    // this is a hack
-    var RouteRecognizerConstructor = (RouteRecognizer.default || RouteRecognizer);
-
-    this.recognizer = new RouteRecognizerConstructor();
-    this.childRecognizer = new RouteRecognizerConstructor();
+    this.recognizer = new RouteRecognizer();
+    this.childRecognizer = new RouteRecognizer();
   }
 
 

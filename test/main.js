@@ -22,11 +22,7 @@ require.config({
 
   paths: {
     assert: './node_modules/rtts-assert/dist/amd/assert',
-    'route-recognizer': './node_modules/route-recognizer/dist/route-recognizer.amd'
-  },
-
-  bundles: {
-    'route-recognizer': [ 'route-recognizer/dsl' ]
+    'route-recognizer': './node_modules/route-recognizer/lib/route-recognizer'
   },
 
   // Dynamically load all test files.
