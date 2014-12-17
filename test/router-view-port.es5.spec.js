@@ -301,3 +301,92 @@ describe('routerViewPort', function () {
     return elt;
   }
 });
+
+
+describe('routerViewPort animations', function () {
+
+  var elt,
+      ctrl,
+      $animate,
+      $compile,
+      $rootScope,
+      $templateCache,
+      $controllerProvider;
+
+  beforeEach(function() {
+    module('ngAnimate');
+    module('ngAnimateMock');
+    module('ngFuturisticRouter');
+    module(function(_$controllerProvider_) {
+      $controllerProvider = _$controllerProvider_;
+    });
+
+    inject(function(_$animate_, _$compile_, _$rootScope_, _$templateCache_) {
+      $animate = _$animate_;
+      $compile = _$compile_;
+      $rootScope = _$rootScope_;
+      $templateCache = _$templateCache_;
+    });
+
+    put('router.html', '<div router-view-port></div>');
+    $controllerProvider.register('RouterController', function (router) {
+      ctrl = this;
+    });
+
+    put('user.html', '<div>hello {{name}}</div>');
+    $controllerProvider.register('UserController', function($scope, routeParams) {
+      $scope.name = routeParams.name || 'blank';
+    });
+  });
+
+  afterEach(function() {
+    expect($animate.queue).toEqual([]);
+  });
+
+  it('should work in a simple case', inject(function (router) {
+    var item;
+
+    compile('<router-component component-name="router"></router-component>');
+
+    router.config([
+      { path: '/user/:name', component: 'user' }
+    ]);
+
+    router.navigate('/user/brian');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('hello brian');
+
+    // "router" component enters
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+
+    // "user" component enters
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+
+    router.navigate('/user/pete');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('hello pete');
+
+
+    // "user brian" component leaves
+    item = $animate.queue.shift();
+    expect(item.event).toBe('leave');
+    expect(item.element.text()).toBe('hello brian');
+
+    // "user pete" component enters
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.event).toBe('enter');
+  }));
+
+  function put (name, template) {
+    $templateCache.put(name, [200, template, {}]);
+  }
+
+  function compile(template) {
+    elt = $compile('<div>' + template + '</div>')($rootScope);
+    $rootScope.$digest();
+    return elt;
+  }
+});

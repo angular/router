@@ -147,10 +147,21 @@ function routerViewPortDirective($animate, $compile, $templateRequest, component
         var componentName = typeof component === 'string' ? component : component[name];
 
         var template = makeComponentString(componentName);
+        var oldContents = elt.contents();
+
+        if (oldContents.length) {
+          oldContents.remove();
+        }
+
         elt.html(template);
         var link = $compile(elt.contents());
         ctrl.$$router.context = instruction[0];
         link(scope.$new());
+
+        if (oldContents.length) {
+          elt.append(oldContents);
+          $animate.leave(oldContents);
+        }
 
         // TODO: this is a hack to avoid ordering constraint issues
         return $templateRequest(componentLoader(componentName).template);
