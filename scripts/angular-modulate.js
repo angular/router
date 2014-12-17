@@ -5,6 +5,7 @@ var through = require('through2');
 var fs = require('fs');
 var path = require('path');
 var traceur = require('traceur');
+var traceurRuntime = fs.readFileSync(__dirname + '/lib/traceur-runtime-custom.js', 'utf8');
 var escape = require('escape-regexp');
 
 var TRACEUR_OPTS = {
@@ -29,7 +30,7 @@ module.exports = function (opts) {
       contents = traceur.compile(contents, TRACEUR_OPTS);
       contents = stripIife(contents);
       contents = dollarQify(contents);
-      contents = angularModulate(contents, opts);
+      contents = angularModulate(traceurRuntime + ';' + contents, opts);
       file.contents = new Buffer(contents.toString());
     }
 

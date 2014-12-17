@@ -23,6 +23,7 @@
     "escape-regexp": "0.0.1",
     "falafel": "^0.3.1",
     "gulp": "^3.8.9",
+    "gulp-concat": "^2.4.2",
     "gulp-connect": "^2.0.6",
     "gulp-rename": "^1.2.0",
     "gulp-traceur": "^0.13.0",
@@ -33,6 +34,7 @@
     "karma-requirejs": "^0.2.2",
     "karma-sauce-launcher": "^0.2.9",
     "karma-traceur-preprocessor": "^0.4.0",
+    "merge-stream": "^0.1.6",
     "protractor": "^0.21.0",
     "through2": "^0.4.1"
   },

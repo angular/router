@@ -9,14 +9,11 @@ module.exports = function(config) {
     frameworks: ['jasmine'],
 
     files: [
-      'node_modules/traceur/bin/traceur-runtime.js',
-
       'node_modules/angular/angular.js',
       'node_modules/angular-animate/angular-animate.js',
       'node_modules/angular-mocks/angular-mocks.js',
 
       buildDir + '/*.es5.js',
-      'src/*.es5.js',
 
       'test/*.es5.spec.js'
     ],

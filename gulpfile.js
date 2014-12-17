@@ -1,6 +1,8 @@
 var gulp = require('gulp');
 var traceur = require('gulp-traceur');
 var connect = require('gulp-connect');
+var concat = require('gulp-concat');
+var merge = require('merge-stream');
 var rename = require('gulp-rename');
 
 var modulate = require('./scripts/angular-modulate');
@@ -22,11 +24,15 @@ gulp.task('transpile', function() {
 });
 
 gulp.task('angularify', ['transpile'], function() {
-  return gulp.src('./src/router.ats')
+  var directive = gulp.src('./src/*.es5.js');
+
+  var generated = gulp.src('./src/router.ats')
       .pipe(modulate({
         moduleName: 'ngFuturisticRouter.generated'
       }))
-      .pipe(rename({extname: '.es5.js'}))
+
+  return merge(directive, generated)
+      .pipe(concat('router.es5.js'))
       .pipe(gulp.dest(BUILD_DIR));
 });
 
