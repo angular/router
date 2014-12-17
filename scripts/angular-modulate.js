@@ -45,7 +45,7 @@ module.exports = function (opts) {
 
 var moduleLocations = {
   'route-recognizer': '../node_modules/route-recognizer/lib/route-recognizer'
-}
+};
 
 var IIEF_RE = new RegExp([
   escape('var $'),
@@ -104,10 +104,6 @@ function angularModulate (src, opts) {
       'return new Router();',
     '}]);'
   ].join('');
-}
-
-function addQ (str) {
-  return str.replace(/function ?\(\)/, 'function($q)')
 }
 
 
