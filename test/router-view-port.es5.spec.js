@@ -295,8 +295,8 @@ describe('routerViewPort', function () {
     $templateCache.put(name, [200, template, {}]);
   }
 
-  function compile (template) {
-    elt = $compile(template)($rootScope);
+  function compile(template) {
+    elt = $compile('<div>' + template + '</div>')($rootScope);
     $rootScope.$digest();
     return elt;
   }

@@ -4,6 +4,7 @@
 
 angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
   directive('routerComponent', routerComponentDirective).
+  directive('routerComponent', routerComponentFillContentDirective).
   value('routeParams', {}).
   provider('componentLoader', componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
@@ -36,15 +37,18 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
   return {
     restrict: 'AE',
     scope: {},
-    require: ['?^^routerComponent', '?^^routerViewPort'],
+    priority: 400,
+    transclude: 'element',
+    require: ['?^^routerComponent', '?^^routerViewPort', 'routerComponent'],
     link: routerComponentLinkFn,
     controller: function () {},
     controllerAs: '$$routerComponentController'
   };
 
-  function routerComponentLinkFn(scope, elt, attrs, ctrls) {
+  function routerComponentLinkFn(scope, elt, attrs, ctrls, $transclude) {
     var parentComponentCtrl = ctrls[0],
-        viewPortCtrl = ctrls[1];
+        viewPortCtrl = ctrls[1],
+        myOwnRouterComponentCtrl= ctrls[2];
 
     var childRouter = (parentComponentCtrl && parentComponentCtrl.$$router && parentComponentCtrl.$$router.childRouter()) || router;
     var parentRouter = childRouter.parent || childRouter;
@@ -52,11 +56,11 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
     var componentName = attrs.routerComponent || attrs.componentName;
 
     var component = componentLoader(componentName);
-    var controllerName = component.controllerName;
-    var componentTemplate = component.template;
 
+    // build up locals for controller
+    var childScope = scope.$new();
     var locals = {
-      $scope: scope
+      $scope: childScope
     };
 
     if (parentRouter.context) {
@@ -66,16 +70,20 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
     scope.$$routerComponentController.$$router = locals.router = childRouter;
 
     // TODO: the pipeline should probably be responsible for creating this...
+    var controllerName = component.controllerName;
     var ctrl = $controller(controllerName, locals);
-    scope[componentName] = ctrl;
+    childScope[componentName] = ctrl;
 
     if (!ctrl.canActivate || ctrl.canActivate()) {
-      $templateRequest(componentTemplate).
-          then(function(child) {
-            var animationPromise = $animate.enter(child, elt);
+      var componentTemplateUrl = component.template;
+      $templateRequest(componentTemplateUrl).
+          then(function(templateHtml) {
 
-            var link = $compile(elt.contents());
-            link(scope);
+            myOwnRouterComponentCtrl.template = templateHtml;
+
+            var clone = $transclude(childScope, function(clone) {
+              $animate.enter(clone, null, elt);
+            });
 
             if (ctrl.activate) {
               ctrl.activate();
@@ -85,12 +93,25 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
                 return ctrl.canDeactivate();
               }
             }
-            return animationPromise;
           });
     }
 
   }
 }
+
+
+function routerComponentFillContentDirective($compile) {
+  return {
+    restrict: 'AE',
+    priority: -400,
+    require: 'routerComponent',
+    link: function(scope, $element, $attr, ctrl) {
+      $element.html(ctrl.template);
+      $compile($element.contents())(scope);
+    }
+  };
+};
+
 
 
 /*
@@ -106,7 +127,7 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
  *
  * The value for the routerViewComponent is optional
  */
-function routerViewPortDirective($compile, $templateRequest, componentLoader) {
+function routerViewPortDirective($animate, $compile, $templateRequest, componentLoader) {
   return {
     restrict: 'AE',
     require: '^^routerComponent',

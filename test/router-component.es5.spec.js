@@ -54,7 +54,7 @@ describe('routerComponent', function() {
   }
 
   function compile(template) {
-    elt = $compile(template)($rootScope);
+    elt = $compile('<div>' + template + '</div>')($rootScope);
     $rootScope.$digest();
     return elt;
   }
@@ -110,7 +110,7 @@ describe('routerComponent animations', function() {
   }
 
   function compile(template) {
-    elt = $compile(template)($rootScope);
+    elt = $compile('<div>' + template + '</div>')($rootScope);
     $rootScope.$digest();
     return elt;
   }
