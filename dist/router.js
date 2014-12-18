@@ -13,9 +13,8 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
     this.ports = {};
     this.children = [];
     this.context = null;
-    var RouteRecognizerConstructor = (RouteRecognizer.default || RouteRecognizer);
-    this.recognizer = new RouteRecognizerConstructor();
-    this.childRecognizer = new RouteRecognizerConstructor();
+    this.recognizer = new RouteRecognizer();
+    this.childRecognizer = new RouteRecognizer();
   };
   var $Router = Router;
   ($traceurRuntime.createClass)(Router, {
