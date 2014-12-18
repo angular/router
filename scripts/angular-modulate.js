@@ -30,7 +30,8 @@ module.exports = function (opts) {
       contents = traceur.compile(contents, TRACEUR_OPTS);
       contents = stripIife(contents);
       contents = dollarQify(contents);
-      contents = angularModulate(traceurRuntime + ';' + contents, opts);
+      contents = detraceurify(contents);
+      contents = angularModulate(contents, opts);
       file.contents = new Buffer(contents.toString());
     }
 
@@ -42,6 +43,10 @@ module.exports = function (opts) {
   // returning the file stream
   return stream;
 };
+
+function detraceurify (contents) {
+  return traceurRuntime + ';\n' + contents.replace('$traceurRuntime.createClass', 'createClass');
+}
 
 var moduleLocations = {
   'route-recognizer': '../node_modules/route-recognizer/lib/route-recognizer'
@@ -128,7 +133,7 @@ function dollarQify (src) {
         node.update('$q.' + method + '(' + argsToSrc(node) + ')');
       }
     }
-  });
+  }).toString();
 }
 
 /*
