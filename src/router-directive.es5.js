@@ -243,7 +243,8 @@ function componentLoaderProvider() {
   };
 
   var componentToTemplate = function componentToTemplateDefault(name) {
-    return name + '.html';
+    var dashName = dashCase(name);
+    return '/components/' + dashName + '/' + dashName + '.html';
   };
 
   function componentLoader(name) {
@@ -264,4 +265,10 @@ function componentLoaderProvider() {
       componentToTemplate = newFn;
     }
   };
+}
+
+function dashCase(str) {
+  return str.replace(/([A-Z])/g, function ($1) {
+    return '-' + $1.toLowerCase();
+  });
 }

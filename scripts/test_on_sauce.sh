@@ -13,7 +13,6 @@ serverPid=$!
 trap killServer EXIT
 
 SAUCE_ACCESS_KEY=`echo $SAUCE_ACCESS_KEY | rev`
-gulp build
 
 karma start --sauce &
 karma start karma.es5.conf.js --sauce &

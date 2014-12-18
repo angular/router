@@ -21,20 +21,20 @@ describe('routerViewPort', function () {
       $templateCache = _$templateCache_;
     });
 
-    put('router.html', '<div router-view-port></div>');
+    put('router', '<div router-view-port></div>');
     $controllerProvider.register('RouterController', function (router) {
       ctrl = this;
     });
 
-    put('user.html', '<div>hello {{name}}</div>');
+    put('user', '<div>hello {{name}}</div>');
     $controllerProvider.register('UserController', function($scope, routeParams) {
       $scope.name = routeParams.name || 'blank';
     });
 
-    put('one.html', '<div>{{number}}</div>');
+    put('one', '<div>{{number}}</div>');
     $controllerProvider.register('OneController', boringController('number', 'one'));
 
-    put('two.html', '<div>{{number}}</div>');
+    put('two', '<div>{{number}}</div>');
     $controllerProvider.register('TwoController', boringController('number', 'two'));
   });
 
@@ -70,7 +70,7 @@ describe('routerViewPort', function () {
 
 
   it('should work with multiple named viewports', inject(function (router) {
-    put('router.html', 'port 1: <div router-view-port="one"></div> | ' +
+    put('router', 'port 1: <div router-view-port="one"></div> | ' +
                        'port 2: <div router-view-port="two"></div>');
 
     router.config([
@@ -95,8 +95,8 @@ describe('routerViewPort', function () {
       ]);
     });
 
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('childRouter.html', '<div>inner { <div router-view-port></div> }</div>');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('childRouter', '<div>inner { <div router-view-port></div> }</div>');
 
     router.config([
       { path: '/a', component: 'childRouter' }
@@ -111,8 +111,8 @@ describe('routerViewPort', function () {
 
 
   it('should have links that correctly work', inject(function (router) {
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('one.html', '<div><a router-link="two">{{number}}</a></div>');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('one', '<div><a router-link="two">{{number}}</a></div>');
 
     router.config([
       { path: '/a', component: 'one' },
@@ -128,8 +128,8 @@ describe('routerViewPort', function () {
 
 
   it('should have links that correctly work', inject(function (router) {
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('one.html', '<div><a router-link="two({param: \'lol\'})">{{number}}</a></div>');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('one', '<div><a router-link="two({param: \'lol\'})">{{number}}</a></div>');
 
     router.config([
       { path: '/a', component: 'one' },
@@ -145,8 +145,8 @@ describe('routerViewPort', function () {
 
 
   it('should update the href of links', inject(function (router) {
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('one.html', '<div><a router-link="two({param: number})">{{number}}</a></div>');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('one', '<div><a router-link="two({param: number})">{{number}}</a></div>');
 
     router.config([
       { path: '/a', component: 'one' },
@@ -162,8 +162,8 @@ describe('routerViewPort', function () {
 
 
   it('should run the activate hook of controllers', inject(function (router) {
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('activate.html', 'hi');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('activate', 'hi');
 
     $controllerProvider.register('ActivateController', ActivateController);
     function ActivateController() {}
@@ -182,8 +182,8 @@ describe('routerViewPort', function () {
 
 
   it('should not activate a component when canActivate returns false', inject(function (router) {
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('activate.html', 'hi');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('activate', 'hi');
 
     $controllerProvider.register('ActivateController', ActivateController);
     function ActivateController() {}
@@ -206,8 +206,8 @@ describe('routerViewPort', function () {
 
 
   it('should not activate a component when canDeactivate returns false', inject(function (router) {
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('activate.html', 'hi');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('activate', 'hi');
 
     $controllerProvider.register('ActivateController', ActivateController);
     function ActivateController() {}
@@ -233,8 +233,8 @@ describe('routerViewPort', function () {
 
 
   it('should activate a component when canActivate returns true', inject(function (router) {
-    put('router.html', '<div>outer { <div router-view-port></div> }</div>');
-    put('activate.html', 'hi');
+    put('router', '<div>outer { <div router-view-port></div> }</div>');
+    put('activate', 'hi');
 
     $controllerProvider.register('ActivateController', ActivateController);
     function ActivateController() {}
@@ -292,7 +292,7 @@ describe('routerViewPort', function () {
   }
 
   function put (name, template) {
-    $templateCache.put(name, [200, template, {}]);
+    $templateCache.put(componentTemplatePath(name), [200, template, {}]);
   }
 
   function compile(template) {
@@ -328,12 +328,12 @@ describe('routerViewPort animations', function () {
       $templateCache = _$templateCache_;
     });
 
-    put('router.html', '<div router-view-port></div>');
+    put('router', '<div router-view-port></div>');
     $controllerProvider.register('RouterController', function (router) {
       ctrl = this;
     });
 
-    put('user.html', '<div>hello {{name}}</div>');
+    put('user', '<div>hello {{name}}</div>');
     $controllerProvider.register('UserController', function($scope, routeParams) {
       $scope.name = routeParams.name || 'blank';
     });
@@ -381,7 +381,7 @@ describe('routerViewPort animations', function () {
   }));
 
   function put (name, template) {
-    $templateCache.put(name, [200, template, {}]);
+    $templateCache.put(componentTemplatePath(name), [200, template, {}]);
   }
 
   function compile(template) {
@@ -390,3 +390,13 @@ describe('routerViewPort animations', function () {
     return elt;
   }
 });
+
+function componentTemplatePath(name) {
+  return '/components/' + dashCase(name) + '/' + dashCase(name) + '.html';
+}
+
+function dashCase(str) {
+  return str.replace(/([A-Z])/g, function ($1) {
+    return '-' + $1.toLowerCase();
+  });
+}
