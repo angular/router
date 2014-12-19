@@ -1,23 +1,27 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-<!--   <link rel="stylesheet" href="/third_party/bootstrap/css/bootstrap.min.css">
+  <meta charset="utf-8">
+  <base href="/examples/angular-1/wizard/">
+  <!--
+  <link rel="stylesheet" href="/third_party/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/third_party/fontawesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/styles/styles.css"> -->
+  <link rel="stylesheet" href="/styles/styles.css">
+  -->
+
+  <base href="/examples/angular-1/hello">
+</head>
+<body ng-app="myApp">
+  <router-component component-name="app"></router-component>
 
   <script src="/node_modules/angular/angular.js"></script>
   <script src="/dist/router.es5.js"></script>
 
-  <script src="./components/app/app.js"></script>
-  <script src="./components/intro/intro.js"></script>
-  <script src="./components/one/one.js"></script>
-  <script src="./components/two/two.js"></script>
-  <script src="./components/three/three.js"></script>
-  <script src="./components/end/end.js"></script>
-
-  <title>The Bridge of Death</title>
-</head>
-<body ng-app="myApp">
-  <router-component component-name="app"></router-component>
+  <script src="components/app/app.js"></script>
+  <script src="components/intro/intro.js"></script>
+  <script src="components/one/one.js"></script>
+  <script src="components/two/two.js"></script>
+  <script src="components/three/three.js"></script>
+  <script src="components/end/end.js"></script>
 </body>
 </html>
