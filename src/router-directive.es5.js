@@ -244,7 +244,7 @@ function componentLoaderProvider() {
 
   var componentToTemplate = function componentToTemplateDefault(name) {
     var dashName = dashCase(name);
-    return '/components/' + dashName + '/' + dashName + '.html';
+    return 'components/' + dashName + '/' + dashName + '.html';
   };
 
   function componentLoader(name) {

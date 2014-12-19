@@ -122,7 +122,7 @@ function UserController($scope) {
 }
 
 function componentTemplatePath(name) {
-  return '/components/' + dashCase(name) + '/' + dashCase(name) + '.html';
+  return './components/' + dashCase(name) + '/' + dashCase(name) + '.html';
 }
 
 function dashCase(str) {

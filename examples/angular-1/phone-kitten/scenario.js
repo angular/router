@@ -15,7 +15,7 @@ describe('PhoneCat App', function() {
   describe('Phone list view', function() {
 
     beforeEach(function() {
-      browser.get('index.html#/phones');
+      browser.get(appRoot + '/index.html#/phones');
     });
 
 
@@ -76,7 +76,7 @@ describe('PhoneCat App', function() {
   describe('Phone detail view', function() {
 
     beforeEach(function() {
-      browser.get('index.html#/phones/nexus-s');
+      browser.get(appRoot + '/index.html#/phones/nexus-s');
     });
 
 

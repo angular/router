@@ -6,7 +6,7 @@ describe('componentLoader', function () {
     var component = componentLoader('foo');
     expect(component).toEqual({
       controllerName: 'FooController',
-      template: '/components/foo/foo.html'
+      template: './components/foo/foo.html'
     });
   }));
 
