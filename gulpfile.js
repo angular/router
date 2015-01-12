@@ -7,9 +7,10 @@ var rename = require('gulp-rename');
 
 var modulate = require('./scripts/angular-modulate');
 
-
-var TRACEUR_OPTIONS = require('./config').traceur;
-var BUILD_DIR = require('./config').build.dir;
+var CONFIG = require('./config');
+var SERVER_CONFIG = CONFIG.server;
+var TRACEUR_OPTIONS = CONFIG.traceur;
+var BUILD_DIR = CONFIG.build.dir;
 var PATH = {
   SRC: './src/**/*.ats'
 };
@@ -46,8 +47,9 @@ gulp.task('watch', function() {
 // WEB SERVER
 gulp.task('serve', function() {
   connect.server({
+    host: SERVER_CONFIG.host,
     root: [__dirname],
-    port: 8000,
+    port: SERVER_CONFIG.port,
     livereload: false
   });
 });
