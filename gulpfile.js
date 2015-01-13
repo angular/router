@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var Dgeni = require('dgeni');
 var traceur = require('gulp-traceur');
 var connect = require('gulp-connect');
 var concat = require('gulp-concat');
@@ -15,7 +16,7 @@ var PATH = {
   SRC: './src/**/*.ats'
 };
 
-gulp.task('build', ['transpile', 'angularify']);
+gulp.task('build', ['transpile', 'angularify', 'docs']);
 
 gulp.task('transpile', function() {
   return gulp.src(PATH.SRC)
@@ -35,6 +36,16 @@ gulp.task('angularify', ['transpile'], function() {
   return merge(directive, generated)
       .pipe(concat('router.es5.js'))
       .pipe(gulp.dest(BUILD_DIR));
+});
+
+gulp.task('dgeni', function() {
+  try {
+    var dgeni = new Dgeni([require('./docs/dgeni.conf')]);
+    return dgeni.generate();
+  } catch(x) {
+    console.log(x.stack);
+    throw x;
+  }
 });
 
 
