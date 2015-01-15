@@ -1,11 +1,13 @@
-/*
- * Both the Angular 1.3 Router and Angular 2 Router use this
- */
-
 import RouteRecognizer from 'route-recognizer';
 
 var CHILD_ROUTE_SUFFIX = '/*childRoute';
 
+/**
+ * @name Router
+ * @where shared
+ * @description
+ * The router is responsible for
+ */
 export class Router {
   constructor(parent, configPrefix) {
     this.parent = parent || null;
@@ -39,8 +41,12 @@ export class Router {
   }
 
 
-  /*
+  /**
+   * @name config
+   *
+   * @description
    * update the routing configuation and trigger a navigation
+   * 
    */
   config(mapping) {
     if (mapping instanceof Array) {
@@ -69,8 +75,10 @@ export class Router {
   }
 
 
-  /*
-   * public API for navigating from a URL
+  /**
+   * @name navigate
+   *
+   * @descrive navigate from a URL
    */
   navigate(url:String, force:Boolean=false) {
 
@@ -181,7 +189,8 @@ export class Router {
   }
 
 
-  /*
+  /**
+   * 
    * given a context obj
    * returns a Promise<bool> that represents
    * whether this router and all the descendants can navigate

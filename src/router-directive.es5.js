@@ -22,9 +22,13 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  * - a template
  * - an optional router
  *
- * This directive makes it easy to group all of them into a single concept
+ * This directive makes it easy to group all of them into a single concept,
+ * and also knows how to pass...
+ *
+ * By default...
  */
-function routerComponentDirective($animate, $controller, $compile, $rootScope, $location, $templateRequest, router, componentLoader) {
+function routerComponentDirective($animate, $controller, $compile, $rootScope, $location,
+                                  $templateRequest, router, componentLoader) {
   $rootScope.$watch(function () {
     return $location.path();
   }, function (newUrl) {
@@ -104,6 +108,9 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
 }
 
 
+/*
+ * This uses the same technique as ngInclude
+ */
 function routerComponentFillContentDirective($compile) {
   return {
     restrict: 'AE',
@@ -122,7 +129,7 @@ function routerComponentFillContentDirective($compile) {
  * @name routerViewPort
  * 
  * @description
- * The place where resolved content goes.
+ * A routerViewPort is where resolved content goes.
  *
  * ## Use
  * `<router-view-port>` needs to appear inside of a routerComponent
@@ -186,7 +193,7 @@ function makeComponentString(name) {
   ].join('');
 }
 
-var SOME_RE = /^(.+?)(?:\((.*)\))?$/;
+var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
 
 function routerLinkDirective(router, $location, $parse) {
   var rootRouter = router;
@@ -205,7 +212,7 @@ function routerLinkDirective(router, $location, $parse) {
     }
 
     var link = attrs.routerLink || '';
-    var parts = link.match(SOME_RE);
+    var parts = link.match(LINK_MICROSYNTAX_RE);
     var routeName = parts[1];
     var routeParams = parts[2];
     var url;
@@ -235,13 +242,15 @@ function routerLinkDirective(router, $location, $parse) {
       rootRouter.navigate(url);
     });
   }
-
 }
 
+
 /**
- * @name componentLoader
+ * @name componentLoaderProvider
+ * @type provider
  * @description
- * This lets you set up your conventions
+ *
+ * This lets you configure conventions for what controllers are named and where to load templates from
  */
 function componentLoaderProvider() {
   var componentToCtrl = function componentToCtrlDefault(name) {
@@ -252,7 +261,7 @@ function componentLoaderProvider() {
 
   var componentToTemplate = function componentToTemplateDefault(name) {
     var dashName = dashCase(name);
-    return 'components/' + dashName + '/' + dashName + '.html';
+    return './components/' + dashName + '/' + dashName + '.html';
   };
 
   function componentLoader(name) {
