@@ -13,13 +13,14 @@ var SERVER_CONFIG = CONFIG.server;
 var TRACEUR_OPTIONS = CONFIG.traceur;
 var BUILD_DIR = CONFIG.build.dir;
 var PATH = {
-  SRC: './src/**/*.ats'
+  SRC: './src/**/*',
+  ATS: './src/**/*.ats'
 };
 
 gulp.task('build', ['transpile', 'angularify', 'docs']);
 
 gulp.task('transpile', function() {
-  return gulp.src(PATH.SRC)
+  return gulp.src(PATH.ATS)
       .pipe(traceur(TRACEUR_OPTIONS))
       .pipe(rename({extname: '.js'}))
       .pipe(gulp.dest(BUILD_DIR));
@@ -38,7 +39,7 @@ gulp.task('angularify', ['transpile'], function() {
       .pipe(gulp.dest(BUILD_DIR));
 });
 
-gulp.task('dgeni', function() {
+gulp.task('docs', function() {
   try {
     var dgeni = new Dgeni([require('./docs/dgeni.conf')]);
     return dgeni.generate();
