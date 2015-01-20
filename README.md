@@ -21,9 +21,12 @@ You can install the router via `npm`:
 npm install angular-new-router
 ```
 
-The documentation is pretty sparse. See the `examples/` directory in this repo
-and the [phone-kitten](https://github.com/btford/phone-kitten) demo app for now.
+The documentation is pretty sparse. See the `examples/` directory in this repo for now.
 
+### Helping out
+
+For now, the best way for you to help with the new router is to try it out and file GitHub issues
+with questions or feedback.
 
 ## Goals
 
