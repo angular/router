@@ -39,6 +39,7 @@
     "karma-requirejs": "^0.2.2",
     "karma-sauce-launcher": "^0.2.9",
     "karma-traceur-preprocessor": "^0.4.0",
+    "marked": "^0.3.2",
     "merge-stream": "^0.1.6",
     "protractor": "^0.21.0",
     "through2": "^0.4.1"
