@@ -125,9 +125,9 @@ MyController.prototype.canDeactivate = function() {
 };
 ```
 
-### High level item
+### High level overview
 
-Here's a high-level overview of the thing:
+This is the basic logic that the router uses.
 
 ```dot
 digraph G {
@@ -163,6 +163,10 @@ digraph G {
   { rank=same; "complete navigation"; "cancel navigation"; }
 }
 ```
+
+<!--
+TODO: show multi-level
+-->
 
 
 ### Handling failure
