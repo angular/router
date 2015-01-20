@@ -53,7 +53,7 @@ describe('routerViewPort', function () {
   }));
 
 
-  it('should transition between components', inject(function (router) {
+  it('should transition between components with different parameters', inject(function (router) {
     router.config([
       { path: '/user/:name', component: 'user' }
     ]);
