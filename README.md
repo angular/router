@@ -26,7 +26,7 @@ The documentation is pretty sparse. See the `examples/` directory in this repo f
 ### Helping out
 
 For now, the best way for you to help with the new router is to try it out and file GitHub issues
-with questions or feedback.
+with questions or feedback. Please also [check out existing discussions](https://github.com/angular/router/labels/type%3A%20use%20case).
 
 ## Goals
 
