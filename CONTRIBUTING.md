@@ -18,16 +18,12 @@ or will have up-to-date build artifacts checked in.
 ## Running the Examples
 
 1. Start the development server with `gulp build watch serve`
-2. Open a browser and navigate to [http://localhost:8000/temp/examples/index.html](http://localhost:8000/temp/examples/index.html)
+2. Open a browser and navigate to [http://localhost:8000/examples/angular-1/hello](http://localhost:8000/examples/angular-1/hello)
 
 
 ## Development
 
 1. Install [Karma](http://karma-runner.github.io/) with `npm install -g karma`
-2. Install the cli for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
+2. Install the CLI for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
 3. Start karma with `karma start`
 4. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
-
-## Code Style Guide
-
-* Use 2 spaces as tab, see `.editorconfig`
