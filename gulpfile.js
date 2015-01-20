@@ -5,6 +5,7 @@ var connect = require('gulp-connect');
 var concat = require('gulp-concat');
 var merge = require('merge-stream');
 var rename = require('gulp-rename');
+var markdown = require('./scripts/markdown');
 
 var modulate = require('./scripts/angular-modulate');
 
@@ -14,6 +15,7 @@ var TRACEUR_OPTIONS = CONFIG.traceur;
 var BUILD_DIR = CONFIG.build.dir;
 var PATH = {
   SRC: './src/**/*',
+  DOCS: './docs/**/*.md',
   ATS: './src/**/*.ats'
 };
 
@@ -39,7 +41,7 @@ gulp.task('angularify', ['transpile'], function() {
       .pipe(gulp.dest(BUILD_DIR));
 });
 
-gulp.task('docs', function() {
+gulp.task('dgeni', function() {
   try {
     var dgeni = new Dgeni([require('./docs/dgeni.conf')]);
     return dgeni.generate();
@@ -49,10 +51,17 @@ gulp.task('docs', function() {
   }
 });
 
+gulp.task('markdown', function() {
+  return gulp.src('./docs/**/*.md')
+      .pipe(markdown())
+      .pipe(rename({extname: '.html'}))
+      .pipe(gulp.dest('dist/docs/'));
+});
+
 
 // WATCH FILES FOR CHANGES
 gulp.task('watch', function() {
-  gulp.watch(PATH.SRC, ['build']);
+  gulp.watch([PATH.SRC, PATH.DOCS], ['build']);
 });
 
 
@@ -66,5 +75,5 @@ gulp.task('serve', function() {
   });
 });
 
-
+gulp.task('docs', ['dgeni', 'markdown']);
 gulp.task('default', ['serve', 'watch']);
