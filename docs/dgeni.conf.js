@@ -10,9 +10,11 @@ var package = new Package('router', [
   require('dgeni-packages/nunjucks')
 ]);
 
+package.processor(require('./processors/generateIndexPage.js'));
+
 // Configure our dgeni-example package. We can ask the Dgeni dependency injector
 // to provide us with access to services and processors that we wish to configure
-package.config(function(log, readFilesProcessor, templateFinder, writeFilesProcessor) {
+package.config(function(log, readFilesProcessor, templateFinder, templateEngine, writeFilesProcessor) {
 
   // Set logging level
   log.level = 'info';
@@ -31,12 +33,26 @@ package.config(function(log, readFilesProcessor, templateFinder, writeFilesProce
     basePath: 'src'
   }];
 
+
+  // Nunjucks and Angular conflict in their template bindings so change the Nunjucks
+  templateEngine.config.tags = {
+    variableStart: '{$',
+    variableEnd: '$}'
+  };
+
+  templateEngine.filters.push(require('./rendering/relativeLinkInlineTag'));
+
   // Add a folder to search for our own templates to use when rendering docs
   templateFinder.templateFolders.unshift(path.resolve(__dirname, 'templates'));
 
   // Specify how to match docs to templates.
   // In this case we just use the same static template for all docs
-  templateFinder.templatePatterns.unshift('common.template.html');
+  templateFinder.templatePatterns = [
+    '${ doc.template }',
+    '${ doc.id }.${ doc.docType }.template.html',
+    '${ doc.id }.template.html',
+    '${ doc.docType }.template.html',
+    'common.template.html'];
 
   // Specify where the writeFilesProcessor will write our generated doc files
   writeFilesProcessor.outputFolder  = 'dist/docs';

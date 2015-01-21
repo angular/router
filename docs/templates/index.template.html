@@ -1,0 +1,13 @@
+<h1>Angular New Router</h1>
+<p>{$ doc.description | marked $}</p>
+
+{%- for docType, docs in doc.docTypes %}
+  <h2>Area: {$ docType $}</h2>
+  <ul>
+  {% for childDoc in docs -%}
+  <li>{$ childDoc | relativeLink(doc) $}
+      {%- if childDoc.description %} - {$ childDoc.description | firstLine | marked $}{% endif -%}
+  </li>
+  {% endfor -%}
+  </ul>
+{%- endfor %}

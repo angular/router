@@ -5,7 +5,7 @@ var connect = require('gulp-connect');
 var concat = require('gulp-concat');
 var merge = require('merge-stream');
 var rename = require('gulp-rename');
-var markdown = require('./scripts/markdown');
+//var markdown = require('./scripts/markdown');
 
 var modulate = require('./scripts/angular-modulate');
 
@@ -51,12 +51,12 @@ gulp.task('dgeni', function() {
   }
 });
 
-gulp.task('markdown', function() {
-  return gulp.src('./docs/**/*.md')
-      .pipe(markdown())
-      .pipe(rename({extname: '.html'}))
-      .pipe(gulp.dest('dist/docs/'));
-});
+// gulp.task('markdown', function() {
+//   return gulp.src('./docs/**/*.md')
+//       .pipe(markdown())
+//       .pipe(rename({extname: '.html'}))
+//       .pipe(gulp.dest('dist/docs/'));
+// });
 
 
 // WATCH FILES FOR CHANGES
