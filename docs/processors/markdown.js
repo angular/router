@@ -19,6 +19,16 @@ renderer.heading = function (text, level) {
       text + '</h' + level + '>';
 };
 
+var superCode = renderer.code;
+renderer.code = function (code, lang, escaped) {
+  // dont wrap dotviz output in a code block
+  if (lang === 'dot') {
+    return code;
+  } else {
+    return superCode.apply(this, arguments);
+  }
+};
+
 var TITLE = /#[ ]?(.+)/;
 
 module.exports = function renderMarkdownProcessor() {
