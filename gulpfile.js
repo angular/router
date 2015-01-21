@@ -50,6 +50,11 @@ gulp.task('dgeni', function() {
   }
 });
 
+gulp.task('static', function () {
+  return gulp.src('./docs/*.css', {base: './docs'})
+    .pipe(gulp.dest('./dist/docs/'));
+});
+
 // WATCH FILES FOR CHANGES
 gulp.task('watch', function() {
   gulp.watch([PATH.SRC, PATH.DOCS], ['build']);
@@ -66,5 +71,5 @@ gulp.task('serve', function() {
   });
 });
 
-gulp.task('docs', ['dgeni']);
+gulp.task('docs', ['dgeni', 'static']);
 gulp.task('default', ['serve', 'watch']);
