@@ -1,6 +1,23 @@
 var Q = require('q');
 var marked = require('marked');
 var exec = require('child_process').exec;
+var renderer    = new marked.Renderer();
+
+// anchors for headings
+renderer.heading = function (text, level) {
+  if (level === 1) {
+    return '<h1>' + text + '</h1>';
+  }
+
+  var escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+
+  return '<h' + level + '><a name="' +
+      escapedText +
+      '" class="anchor" href="#' +
+      escapedText +
+      '"><span class="header-link"></span></a>' +
+      text + '</h' + level + '>';
+};
 
 var TITLE = /#[ ]?(.+)/;
 
@@ -47,7 +64,8 @@ function markdownize(str, cb) {
       } else {
         return callback(null, code);
       }
-    }
+    },
+    renderer: renderer
   }, cb);
 }
 
