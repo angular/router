@@ -40,6 +40,7 @@ package.config(function(log, readFilesProcessor, templateFinder, templateEngine,
   };
 
   templateEngine.filters.push(require('./rendering/relativeLinkInlineTag'));
+  templateEngine.filters.push(require('./rendering/docTypeLabel'));
 
   // Add a folder to search for our own templates to use when rendering docs
   templateFinder.templateFolders.unshift(path.resolve(__dirname, 'templates'));

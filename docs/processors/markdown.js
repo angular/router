@@ -17,6 +17,7 @@ module.exports = function renderMarkdownProcessor() {
           return {
             fileInfo: doc.fileInfo,
             name: getTitle(doc.fileInfo.content),
+            summary: getDescription(doc.fileInfo.content),
             renderedContent: rendered,
             docType: 'markdown'
           };
@@ -28,6 +29,14 @@ module.exports = function renderMarkdownProcessor() {
 
 function getTitle(md) {
   return md.match(TITLE)[1];
+}
+
+function getDescription(md) {
+  var first = '';
+  md.split('\n').some(function (line) {
+    return line.trim().length > 0 && line[0] !== '#' && (first = line);
+  });
+  return first;
 }
 
 function markdownize(str, cb) {
