@@ -209,4 +209,4 @@ router.config([
 
 ## Additional reading
 
-See the `examples/` directory for common recipies.
+See the `examples/` directory for common recipes.
