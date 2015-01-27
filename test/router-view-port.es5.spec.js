@@ -53,7 +53,7 @@ describe('routerViewPort', function () {
   }));
 
 
-  it('should transition between components with different parameters', inject(function (router) {
+  it('should navigate between components with different parameters', inject(function (router) {
     router.config([
       { path: '/user/:name', component: 'user' }
     ]);
@@ -85,32 +85,30 @@ describe('routerViewPort', function () {
   }));
 
 
-  it('should give child components child routers', inject(function (router) {
-    var childCtrlRouter;
+  it('should work with nested viewports', inject(function (router) {
 
+    put('childRouter', '<div>inner { <div router-view-port></div> }</div>');
     $controllerProvider.register('ChildRouterController', function (router) {
-      childCtrlRouter = router;
       router.config([
         { path: '/b', component: 'one' }
       ]);
     });
 
     put('router', '<div>outer { <div router-view-port></div> }</div>');
-    put('childRouter', '<div>inner { <div router-view-port></div> }</div>');
-
     router.config([
       { path: '/a', component: 'childRouter' }
     ]);
+
     compile('<router-component component-name="router"></router-component>');
 
     router.navigate('/a/b');
-    $rootScope.$digest();
+    $rootScope.$digest(true);
 
     expect(elt.text()).toBe('outer { inner { one } }');
   }));
 
 
-  it('should have links that correctly work', inject(function (router) {
+  it('should update anchor hrefs with the routerLink directive', inject(function (router) {
     put('router', '<div>outer { <div router-view-port></div> }</div>');
     put('one', '<div><a router-link="two">{{number}}</a></div>');
 
@@ -123,11 +121,11 @@ describe('routerViewPort', function () {
     router.navigate('/a');
     $rootScope.$digest();
 
-    expect(elt.find('a').attr('href')).toBe('/b');
+    expect(elt.find('a').attr('href')).toBe('./b');
   }));
 
 
-  it('should have links that correctly work', inject(function (router) {
+  it('should allow params in routerLink directive', inject(function (router) {
     put('router', '<div>outer { <div router-view-port></div> }</div>');
     put('one', '<div><a router-link="two({param: \'lol\'})">{{number}}</a></div>');
 
@@ -142,6 +140,8 @@ describe('routerViewPort', function () {
 
     expect(elt.find('a').attr('href')).toBe('/b/lol');
   }));
+
+  // TODO: test dynamic links
 
 
   it('should update the href of links', inject(function (router) {
