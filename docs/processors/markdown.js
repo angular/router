@@ -2,18 +2,32 @@ var Q = require('q');
 var marked = require('marked');
 var exec = require('child_process').exec;
 var renderer    = new marked.Renderer();
+var eshighlight = require('eshighlight');
+var hljs = require('highlight.js');
+hljs.configure({
+  classPrefix: ''
+});
+
 
 // anchors for headings
+var prev = {}; // <- this is a dirty hack
 renderer.heading = function (text, level) {
   if (level === 1) {
     return '<h1>' + text + '</h1>';
   }
 
-  var escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+  var escapedText = dashCase(text.trim().replace(/[^\w]+/g, '-'));
+  if (level > 2) {
+    escapedText = prev[level - 1] + '-' + escapedText;
+  }
 
-  return '<h' + level + '><a name="' +
+  escapedText = escapedText.replace(/-{2}/g, '-').replace(/^-/, '');
+
+  prev[level] = escapedText;
+
+  return '<h' + level + ' id="' +
       escapedText +
-      '" class="anchor" href="#' +
+      '"><a class="anchor" href="#' +
       escapedText +
       '"><span class="header-link"></span></a>' +
       text + '</h' + level + '>';
@@ -71,6 +85,10 @@ function markdownize(str, cb) {
     highlight: function (code, lang, callback) {
       if (lang === 'dot') {
         graphvizualize(code, callback);
+      } else if (lang === 'js') {
+        return callback(null, eshighlight(code));
+      } else if (lang) {
+        return callback(null, hljs.highlight(lang, code).value);
       } else {
         return callback(null, code);
       }
@@ -95,4 +113,11 @@ function graphvizualize(data, cb) {
 
   // set dot to stdin
   cp.stdin.end(data);
+}
+
+
+function dashCase(str) {
+  return str.replace(/([A-Z])/g, function ($1) {
+    return '-' + $1.toLowerCase();
+  });
 }

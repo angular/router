@@ -98,18 +98,19 @@ blockquote {
   font-style:italic;
 }
 
-code, pre {
+pre, code {
   font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
-  color:#333;
   font-size:12px;
 }
 
 pre {
   padding:8px 15px;
-  background: #f8f8f8;
   border-radius:5px;
+  background-color: #272727;
   border:1px solid #e5e5e5;
+  color: #fff;
   overflow-x: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 table {
