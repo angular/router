@@ -4,6 +4,8 @@ These are instuctions for starting a new app with the New Router with AngularJS 
 
 ## Project Structure
 
+Make a new directory and `cd` into it.
+
 We're going to organize our code like this, and assume we have a simple HTTP server
 that serves files at a path corresponding to their location within the file system.
 
@@ -18,6 +20,7 @@ components/
 node_modules/
 └── ...
 ```
+We'll use `npm` to install Angular and the New Router.
 
 Let's start with the contents of `index.html`:
 
@@ -69,13 +72,13 @@ The configuration maps routes to components for each viewport.
 Let's see what this looks like:
 
 `app/app.js`
-```html
+```js
 angular.module('app', AppController);
 
-function (router) {
+function AppController (router) {
   router.config([
     {path: '', component: 'detail' }
-  ])
+  ]);
 }
 ```
 
@@ -85,11 +88,13 @@ How do we link routes?
 
 ## Nesting Routes
 
+```js
 module.controller('PhoneListController', function (router) {
   router.config([
     {path: '', component: 'detail' }
-  ])
+  ]);
 });
+```
 
 ## Multiple Viewports
 
@@ -111,7 +116,7 @@ They are then configured like this:
 ```js
 router.config([
   { path: '/', components: { left: 'tree', right: 'detail' } }
-])
+]);
 ```
 
 
