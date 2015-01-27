@@ -138,7 +138,7 @@ describe('routerViewPort', function () {
     router.navigate('/a');
     $rootScope.$digest();
 
-    expect(elt.find('a').attr('href')).toBe('/b/lol');
+    expect(elt.find('a').attr('href')).toBe('./b/lol');
   }));
 
   // TODO: test dynamic links
@@ -157,7 +157,7 @@ describe('routerViewPort', function () {
     router.navigate('/a');
     $rootScope.$digest();
 
-    expect(elt.find('a').attr('href')).toBe('/b/one');
+    expect(elt.find('a').attr('href')).toBe('./b/one');
   }));
 
 

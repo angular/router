@@ -224,18 +224,18 @@ function routerLinkDirective(router, $location, $parse) {
       // we can avoid adding a watcher if it's a literal
       if (routeParamsGetter.constant) {
         var params = routeParamsGetter();
-        url = router.generate(routeName, params);
+        url = '.' + router.generate(routeName, params);
         elt.attr('href', url);
       } else {
         scope.$watch(function() {
           return routeParamsGetter(scope, ctrl.one);
         }, function(params) {
-          url = router.generate(routeName, params);
+          url = '.' + router.generate(routeName, params);
           elt.attr('href', url);
         }, true);
       }
     } else {
-      url = router.generate(routeName);
+      url = '.' + router.generate(routeName);
       elt.attr('href', url);
     }
 
