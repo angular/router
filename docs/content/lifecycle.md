@@ -163,19 +163,19 @@ This is the basic logic that the router uses when determining whether or not to 
 
 ```dot
 digraph G {
-  node [shape=box, width=3, fontsize="12px"];
+  node [shape=box, width=3, fontsize="12px", style=filled, peripheries=0];
   splines=ortho;
   nodesep=0.50;
 
   {
-    node[fontname="Helvetica", style=filled, fillcolor=grey90, peripheries=0];
+    node[fontname="Helvetica", fillcolor=grey90];
     "complete navigation";
     "cancel navigation";
     "begin navigation";
   }
 
   {
-    node [fontname="Courier", style=filled, peripheries=0];
+    node [fontname="Courier"];
     "oldCtrl.canDeactivate()" [fillcolor=lightblue];
     "newCtrl = new Ctrl()" [fillcolor=lightsalmon];
     "newCtrl.canActivate()" [fillcolor=lightsalmon];
@@ -193,7 +193,7 @@ digraph G {
   "newCtrl.canActivate()"    -> "oldCtrl.deactivate()"     [label="true", weight=10, fontcolor=darkgreen];
   "newCtrl.canActivate()"    -> "cancel navigation"        [fontcolor=red];
 
-  "oldCtrl.deactivate()"     -> "newCtrl.activate()"       [weight=10];
+  "oldCtrl.deactivate()"     -> "newCtrl.activate()"       [label="ok", weight=10, fontcolor=darkgreen];
   "oldCtrl.deactivate()"     -> "cancel navigation";
 
   "newCtrl.activate()"       -> "complete navigation"      [weight=10];
