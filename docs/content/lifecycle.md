@@ -1,8 +1,8 @@
 # Component Lifecycle Hooks
 
+Lifecycle hooks let you control each stage of a route navigation.
 There are four main lifecycle hooks: [`canActivate`](#can-activate), [`activate`](#activate), and [`canDeactivate`](#can-deactivate), and [`deactivate`](#deactivate).
-
-A component can make use of these hooks by implementing any of them.
+A component can make use of these hooks by having its controller implement any number or combination of them.
 
 To understand how this works, let's step through a simple case where a component wants to navigate from one route to another.
 
