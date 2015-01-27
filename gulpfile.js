@@ -18,7 +18,7 @@ var PATH = {
   ATS: './src/**/*.ats'
 };
 
-gulp.task('build', ['transpile', 'angularify', 'docs']);
+gulp.task('build', ['transpile', 'angularify']);
 
 gulp.task('transpile', function() {
   return gulp.src(PATH.ATS)
@@ -57,7 +57,7 @@ gulp.task('static', function () {
 
 // WATCH FILES FOR CHANGES
 gulp.task('watch', function() {
-  gulp.watch([PATH.SRC, PATH.DOCS], ['build']);
+  gulp.watch([PATH.SRC, PATH.DOCS], ['build', 'docs']);
 });
 
 
@@ -72,4 +72,4 @@ gulp.task('serve', function() {
 });
 
 gulp.task('docs', ['dgeni', 'static']);
-gulp.task('default', ['serve', 'watch']);
+gulp.task('default', ['build', 'docs', 'serve', 'watch']);
