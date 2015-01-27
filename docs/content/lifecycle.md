@@ -10,6 +10,20 @@ To understand how this works, let's step through a simple case where a component
 TODO: expected behavior of a navigation while another navigation is completing?
 -->
 
+## Controller Constructor
+
+Before a component can fire any lifecycle hooks, Angular needs to instantiate it.
+In this phase of routing, Angular [injects the controller's dependencies](https://docs.angularjs.org/guide/di#controllers).
+
+<!-- <aside> -->
+If the controller can't be instantiated (the constructor throws), the router cancels navigation.
+However, you should avoid control flow logic my means of throwing exceptions.
+If you have logic that determines whether or not to perform a navigation, use the `canActivate` hook instead.
+<!-- </aside> -->
+
+Constructors should be lightweight.
+If you need to do a lot of work to setup a controller, consider using the [`activate`](#activate) lifecycle hook.
+
 ## canActivate
 
 Before switching to a new component, this hook runs for each active component in the app.
@@ -106,14 +120,18 @@ SaveController.prototype.canDeactivate = function() {
 ## deactivate
 
 This hook fires for each component that is removed as part of navigation.
+`deactivate` is useful for doing cleanup work.
 
-This hook fires after X, but before `activate`.
+This hook fires after the `canActivate` of the new component and `canDeactivate` of the component to be removed, but before `activate` of the new component.
 
 ## An example
 
 In this example, we have a component that prevents navigation until a user saves
 
 ```js
+angular.module('app.my', [])
+  .controller('MyController', ['user', '$http', MyController]);
+
 function MyController(user, $http) {
   this.user = user;
   this.$http = $http;
@@ -205,15 +223,15 @@ digraph G {
 
 
 
+<!--
+TODO: finish this
 ## Handling failure
 
 What happens when a `canActivate` or `canDeactivate` returns `false`?
 
 By default, this stops the navigation entirely.
 
-<!--
 TODO: show multiple levels
-TODO:
 -->
 
 
