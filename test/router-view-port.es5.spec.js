@@ -260,18 +260,70 @@ describe('routerViewPort', function () {
     compile('<router-component component-name="router"></router-component>');
 
     router.config([
-      { path: '/', component: 'user' }
+      { path: '/user', component: 'user' }
     ]);
 
-    spyOn($location, 'path').and.callThrough();
+    router.navigate('/user');
+    $rootScope.$digest();
+
+    expect($location.path()).toBe('/user');
+  }));
+
+  // TODO: location path base href
+  /*
+  it('should change the location according to...', fuction () {
+    expect('').toBe('');
+  });
+  */
+
+  it('should change location to the cannonical route', inject(function (router, $location) {
+    compile('<router-component component-name="router"></router-component>');
+
+    router.config([
+      { path: '/',     redirectTo: '/user' },
+      { path: '/user', component:  'user' }
+    ]);
+
     router.navigate('/');
     $rootScope.$digest();
 
-    expect($location.path).toHaveBeenCalledWith('/');
+    expect($location.path()).toBe('/user');
   }));
 
 
-  it('should navigate when location path changes', inject(function (router, $location) {
+  it('should change location to the cannonical route with nested components', inject(function (router, $location) {
+    compile('<router-component component-name="router"></router-component>');
+
+    router.config([
+      { path: '/old-parent', redirectTo: '/new-parent' },
+      { path: '/new-parent', component:  'childRouter' }
+    ]);
+
+    put('childRouter', '<div>inner { <div router-view-port></div> }</div>');
+    $controllerProvider.register('ChildRouterController', function (router) {
+      router.config([
+        { path: '/old-child', redirectTo: '/new-child' },
+        { path: '/new-child', component: 'one'},
+        { path: '/old-child-two', redirectTo: '/new-child-two' },
+        { path: '/new-child-two', component: 'two'}
+      ]);
+    });
+
+    router.navigate('/old-parent/old-child');
+    $rootScope.$digest();
+
+    expect($location.path()).toBe('/new-parent/new-child');
+    expect(elt.text()).toBe('inner { one }');
+
+    router.navigate('/old-parent/old-child-two');
+    $rootScope.$digest();
+
+    expect($location.path()).toBe('/new-parent/new-child-two');
+    expect(elt.text()).toBe('inner { two }');
+  }));
+
+
+  it('should navigate when the location path changes', inject(function (router, $location) {
     compile('<router-component component-name="router"></router-component>');
 
     router.config([

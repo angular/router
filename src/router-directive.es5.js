@@ -37,8 +37,10 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
 
   var nav = router.navigate;
   router.navigate = function (url) {
-    return nav.call(this, url).then(function () {
-      $location.path(url);
+    return nav.call(this, url).then(function (newUrl) {
+      if (newUrl) {
+        $location.path(newUrl);
+      }
     });
   }
 

@@ -13,6 +13,7 @@ export class Router {
     this.parent = parent || null;
     this.navigating = false;
     this.ports = {};
+    this.rewrites = {};
     this.children = [];
     this.context = null;
     this.recognizer = new RouteRecognizer();
@@ -46,12 +47,18 @@ export class Router {
    *
    * @description
    * update the routing configuation and trigger a navigation
-   * 
+   *
    */
   config(mapping) {
     if (mapping instanceof Array) {
       return mapping.forEach(nav => this.config(nav));
     }
+
+    if (mapping.redirectTo) {
+      this.rewrites[mapping.path] = mapping.redirectTo;
+      return this.renavigate();
+    }
+
     var component = mapping.component;
 
     if (typeof component === 'string') {
@@ -79,22 +86,27 @@ export class Router {
    * @name navigate
    *
    * @descrive navigate from a URL
+   * @returns the cannonical URL for the route
    */
-  navigate(url:String, force:Boolean=false) {
+  navigate(url, force:Boolean=false) {
+    var self = this;
 
     // TODO: test this behavior
     // we need this check because a navigation might cause additional config
     // to be loaded and we dont want to kick off two navigations
-    // also maybe this should return a promise that resolves when the naviagation finishes
+    // also maybe this should return a promise that resolves when the navigation finishes
     if (this.navigating) {
       return Promise.resolve();
     }
 
+    url = this.getCanonicalUrl(url);
+
     if (!force && url === this.previousUrl) {
       return Promise.resolve();
     }
-    this.previousUrl = url;
+
     var context = this.recognizer.recognize(url);
+    var segment = url;
 
     if (notMatched(context)) {
       context = this.childRecognizer.recognize(url);
@@ -104,12 +116,13 @@ export class Router {
       }
 
       var path = context[0].handler.path;
-      var segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
+      segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
 
       if (this.previousSegment === segment) {
-        return this.navigateChildren(context);
+        startNavigating();
+        return this.navigateChildren(context)
+              .then(finishNavigating);
       }
-      this.previousSegment = segment;
     }
 
     if (notMatched(context)) {
@@ -132,8 +145,20 @@ export class Router {
     // TODO: this will become the pipeline
     return this.canNavigate(context)
                .then(status => (status && this.activatePorts(context)))
-               .then(() => this.navigating = false)
-               .then(() => this.previousContext = context);
+               .then(finishNavigating);
+
+    function startNavigating() {
+      self.context = context[0];
+      self.fullContext = context;
+      self.navigating = true;
+    }
+
+    function finishNavigating(childUrl) {
+      self.navigating = false;
+      self.previousSegment = segment;
+      self.previousContext = context;
+      return self.previousUrl = segment + (childUrl || '');
+    }
   }
 
   renavigate() {
