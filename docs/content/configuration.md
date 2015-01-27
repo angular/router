@@ -14,13 +14,11 @@ You can configure multiple viewports on the same path like this:
 
 ```js
 router.config([
-  {
-    path: '/user',
+  { path: '/user',
     components: {
       master: 'userList',
       detail: 'user'
-    }
-  }
+  } }
 ]);
 ```
 
