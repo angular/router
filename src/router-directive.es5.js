@@ -58,7 +58,7 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
   function routerComponentLinkFn(scope, elt, attrs, ctrls, $transclude) {
     var parentComponentCtrl = ctrls[0],
         viewPortCtrl = ctrls[1],
-        myOwnRouterComponentCtrl= ctrls[2];
+        myOwnRouterComponentCtrl = ctrls[2];
 
     var childRouter = (parentComponentCtrl && parentComponentCtrl.$$router && parentComponentCtrl.$$router.childRouter()) || router;
     var parentRouter = childRouter.parent || childRouter;
@@ -129,7 +129,7 @@ function routerComponentFillContentDirective($compile) {
 
 /**
  * @name routerViewPort
- * 
+ *
  * @description
  * A routerViewPort is where resolved content goes.
  *
@@ -252,7 +252,7 @@ function routerLinkDirective(router, $location, $parse) {
  * @type provider
  * @description
  *
- * This lets you configure conventions for what controllers are named and where to load templates from
+ * This lets you configure conventions for what controllers are named and where to load templates from.
  */
 function componentLoaderProvider() {
   var componentToCtrl = function componentToCtrlDefault(name) {

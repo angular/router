@@ -21,8 +21,9 @@ export class Router {
   }
 
 
-  /*
-   * constructs a child router
+  /**
+   * @name childRouter
+   * @description constructs a child router
    */
   childRouter() {
     var child = new Router(this);
@@ -31,8 +32,9 @@ export class Router {
   }
 
 
-  /*
-   * object to notify of route changes
+  /**
+   * @name registerViewPort
+   * @description register an object to notify of route changes
    */
   registerViewPort(view, name = 'default') {
     this.ports[name] = view;
@@ -48,6 +50,9 @@ export class Router {
    * @description
    * update the routing configuation and trigger a navigation
    *
+   * ```js
+   * router.config({ path: '/', component: '/user' });
+   * ```
    */
   config(mapping) {
     if (mapping instanceof Array) {
@@ -161,26 +166,45 @@ export class Router {
     }
   }
 
+  getCanonicalUrl(url) {
+    // TODO: normalize this
+    forEach(this.rewrites, function (toUrl, fromUrl) {
+      if (url.indexOf(fromUrl) === 0) {
+        url = url.replace(fromUrl, toUrl);
+      }
+    });
+
+    return url;
+  }
+
+  /**
+   * @name renavigate
+   * @description like "refresh"
+   */
   renavigate() {
-    if (this.navigating) {
-      return Promise.resolve();
-    }
-    if (this.previousUrl) {
+    if (!this.navigating && this.previousUrl) {
       return this.navigate(this.previousUrl, true);
     } else {
       return Promise.resolve();
     }
   }
 
+
   navigateChildren(context) {
     if (context[0].params.childRoute) {
       var subNav = '/' + context[0].params.childRoute;
-      return Promise.all(this.children.map(child => child.navigate(subNav)));
+      return Promise.all(this.children.map(child => child.navigate(subNav)))
+            .then(childUrls => childUrls[0]);
     }
     return Promise.resolve();
   }
 
 
+  /**
+   * @name generate
+   * @returns URL
+   * @description
+   */
   generate(name:string, params) {
     var router = this,
         prefix = '';
@@ -207,15 +231,15 @@ export class Router {
    */
   activatePorts(context) {
     var activations = mapObj(this.ports,
-        port => Promise.resolve(port.deactivate && port.deactivate(context)).
-            then(port.activate(context)));
+        port => Promise.resolve(port.deactivate && port.deactivate(context))
+            .then(port.activate(context)));
 
     return Promise.all(activations).then(() => this.navigateChildren(context));
   }
 
 
   /**
-   * 
+   *
    * given a context obj
    * returns a Promise<bool> that represents
    * whether this router and all the descendants can navigate
