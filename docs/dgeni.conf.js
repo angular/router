@@ -7,7 +7,8 @@ var Package = require('dgeni').Package;
 // the jsdoc and nunjucks packages defined in the dgeni-packages npm module.
 var package = new Package('router', [
   require('dgeni-packages/jsdoc'),
-  require('dgeni-packages/nunjucks')
+  require('dgeni-packages/nunjucks'),
+  require('./traceur-package')
 ]);
 
 package.processor(require('./processors/markdown.js'));
@@ -29,7 +30,8 @@ package.config(function(log, readFilesProcessor, templateFinder, templateEngine,
   // Specify collections of source files that should contain the documentation to extract
   readFilesProcessor.sourceFiles = [
     { include: 'src/**/*.js', basePath: 'src' },
-    { include: 'docs/content/**/*.md', basePath: 'docs/content' }
+    { include: 'docs/content/**/*.md', basePath: 'docs/content' },
+    { include: 'src/**/*.ats', basePath: 'src' }
   ];
 
 

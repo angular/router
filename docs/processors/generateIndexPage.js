@@ -9,14 +9,17 @@ var path = require('canonical-path');
  */
 module.exports = function generateIndexPageProcessor() {
   return {
+    includeDocFn: function(doc) { return ['js', 'markdown', 'module'].indexOf(doc.docType) >= 0; },
     $runAfter: ['adding-extra-docs'],
     $runBefore: ['extra-docs-added'],
     $process: function(docs) {
 
+      var includeDocFn = this.includeDocFn;
+
       // Collect up all the areas in the docs
       var docTypes = {};
       docs.forEach(function(doc) {
-        if ( doc.docType ) {
+        if (includeDocFn(doc)) {
           docTypes[doc.docType] = docTypes[doc.docType] || [];
           docTypes[doc.docType].push(doc);
         }

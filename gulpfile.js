@@ -72,4 +72,12 @@ gulp.task('serve', function() {
 });
 
 gulp.task('docs', ['dgeni', 'static']);
+gulp.task('docs/serve', ['docs'], function() {
+  connect.server({
+    host: SERVER_CONFIG.host,
+    root: [__dirname + '/dist/docs'],
+    port: SERVER_CONFIG.port,
+    livereload: false
+  });
+});
 gulp.task('default', ['build', 'docs', 'serve', 'watch']);
