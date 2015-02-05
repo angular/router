@@ -20,7 +20,7 @@ That being said, all forms of feedback are welcome: bug reports, feature request
 ### GitHub Milestones
 * v0.x.y - This is the list of tasks that I'm aiming to get done this week. I'll be closing these and cutting releases on Fridays.
 * [pre ng-conf](https://github.com/angular/router/issues?q=milestone%3Apre-ng-conf+) - these tasks need to be taken care of before the beginning of March.
-* [post ng-conf](https://github.com/angular/router/issues?q=milestone%3A%22post+ng-conf%22) - these tasks need to be taken care of before the beginning of March.
+* [post ng-conf](https://github.com/angular/router/issues?q=milestone%3A%22post+ng-conf%22) - these tasks need to be taken care of eventually.
 
 After ng-conf, I'll likely reorganize these labels.
 
