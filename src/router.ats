@@ -94,6 +94,11 @@ export class Router {
    * @returns the cannonical URL for the route
    */
   navigate(url, force:Boolean=false) {
+
+    if (url[0] === '.') {
+      url = url.substr(1);
+    }
+
     var self = this;
 
     // TODO: test this behavior
