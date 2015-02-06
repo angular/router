@@ -14,7 +14,8 @@ controller('AppController', ['router', AppController]);
 
 function AppController(router) {
   router.config([
-    { path: 'phones'          , component: 'phoneList'   },
-    { path: 'phones/:phoneId' , component: 'phoneDetail' }
+    { path: '/'               , redirectTo: '/phones'    },
+    { path: '/phones'          , component: 'phoneList'   },
+    { path: '/phones/:phoneId' , component: 'phoneDetail' }
   ]);
 }

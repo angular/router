@@ -13,6 +13,8 @@ Please check existing issues and PRs (including ones that have already been clos
 That being said, all forms of feedback are welcome: bug reports, feature requests, use cases, and questions.
 
 ### GitHub Labels
+Most of the use cases are self-explanatory, so they are omitted.
+
 * [pair](https://github.com/angular/router/labels/pair) - issues that @btford wants to use or pairing with other Angular Core team members to get feedback.
 * [`type: use case`](https://github.com/angular/router/labels/type%3A%20use%20case) - issues that describe a common usage scenario.
   Should be closed by adding an example to `examples/angular-1/`, complete with docs and an e2e test.

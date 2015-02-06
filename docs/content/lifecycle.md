@@ -201,7 +201,9 @@ digraph G {
     "newCtrl.activate()" [fillcolor=lightsalmon];
   }
 
-  "begin navigation"         -> "oldCtrl.canDeactivate()";
+  "begin navigation"         -> "oldCtrl.canReuse()";
+  "oldCtrl.canReuse()"       -> "oldCtrl.reuse()"          [label=true];
+  "oldCtrl.canReuse()"       -> "oldCtrl.canDeactivate()";
   "oldCtrl.canDeactivate()"  -> "newCtrl = new Ctrl()"     [label="true", weight=10, fontcolor=darkgreen];
   "oldCtrl.canDeactivate()"  -> "cancel navigation"        [fontcolor=red];
 
@@ -217,7 +219,7 @@ digraph G {
   "newCtrl.activate()"       -> "complete navigation"      [weight=10];
   "newCtrl.activate()"       -> "cancel navigation";
 
-  { rank=same; "complete navigation"; "cancel navigation"; }
+  { rank=same; "complete navigation"; "cancel navigation"; "oldCtrl.reuse()" }
 }
 ```
 

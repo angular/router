@@ -17,8 +17,6 @@ function AppController(router) {
     { path: '/three',  component: 'three' },
     { path: '/end',    component: 'end' }
   ]);
-
-  router.navigate('/');
 }
 
 

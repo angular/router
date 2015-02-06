@@ -10,7 +10,7 @@ angular.module('example', [
 
 function AppController(router) {
   router.config([
-    { path: '/',              component: 'welcome' },
+    { path: '/',              redirectTo: '/welcome' },
     { path: '/welcome',       component: 'welcome' },
     { path: '/flickr',        component: 'flickr' },
     { path: '/settings',      component: 'settings' }

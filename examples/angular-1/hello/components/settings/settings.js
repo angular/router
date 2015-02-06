@@ -8,9 +8,8 @@ function SettingsController(router) {
   this.router = router;
 
   router.config([
-    { path: '/',         component: 'welcome',  title:'Welcome' },
+    { path: '/',         redirectTo: '/welcome' },
     { path: '/welcome',  component: 'welcome',  title:'Welcome' },
-    { path: '/flickr',   component: 'flickr' },
-    { path: '/settings', component: 'settings', title:'Settings (What!?)' }
+    { path: '/flickr',   component: 'flickr' }
   ]);
 }

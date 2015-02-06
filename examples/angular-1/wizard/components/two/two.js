@@ -7,8 +7,5 @@ function TwoController(answers) {
 }
 
 TwoController.prototype.canActivate = function () {
-  if (!this.answers.name) {
-    return new Redirect('one');
-  }
-  return true;
+  return !!this.answers.name;
 };

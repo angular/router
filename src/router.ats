@@ -27,6 +27,7 @@ export class Router {
    */
   childRouter() {
     var child = new Router(this);
+    // the child isn't "live" until we add it to our children array
     this.children.push(child);
     return child;
   }
@@ -39,7 +40,7 @@ export class Router {
   registerViewPort(view, name = 'default') {
     this.ports[name] = view;
     if (this.fullContext) {
-      return this.activatePorts(this.fullContext);
+      return this.renavigate();
     }
   }
 
@@ -56,12 +57,23 @@ export class Router {
    */
   config(mapping) {
     if (mapping instanceof Array) {
-      return mapping.forEach(nav => this.config(nav));
+      return mapping.forEach(nav => this.configOne(nav));
+    } else {
+      this.configOne(mapping);
     }
+    //this.parent.makeChildLive(this);
 
+    return this.renavigate();
+  }
+
+
+  /*
+   * this should be private
+   */
+  configOne(mapping) {
     if (mapping.redirectTo) {
       this.rewrites[mapping.path] = mapping.redirectTo;
-      return this.renavigate();
+      return;
     }
 
     var component = mapping.component;
@@ -82,8 +94,6 @@ export class Router {
       path: withChild.path,
       handler: withChild
     }]);
-
-    return this.renavigate();
   }
 
 
@@ -111,10 +121,6 @@ export class Router {
 
     url = this.getCanonicalUrl(url);
 
-    if (!force && url === this.previousUrl) {
-      return Promise.resolve();
-    }
-
     var context = this.recognizer.recognize(url);
     var segment = url;
 
@@ -122,7 +128,7 @@ export class Router {
       context = this.childRecognizer.recognize(url);
 
       if (notMatched(context)) {
-        return Promise.reject();
+        return Promise.resolve();
       }
 
       var path = context[0].handler.path;
@@ -131,12 +137,12 @@ export class Router {
       if (this.previousSegment === segment) {
         startNavigating();
         return this.navigateChildren(context)
-              .then(finishNavigating);
+              .then(finishNavigating, cancelNavigating);
       }
     }
 
     if (notMatched(context)) {
-      return Promise.reject();
+      return Promise.resolve();
     }
 
     // TODO: not sure if I can compare by identity here
@@ -155,7 +161,7 @@ export class Router {
     // TODO: this will become the pipeline
     return this.canNavigate(context)
                .then(status => (status && this.activatePorts(context)))
-               .then(finishNavigating);
+               .then(finishNavigating, cancelNavigating);
 
     function startNavigating() {
       self.context = context[0];
@@ -168,6 +174,10 @@ export class Router {
       self.previousSegment = segment;
       self.previousContext = context;
       return self.previousUrl = segment + (childUrl || '');
+    }
+
+    function cancelNavigating() {
+      self.navigating = false;
     }
   }
 
@@ -200,8 +210,8 @@ export class Router {
 
 
   navigateChildren(context) {
-    if (context[0].params.childRoute) {
-      var subNav = '/' + context[0].params.childRoute;
+    if (context[0].params.childRoute || this.children.length > 0) {
+      var subNav = '/' + (context[0].params.childRoute || '');
       return Promise.all(this.children.map(child => child.navigate(subNav)))
             .then(childUrls => childUrls[0]);
     }
@@ -223,7 +233,7 @@ export class Router {
     }
 
     if (!router) {
-      throw new Error('Can not find route');
+      return '';
     }
 
     var path = router.recognizer.generate(name, params);
@@ -279,7 +289,16 @@ export class Router {
    */
   navigationPredicate(context) {
     return this.viewportsCanDeactivate(context).
-        then(status => (status && this.viewportsCanActivate(context)));
+        then(() => this.viewportsLoadConfig(context)).
+        then(() => this.viewportsCanActivate(context));
+  }
+
+  /*
+   * instantiates viewports, loading sub-router config
+   */
+  viewportsLoadConfig(context) {
+    forEach(this.ports, port => port.instantiate(context));
+    return Promise.all(mapObj(this.ports, port => port.load(context)));
   }
 
   viewportsCanDeactivate(context) {
@@ -296,7 +315,8 @@ export class Router {
     var allViewportQueries = mapObj(this.ports, fn);
 
     return Promise.all(allViewportQueries).
-        then(booleanReduction);
+        then(booleanReduction).
+        then(boolToPromise);
   }
 }
 
@@ -320,4 +340,8 @@ function mapObj(obj, fn) {
 
 function booleanReduction (arr) {
   return arr.reduce((acc, val) => acc && val, true);
+}
+
+function boolToPromise (value) {
+  return value ? Promise.resolve(value) : Promise.reject();
 }
