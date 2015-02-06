@@ -254,6 +254,7 @@ function componentLoaderProvider() {
      */
     setCtrlNameMapping: function(newFn) {
       componentToCtrl = newFn;
+      return this;
     },
     /**
      * @name componentLoaderProvider#setTemplateMapping
@@ -261,6 +262,7 @@ function componentLoaderProvider() {
      */
     setTemplateMapping: function(newFn) {
       componentToTemplate = newFn;
+      return this;
     }
   };
 }
