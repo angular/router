@@ -142,9 +142,20 @@ function makeComponentString(name) {
     '</router-component>'
   ].join('');
 }
-
+/**
+ * @ngdoc directive
+ * @name routerLink
+ * @description
+ * Lets you link to different parts of the app, and automatically generates hrefs.
+ *
+ * ## Use
+ * The directive uses a simple syntax: `componentName({ param: paramValue })`
+ *
+ * ```
+ * <a router-link="user({id: user.id})">{{user.name}}</a>
+`* ```
+ */
 var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
-
 function routerLinkDirective(router, $location, $parse) {
   var rootRouter = router;
 
