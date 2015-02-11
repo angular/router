@@ -53,7 +53,7 @@ export class Router {
    */
   config(mapping) {
     if (mapping instanceof Array) {
-      return mapping.forEach(nav => this.configOne(nav));
+      mapping.forEach(nav => this.configOne(nav));
     } else {
       this.configOne(mapping);
     }
