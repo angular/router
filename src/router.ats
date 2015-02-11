@@ -57,7 +57,6 @@ export class Router {
     } else {
       this.configOne(mapping);
     }
-    //this.parent.makeChildLive(this);
 
     return this.renavigate();
   }
