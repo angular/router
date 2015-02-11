@@ -54,7 +54,7 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
 
   function viewPortLink(scope, elt, attrs, ctrl) {
     var viewPortName = attrs.routerViewPort || 'default',
-        router = (ctrl && ctrl.$$router && ctrl.$$router) || rootRouter;
+        router = (ctrl && ctrl.$$router) || rootRouter;
 
     var oldCtrl = null,
         oldChildScope = null,
