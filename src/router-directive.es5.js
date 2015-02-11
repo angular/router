@@ -149,8 +149,9 @@ function makeComponentString(name) {
  * Lets you link to different parts of the app, and automatically generates hrefs.
  *
  * ## Use
- * The directive uses a simple syntax: `componentName({ param: paramValue })`
+ * The directive uses a simple syntax: `router-link="componentName({ param: paramValue })"`
  *
+ * ## Example
  * ```
  * <a router-link="user({id: user.id})">{{user.name}}</a>
 `* ```
