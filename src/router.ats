@@ -214,9 +214,7 @@ export class Router {
 
 
   /**
-   * @name generate
-   * @returns URL
-   * @description
+   * @description generate a URL from a component name and optional map of parameters
    */
   generate(name:string, params) {
     var router = this,
