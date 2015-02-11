@@ -5,10 +5,12 @@
 <p class="module">exported from {$ doc.moduleDoc | relativeLink(doc) $}</p>
 <p>{$ doc.description | marked $}</p>
 
-<h2>Members</h2>
+<h2>Methods</h2>
 {% for member in doc.members %}
+{%- if member.description %}
   <h3>{$ member.name $}</h3>
   <p>{$ member.description | marked $}</p>
+{% endif %}
 {% endfor %}
 
 {% endblock %}
