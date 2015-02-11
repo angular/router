@@ -22,7 +22,6 @@ export class Router {
 
 
   /**
-   * @name childRouter
    * @description constructs a child router
    */
   childRouter() {
@@ -34,7 +33,6 @@ export class Router {
 
 
   /**
-   * @name registerViewPort
    * @description register an object to notify of route changes
    */
   registerViewPort(view, name = 'default') {
@@ -46,8 +44,6 @@ export class Router {
 
 
   /**
-   * @name config
-   *
    * @description
    * update the routing configuation and trigger a navigation
    *
@@ -197,7 +193,6 @@ export class Router {
   }
 
   /**
-   * @name renavigate
    * @description like "refresh"
    */
   renavigate() {
