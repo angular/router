@@ -211,12 +211,12 @@ function routerLinkDirective(router, $location, $parse) {
 
 /**
  * @name componentLoaderProvider
- * @type provider
  * @description
  *
  * This lets you configure conventions for what controllers are named and where to load templates from.
  *
- * The default behavior is to dasherize and serve from `./components`. `myWidget`
+ * The default behavior is to dasherize and serve from `./components`. A component called `myWidget`
+ * uses a controller named `MyWidgetController` and a template loaded from `./components/my-widget/my-widget.html`.
  *
  * A component is:
  * - a controller
@@ -249,15 +249,15 @@ function componentLoaderProvider() {
       return componentLoader;
     },
     /**
-     * @name setCtrlNameMapping
-     * @description takes a template name
+     * @name componentLoaderProvider#setCtrlNameMapping
+     * @description takes a function for mapping component names to component controller names
      */
     setCtrlNameMapping: function(newFn) {
       componentToCtrl = newFn;
     },
     /**
-     * @name setTemplateMapping
-     * @description
+     * @name componentLoaderProvider#setTemplateMapping
+     * @description takes a function for mapping component names to component template URLs
      */
     setTemplateMapping: function(newFn) {
       componentToTemplate = newFn;
