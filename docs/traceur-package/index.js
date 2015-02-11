@@ -76,7 +76,7 @@ module.exports = new Package('traceur')
   computePathsProcessor.pathTemplates.push({
     docTypes: ['module'],
     pathTemplate: '${id}',
-    outputPathTemplate: '${id}/index.html'
+    getOutputPath: function() {} // don't write this to file
   });
 
   computePathsProcessor.pathTemplates.push({
@@ -86,8 +86,8 @@ module.exports = new Package('traceur')
       'NAMED_EXPORT',
       'VARIABLE_STATEMENT'
     ],
-    pathTemplate: '${moduleDoc.path}/${name}',
-    outputPathTemplate: '${path}/index.html'
+    pathTemplate: '${name}',
+    outputPathTemplate: '${path}.html'
   });
 
   computePathsProcessor.pathTemplates.push({
@@ -96,4 +96,3 @@ module.exports = new Package('traceur')
     getOutputPath: function() {} // These docs are not written to their own file, instead they are part of their class doc
   });
 });
-

@@ -7,7 +7,7 @@ module.exports = function processModuleDocs(log, ExportTreeVisitor, getJSDocComm
     $runBefore: ['parsing-tags', 'generateDocsFromComments'],
     $process: function(docs) {
       var exportDocs = [];
-      _.forEach(docs, function(doc) {
+      docs.forEach(function(doc) {
         if (doc.docType === 'module') {
 
           log.debug('processing', doc.moduleTree.moduleName);
@@ -30,7 +30,7 @@ module.exports = function processModuleDocs(log, ExportTreeVisitor, getJSDocComm
                 // If this export has a comment, remove it from the list of
                 // comments collected in the module
                 var index = doc.comments.indexOf(exportDoc.comment);
-                if ( index !== -1 ) {
+                if (index !== -1) {
                   doc.comments.splice(index, 1);
                 }
 

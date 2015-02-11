@@ -1,6 +1,5 @@
 var path = require('canonical-path');
 
-
 /**
  * @dgService atScriptFileReader
  * @description
@@ -25,6 +24,4 @@ module.exports = function atScriptFileReader(log, atParser) {
   };
 
   return reader;
-
-
 };

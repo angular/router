@@ -8,7 +8,7 @@ module.exports = function processClassDocs(log, getJSDocComment) {
     $process: function(docs) {
       var memberDocs = [];
       _.forEach(docs, function(classDoc) {
-        if ( classDoc.docType === 'class' ) {
+        if (classDoc.docType === 'class') {
 
           classDoc.members = [];
 
@@ -26,7 +26,7 @@ module.exports = function processClassDocs(log, getJSDocComment) {
               // If this export has a comment, remove it from the list of
               // comments collected in the module
               var index = classDoc.moduleDoc.comments.indexOf(memberDoc.commentBefore);
-              if ( index !== -1 ) {
+              if (index !== -1) {
                 classDoc.moduleDoc.comments.splice(index, 1);
               }
 

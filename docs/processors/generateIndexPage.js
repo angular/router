@@ -9,7 +9,7 @@ var path = require('canonical-path');
  */
 module.exports = function generateIndexPageProcessor() {
   return {
-    includeDocFn: function(doc) { return ['js', 'markdown', 'module'].indexOf(doc.docType) >= 0; },
+    includeDocFn: shouldIndexDoc,
     $runAfter: ['adding-extra-docs'],
     $runBefore: ['extra-docs-added'],
     $process: function(docs) {
@@ -38,3 +38,8 @@ module.exports = function generateIndexPageProcessor() {
     }
   };
 };
+
+function shouldIndexDoc(doc) {
+  return ['js', 'provider', 'class', 'directive', 'markdown'].indexOf(doc.docType) > -1 &&
+        doc.name.indexOf('#') === -1;
+}
