@@ -1,9 +1,6 @@
 'use strict';
 
-/**
- * @name ngFuturisticRouter
- *
- * @description
+/*
  * A module for adding new a routing system Angular 1.
  */
 angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
