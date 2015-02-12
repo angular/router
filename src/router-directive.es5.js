@@ -18,7 +18,6 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  * A routerViewPort is where resolved content goes.
  *
  * ## Use
- * `<router-view-port>` needs to appear inside of a routerComponent
  *
  * ```html
  * <div router-view-port="name"></div>
@@ -142,8 +141,10 @@ function makeComponentString(name) {
     '</router-component>'
   ].join('');
 }
+
+
+var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
 /**
- * @ngdoc directive
  * @name routerLink
  * @description
  * Lets you link to different parts of the app, and automatically generates hrefs.
@@ -152,11 +153,21 @@ function makeComponentString(name) {
  * The directive uses a simple syntax: `router-link="componentName({ param: paramValue })"`
  *
  * ## Example
+ *
+ * ```js
+ * angular.module('myApp', ['ngFuturisticRouter'])
+ *   .controller('AppController', ['router', fucntion(router) {
+ *     router.config({ path: '/user/:id' component: 'user' });
+ *     this.user = { name: 'Brian', id: 123 };
+ *   });
  * ```
- * <a router-link="user({id: user.id})">{{user.name}}</a>
-`* ```
+ *
+ * ```html
+ * <div ng-controller="AppController as app">
+ *   <a router-link="user({id: app.user.id})">{{app.user.name}}</a>
+ * </div>
+ * ```
  */
-var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
 function routerLinkDirective(router, $location, $parse) {
   var rootRouter = router;
 
