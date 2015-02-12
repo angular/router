@@ -38,15 +38,6 @@ describe('Router', () => {
       expect(view.activate).toHaveBeenCalled();
     }));
 
-    it('should not reactivate when called with the same URL', sync(async () => {
-      await router.navigate('/a');
-      expect(view.activate).toHaveBeenCalled();
-
-      view.activate.calls.reset();
-      await router.navigate('/a');
-      expect(view.activate).not.toHaveBeenCalled();
-    }));
-
     it('should check if it can navigate', sync(async () => {
       spyOn(router, 'navigationPredicate').and.callThrough();
       var status = await router.canNavigate('/a');
@@ -183,6 +174,8 @@ function sync (fn) {
 
 function makeMockComponent (name = '') {
   return {
+    instantiate: () => {},
+    load: () => {},
     activate: jasmine.createSpy(name + ' activate component').and.returnValue(Promise.resolve()),
     deactivate: jasmine.createSpy(name + ' deactivate component').and.returnValue(Promise.resolve())
   };
