@@ -33,7 +33,7 @@ Let's start with the contents of `index.html`:
   <title>My app</title>
 </head>
 <body ng-app="myApp">
-  <div router-component="app"></div>
+  <div router-view-port="app"></div>
 
   <script src="/node_modules/angular/angular.js"></script>
   <script src="/dist/router.es5.js"></script>
@@ -42,7 +42,7 @@ Let's start with the contents of `index.html`:
 </html>
 ```
 
-This is a pretty typical angular app, except the `router-component` directive.
+This is a pretty typical angular app, except the `router-view-port` directive.
 Let's talk about that for a bit.
 
 
@@ -103,12 +103,12 @@ A component can have multiple viewports:
 `multiview.html`
 ```html
 <div class="container">
-  <div ng-view-port="left"></div>
-  <div ng-view-port="right"></div>
+  <div router-view-port="left"></div>
+  <div router-view-port="right"></div>
 </div>
 ```
 
-Viewports are named with the `ng-view-port` attribute.
+Viewports are named with the `router-view-port` attribute.
 
 They are then configured like this:
 
