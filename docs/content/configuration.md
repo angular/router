@@ -25,8 +25,8 @@ router.config([
 ```
 
 ```html
-<div router-component="master"></div>
-<div router-component="detail"></div>
+<div router-view-port="master"></div>
+<div router-view-port="detail"></div>
 ```
 
 ## redirectTo
