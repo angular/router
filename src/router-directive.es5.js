@@ -23,7 +23,7 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  * <div router-view-port="name"></div>
  * ```
  *
- * The value for the `routerViewComponent` attribute is optional.
+ * The value for the `routerViewPort` attribute is optional.
  */
 function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, componentLoader, router) {
   var rootRouter = router;
