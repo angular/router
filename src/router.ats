@@ -120,6 +120,9 @@ export class Router {
 
     url = this.getCanonicalUrl(url);
 
+    // TODO: not sure whether to do before or after redirects
+    this.lastNavigationAttempt = url;
+
     var context = this.recognizer.recognize(url);
     var segment = url;
 
@@ -176,6 +179,7 @@ export class Router {
     }
 
     function cancelNavigating() {
+      self.previousUrl = url;
       self.navigating = false;
     }
   }
@@ -202,8 +206,9 @@ export class Router {
    * You shouldn't need to use this API very often.
    */
   renavigate() {
-    if (!this.navigating && this.previousUrl) {
-      return this.navigate(this.previousUrl);
+    var renavigateDestination = this.previousUrl || this.lastNavigationAttempt;
+    if (!this.navigating && renavigateDestination) {
+      return this.navigate(renavigateDestination);
     } else {
       return Promise.resolve();
     }
