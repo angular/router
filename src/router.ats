@@ -6,7 +6,7 @@ var CHILD_ROUTE_SUFFIX = '/*childRoute';
  * @name Router
  * @where shared
  * @description
- * The router is responsible for
+ * The router is responsible for mapping URLs to components.
  */
 export class Router {
   constructor(parent, configPrefix) {
@@ -22,7 +22,8 @@ export class Router {
 
 
   /**
-   * @description constructs a child router
+   * @description constructs a child router.
+   * You probably don't need to use this unless you're writing a reusable component.
    */
   childRouter() {
     var child = new Router(this);
@@ -33,7 +34,8 @@ export class Router {
 
 
   /**
-   * @description register an object to notify of route changes
+   * @description register an object to notify of route changes.
+   * You probably don't need to use this unless you're writing a reusable component.
    */
   registerViewPort(view, name = 'default') {
     this.ports[name] = view;
@@ -50,6 +52,8 @@ export class Router {
    * ```js
    * router.config({ path: '/', component: '/user' });
    * ```
+   *
+   * For more, see the [configuration](configuration) guide.
    */
   config(mapping) {
     if (mapping instanceof Array) {
@@ -95,8 +99,8 @@ export class Router {
   /**
    * @name navigate
    *
-   * @descrive navigate from a URL
-   * @returns the cannonical URL for the route
+   * @descrive Navigate to a URL.
+   * Returns the cannonical URL for the route navigated to.
    */
   navigate(url, force:Boolean=false) {
 
@@ -191,8 +195,11 @@ export class Router {
     return url;
   }
 
+
   /**
-   * @description like "refresh"
+   * @description Navigates to either the last URL successfully naviagted to,
+   * or the last URL requested if the router has yet to successfully navigate.
+   * You shouldn't need to use this API very often.
    */
   renavigate() {
     if (!this.navigating && this.previousUrl) {
@@ -214,7 +221,8 @@ export class Router {
 
 
   /**
-   * @description generate a URL from a component name and optional map of parameters
+   * @description generate a URL from a component name and optional map of parameters.
+   * The URL is relative to the app's base href.
    */
   generate(name:string, params) {
     var router = this,
@@ -249,8 +257,7 @@ export class Router {
   }
 
 
-  /**
-   *
+  /*
    * given a context obj
    * returns a Promise<bool> that represents
    * whether this router and all the descendants can navigate
