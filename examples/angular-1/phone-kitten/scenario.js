@@ -62,7 +62,7 @@ describe('PhoneCat App', function() {
     });
 
 
-    it('should render phone specific links', function() {
+    xit('should render phone specific links', function() {
       var query = element(by.model('phoneList.query'));
       query.sendKeys('nexus');
       element.all(by.css('.phones li a')).first().click();

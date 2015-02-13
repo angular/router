@@ -7,7 +7,7 @@ describe('angular 1.x Hello App', function() {
     browserGet('index.html');
   });
 
-  it('should work', function() {
+  xit('should work', function() {
     expect(element(by.binding('welcome.heading')).getText())
         .toBe('Welcome to The New Angular Router Demo!');
   });
