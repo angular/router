@@ -102,7 +102,7 @@ export class Router {
    * @descrive Navigate to a URL.
    * Returns the cannonical URL for the route navigated to.
    */
-  navigate(url, force:Boolean=false) {
+  navigate(url) {
 
     if (url[0] === '.') {
       url = url.substr(1);
@@ -203,7 +203,7 @@ export class Router {
    */
   renavigate() {
     if (!this.navigating && this.previousUrl) {
-      return this.navigate(this.previousUrl, true);
+      return this.navigate(this.previousUrl);
     } else {
       return Promise.resolve();
     }
