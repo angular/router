@@ -1,26 +1,34 @@
-/*
- * This is for Angular 1.3
- */
+'use strict';
 
+/*
+ * A module for adding new a routing system Angular 1.
+ */
 angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
-  directive('routerComponent', routerComponentDirective).
-  directive('routerComponent', routerComponentFillContentDirective).
   value('routeParams', {}).
   provider('componentLoader', componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
+  directive('routerViewPort', routerViewPortFillContentDirective).
   directive('routerLink', routerLinkDirective);
 
-/*
- * A component is:
- * - a controller
- * - a template
- * - an optional router
+
+
+/**
+ * @name routerViewPort
  *
- * This directive makes it easy to group all of them into a single concept
+ * @description
+ * A routerViewPort is where resolved content goes.
  *
+ * ## Use
  *
+ * ```html
+ * <div router-view-port="name"></div>
+ * ```
+ *
+ * The value for the `routerViewPort` attribute is optional.
  */
-function routerComponentDirective($animate, $controller, $compile, $rootScope, $location, $templateRequest, router, componentLoader) {
+function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, componentLoader, router) {
+  var rootRouter = router;
+
   $rootScope.$watch(function () {
     return $location.path();
   }, function (newUrl) {
@@ -29,148 +37,130 @@ function routerComponentDirective($animate, $controller, $compile, $rootScope, $
 
   var nav = router.navigate;
   router.navigate = function (url) {
-    return nav.call(this, url).then(function () {
-      $location.path(url);
+    return nav.call(this, url).then(function (newUrl) {
+      if (newUrl) {
+        $location.path(newUrl);
+      }
     });
   }
 
   return {
     restrict: 'AE',
-    scope: {},
-    priority: 400,
     transclude: 'element',
-    require: ['?^^routerComponent', '?^^routerViewPort', 'routerComponent'],
-    link: routerComponentLinkFn,
-    controller: function () {},
-    controllerAs: '$$routerComponentController'
-  };
-
-  function routerComponentLinkFn(scope, elt, attrs, ctrls, $transclude) {
-    var parentComponentCtrl = ctrls[0],
-        viewPortCtrl = ctrls[1],
-        myOwnRouterComponentCtrl= ctrls[2];
-
-    var childRouter = (parentComponentCtrl && parentComponentCtrl.$$router && parentComponentCtrl.$$router.childRouter()) || router;
-    var parentRouter = childRouter.parent || childRouter;
-
-    var componentName = attrs.routerComponent || attrs.componentName;
-
-    var component = componentLoader(componentName);
-
-    // build up locals for controller
-    var childScope = scope.$new();
-    var locals = {
-      $scope: childScope
-    };
-
-    if (parentRouter.context) {
-      locals.routeParams = parentRouter.context.params;
-    }
-
-    scope.$$routerComponentController.$$router = locals.router = childRouter;
-
-    // TODO: the pipeline should probably be responsible for creating this...
-    var controllerName = component.controllerName;
-    var ctrl = $controller(controllerName, locals);
-    childScope[componentName] = ctrl;
-
-    if (!ctrl.canActivate || ctrl.canActivate()) {
-      var componentTemplateUrl = component.template;
-      $templateRequest(componentTemplateUrl).
-          then(function(templateHtml) {
-
-            myOwnRouterComponentCtrl.template = templateHtml;
-
-            var clone = $transclude(childScope, function(clone) {
-              $animate.enter(clone, null, elt);
-            });
-
-            if (ctrl.activate) {
-              ctrl.activate();
-            }
-            if (ctrl.canDeactivate) {
-              viewPortCtrl.canDeactivate = function (){
-                return ctrl.canDeactivate();
-              }
-            }
-          });
-    }
-
-  }
-}
-
-
-function routerComponentFillContentDirective($compile) {
-  return {
-    restrict: 'AE',
-    priority: -400,
-    require: 'routerComponent',
-    link: function(scope, $element, $attr, ctrl) {
-      $element.html(ctrl.template);
-      $compile($element.contents())(scope);
-    }
-  };
-};
-
-
-
-/*
- * ## `<router-view-port>`
- * Responsibile for wiring up stuff
- * needs to appear inside of a routerComponent
- *
- * Use:
- *
- * ```html
- * <div router-view-port="name"></div>
- * ```
- *
- * The value for the routerViewComponent is optional
- */
-function routerViewPortDirective($animate, $compile, $templateRequest, componentLoader) {
-  return {
-    restrict: 'AE',
-    require: '^^routerComponent',
+    terminal: true,
+    priority: 400,
+    require: ['?^^routerViewPort', 'routerViewPort'],
     link: viewPortLink,
     controller: function() {},
     controllerAs: '$$routerViewPort'
   };
 
-  function viewPortLink(scope, elt, attrs, ctrl) {
-    var router = ctrl.$$router;
+  function viewPortLink(scope, $element, attrs, ctrls, $transclude) {
+    var viewPortName = attrs.routerViewPort || 'default',
+        ctrl = ctrls[0],
+        myCtrl = ctrls[1],
+        router = (ctrl && ctrl.$$router) || rootRouter;
 
-    var name = attrs.routerViewPort || 'default';
+    var currentScope,
+        newScope,
+        currentElement,
+        previousLeaveAnimation,
+        previousInstruction;
 
+    function cleanupLastView() {
+      if (previousLeaveAnimation) {
+        $animate.cancel(previousLeaveAnimation);
+        previousLeaveAnimation = null;
+      }
+
+      if (currentScope) {
+        currentScope.$destroy();
+        currentScope = null;
+      }
+      if (currentElement) {
+        previousLeaveAnimation = $animate.leave(currentElement);
+        previousLeaveAnimation.then(function() {
+          previousLeaveAnimation = null;
+        });
+        currentElement = null;
+      }
+    }
+
+    function getComponentFromInstruction(instruction) {
+      var component = instruction[0].handler.component;
+      var componentName = typeof component === 'string' ? component : component[viewPortName];
+      return componentLoader(componentName);
+    }
     router.registerViewPort({
+      canDeactivate: function (instruction) {
+        return !ctrl || !ctrl.canDeactivate || ctrl.canDeactivate();
+      },
+      canReactivate: function (instruction) {
+        //TODO: expose controller hook
+        return JSON.stringify(instruction) === previousInstruction;
+      },
+      instantiate: function (instruction) {
+        var controllerName = getComponentFromInstruction(instruction).controllerName;
+        var component = instruction[0].handler.component;
+        var componentName = typeof component === 'string' ? component : component[viewPortName];
+
+        // build up locals for controller
+        newScope = scope.$new();
+
+        var locals = {
+          $scope: newScope,
+          router: scope.$$routerViewPort.$$router = router.childRouter()
+        };
+
+        if (router.context) {
+          locals.routeParams = router.context.params;
+        }
+        ctrl = $controller(controllerName, locals);
+        newScope[componentName] = ctrl;
+      },
+      canActivate: function (instruction) {
+        return !ctrl || !ctrl.canActivate || ctrl.canActivate(instruction);
+      },
+      load: function (instruction) {
+        var componentTemplateUrl = getComponentFromInstruction(instruction).template;
+        return $templateRequest(componentTemplateUrl).then(function(templateHtml) {
+          myCtrl.$$template = templateHtml;
+        });
+      },
       activate: function (instruction) {
         var component = instruction[0].handler.component;
-        var componentName = typeof component === 'string' ? component : component[name];
+        var componentName = typeof component === 'string' ? component : component[viewPortName];
 
-        var template = makeComponentString(componentName);
-        var oldContents = elt.contents();
+        var clone = $transclude(newScope, function(clone) {
+          $animate.enter(clone, null, currentElement || $element);
+          cleanupLastView();
+        });
 
-        if (oldContents.length) {
-          oldContents.remove();
+        currentElement = clone;
+        currentScope = newScope;
+
+        // finally, run the hook
+        if (ctrl.activate) {
+          ctrl.activate(instruction);
         }
-
-        elt.html(template);
-        var link = $compile(elt.contents());
-        ctrl.$$router.context = instruction[0];
-        link(scope.$new());
-
-        if (oldContents.length) {
-          elt.append(oldContents);
-          $animate.leave(oldContents);
-        }
-
-        // TODO: this is a hack to avoid ordering constraint issues
-        return $templateRequest(componentLoader(componentName).template);
-      },
-      canDeactivate: function (instruction) {
-        return !scope.$$routerViewPort.canDeactivate || scope.$$routerViewPort.canDeactivate();
+        previousInstruction = JSON.stringify(instruction);
       }
-    }, name);
+    }, viewPortName);
   }
+}
+
+function routerViewPortFillContentDirective($compile) {
+  return {
+    restrict: 'EA',
+    priority: -400,
+    require: 'routerViewPort',
+    link: function(scope, $element, attrs, ctrl) {
+      var template = ctrl.$$template;
+      $element.html(template);
+      var link = $compile($element.contents());
+      link(scope);
+    }
+  };
 }
 
 function makeComponentString(name) {
@@ -180,26 +170,58 @@ function makeComponentString(name) {
   ].join('');
 }
 
-var SOME_RE = /^(.+?)(?:\((.*)\))?$/;
 
+var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
+/**
+ * @name routerLink
+ * @description
+ * Lets you link to different parts of the app, and automatically generates hrefs.
+ *
+ * ## Use
+ * The directive uses a simple syntax: `router-link="componentName({ param: paramValue })"`
+ *
+ * ## Example
+ *
+ * ```js
+ * angular.module('myApp', ['ngFuturisticRouter'])
+ *   .controller('AppController', ['router', fucntion(router) {
+ *     router.config({ path: '/user/:id' component: 'user' });
+ *     this.user = { name: 'Brian', id: 123 };
+ *   });
+ * ```
+ *
+ * ```html
+ * <div ng-controller="AppController as app">
+ *   <a router-link="user({id: app.user.id})">{{app.user.name}}</a>
+ * </div>
+ * ```
+ */
 function routerLinkDirective(router, $location, $parse) {
   var rootRouter = router;
 
+  angular.element(document.body).on('click', function (ev) {
+    var target = ev.target;
+    if (target.attributes['router-link']) {
+      ev.preventDefault();
+      var url = target.attributes.href.value;
+      rootRouter.navigate(url);
+    }
+  });
+
   return {
-    require: '^^routerComponent',
+    require: '?^^routerViewPort',
     restrict: 'A',
     link: routerLinkDirectiveLinkFn
   };
 
-
   function routerLinkDirectiveLinkFn(scope, elt, attrs, ctrl) {
-    var router = ctrl && ctrl.$$router;
+    var router = (ctrl && ctrl.$$router) || rootRouter;
     if (!router) {
       return;
     }
 
     var link = attrs.routerLink || '';
-    var parts = link.match(SOME_RE);
+    var parts = link.match(LINK_MICROSYNTAX_RE);
     var routeName = parts[1];
     var routeParams = parts[2];
     var url;
@@ -209,31 +231,39 @@ function routerLinkDirective(router, $location, $parse) {
       // we can avoid adding a watcher if it's a literal
       if (routeParamsGetter.constant) {
         var params = routeParamsGetter();
-        url = router.generate(routeName, params);
+        url = '.' + router.generate(routeName, params);
         elt.attr('href', url);
       } else {
         scope.$watch(function() {
-          return routeParamsGetter(scope, ctrl.one);
+          return routeParamsGetter(scope);
         }, function(params) {
-          url = router.generate(routeName, params);
+          url = '.' + router.generate(routeName, params);
           elt.attr('href', url);
         }, true);
       }
     } else {
-      url = router.generate(routeName);
+      url = '.' + router.generate(routeName);
       elt.attr('href', url);
     }
-
-    elt.on('click', function (ev) {
-      ev.preventDefault();
-      rootRouter.navigate(url);
-    });
   }
-
 }
 
-/*
- * This lets you set up your ~conventions~
+
+/**
+ * @name componentLoaderProvider
+ * @description
+ *
+ * This lets you configure conventions for what controllers are named and where to load templates from.
+ *
+ * The default behavior is to dasherize and serve from `./components`. A component called `myWidget`
+ * uses a controller named `MyWidgetController` and a template loaded from `./components/my-widget/my-widget.html`.
+ *
+ * A component is:
+ * - a controller
+ * - a template
+ * - an optional router
+ *
+ * This service makes it easy to group all of them into a single concept.
  */
 function componentLoaderProvider() {
   var componentToCtrl = function componentToCtrlDefault(name) {
@@ -244,7 +274,7 @@ function componentLoaderProvider() {
 
   var componentToTemplate = function componentToTemplateDefault(name) {
     var dashName = dashCase(name);
-    return '/components/' + dashName + '/' + dashName + '.html';
+    return './components/' + dashName + '/' + dashName + '.html';
   };
 
   function componentLoader(name) {
@@ -258,11 +288,21 @@ function componentLoaderProvider() {
     $get: function () {
       return componentLoader;
     },
+    /**
+     * @name componentLoaderProvider#setCtrlNameMapping
+     * @description takes a function for mapping component names to component controller names
+     */
     setCtrlNameMapping: function(newFn) {
       componentToCtrl = newFn;
+      return this;
     },
+    /**
+     * @name componentLoaderProvider#setTemplateMapping
+     * @description takes a function for mapping component names to component template URLs
+     */
     setTemplateMapping: function(newFn) {
       componentToTemplate = newFn;
+      return this;
     }
   };
 }
@@ -333,6 +373,7 @@ function getDescriptors(object) {
   // }
   return descriptors;
 };
+
   "use strict";
   var RouteRecognizer = (function() {
     var map = (function() {
@@ -850,6 +891,7 @@ function getDescriptors(object) {
       }
     };
     RouteRecognizer.prototype.map = map;
+    RouteRecognizer.VERSION = 'VERSION_STRING_PLACEHOLDER';
     return RouteRecognizer;
   }());
   ;
@@ -858,13 +900,14 @@ function getDescriptors(object) {
     this.parent = parent || null;
     this.navigating = false;
     this.ports = {};
+    this.rewrites = {};
     this.children = [];
     this.context = null;
     this.recognizer = new RouteRecognizer();
     this.childRecognizer = new RouteRecognizer();
   };
   var $Router = Router;
-  ($traceurRuntime.createClass)(Router, {
+  (createClass)(Router, {
     childRouter: function() {
       var child = new $Router(this);
       this.children.push(child);
@@ -873,16 +916,23 @@ function getDescriptors(object) {
     registerViewPort: function(view) {
       var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
       this.ports[name] = view;
-      if (this.fullContext) {
-        return this.activatePorts(this.fullContext);
-      }
+      return this.renavigate();
     },
     config: function(mapping) {
       var $__0 = this;
       if (mapping instanceof Array) {
-        return mapping.forEach((function(nav) {
-          return $__0.config(nav);
+        mapping.forEach((function(nav) {
+          return $__0.configOne(nav);
         }));
+      } else {
+        this.configOne(mapping);
+      }
+      return this.renavigate();
+    },
+    configOne: function(mapping) {
+      if (mapping.redirectTo) {
+        this.rewrites[mapping.path] = mapping.redirectTo;
+        return;
       }
       var component = mapping.component;
       if (typeof component === 'string') {
@@ -899,33 +949,34 @@ function getDescriptors(object) {
         path: withChild.path,
         handler: withChild
       }]);
-      return this.renavigate();
     },
     navigate: function(url) {
-      var force = arguments[1] !== (void 0) ? arguments[1] : false;
       var $__0 = this;
+      if (url[0] === '.') {
+        url = url.substr(1);
+      }
+      var self = this;
       if (this.navigating) {
         return $q.when();
       }
-      if (!force && url === this.previousUrl) {
-        return $q.when();
-      }
-      this.previousUrl = url;
+      url = this.getCanonicalUrl(url);
+      this.lastNavigationAttempt = url;
       var context = this.recognizer.recognize(url);
+      var segment = url;
       if (notMatched(context)) {
         context = this.childRecognizer.recognize(url);
         if (notMatched(context)) {
-          return $q.reject();
+          return $q.when();
         }
         var path = context[0].handler.path;
-        var segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
+        segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
         if (this.previousSegment === segment) {
-          return this.navigateChildren(context);
+          startNavigating();
+          return this.navigateChildren(context).then(finishNavigating, cancelNavigating);
         }
-        this.previousSegment = segment;
       }
       if (notMatched(context)) {
-        return $q.reject();
+        return $q.when();
       }
       if (this.context === context[0]) {
         return $q.when();
@@ -936,28 +987,51 @@ function getDescriptors(object) {
       context.component = this.context.handler.component;
       return this.canNavigate(context).then((function(status) {
         return (status && $__0.activatePorts(context));
-      })).then((function() {
-        return $__0.navigating = false;
-      })).then((function() {
-        return $__0.previousContext = context;
-      }));
+      })).then(finishNavigating, cancelNavigating);
+      function startNavigating() {
+        self.context = context[0];
+        self.fullContext = context;
+        self.navigating = true;
+      }
+      function finishNavigating(childUrl) {
+        self.navigating = false;
+        self.previousSegment = segment;
+        self.previousContext = context;
+        return self.previousUrl = segment + (childUrl || '');
+      }
+      function cancelNavigating() {
+        self.previousUrl = url;
+        self.navigating = false;
+      }
+    },
+    getCanonicalUrl: function(url) {
+      forEach(this.rewrites, function(toUrl, fromUrl) {
+        if (fromUrl === '/') {
+          if (url === '/') {
+            url = toUrl;
+          }
+        } else if (url.indexOf(fromUrl) === 0) {
+          url = url.replace(fromUrl, toUrl);
+        }
+      });
+      return url;
     },
     renavigate: function() {
-      if (this.navigating) {
-        return $q.when();
-      }
-      if (this.previousUrl) {
-        return this.navigate(this.previousUrl, true);
+      var renavigateDestination = this.previousUrl || this.lastNavigationAttempt;
+      if (!this.navigating && renavigateDestination) {
+        return this.navigate(renavigateDestination);
       } else {
         return $q.when();
       }
     },
     navigateChildren: function(context) {
-      if (context[0].params.childRoute) {
-        var subNav = '/' + context[0].params.childRoute;
+      if (context[0].params.childRoute || this.children.length > 0) {
+        var subNav = '/' + (context[0].params.childRoute || '');
         return $q.all(this.children.map((function(child) {
           return child.navigate(subNav);
-        })));
+        }))).then((function(childUrls) {
+          return childUrls[0];
+        }));
       }
       return $q.when();
     },
@@ -968,7 +1042,7 @@ function getDescriptors(object) {
         router = router.parent;
       }
       if (!router) {
-        throw new Error('Can not find route');
+        return '';
       }
       var path = router.recognizer.generate(name, params);
       while (router = router.parent) {
@@ -979,7 +1053,12 @@ function getDescriptors(object) {
     activatePorts: function(context) {
       var $__0 = this;
       var activations = mapObj(this.ports, (function(port) {
-        return $q.when(port.deactivate && port.deactivate(context)).then(port.activate(context));
+        return $q.when(port.canReactivate && port.canReactivate(context)).then((function(status) {
+          if (status) {
+            return $q.when(!port.reactivate || port.reactivate(context));
+          }
+          return $q.when(port.deactivate && port.deactivate(context)).then(port.activate(context));
+        }));
       }));
       return $q.all(activations).then((function() {
         return $__0.navigateChildren(context);
@@ -994,29 +1073,28 @@ function getDescriptors(object) {
       }), [this.navigationPredicate(context)]);
     },
     navigationPredicate: function(context) {
-      var $__0 = this;
-      return this.viewportsCanDeactivate(context).then((function(status) {
-        return (status && $__0.viewportsCanActivate(context));
+      return this.queryViewports((function(port) {
+        return $q.when(port.canReactivate && port.canReactivate(context)).then((function(status) {
+          if (status) {
+            return true;
+          }
+          return $q.when(!port.canDeactivate || port.canDeactivate(context)).then((function(status) {
+            if (status) {
+              port.instantiate(context);
+              return $q.when(port.load(context)).then((function() {
+                return $q.when(!port.canActivate || port.canActivate(context));
+              }));
+            }
+            return false;
+          }));
+        }));
       }));
     },
-    viewportsCanDeactivate: function(context) {
-      return this.queryViewports(context, (function(port) {
-        return $q.when(!port.canDeactivate || port.canDeactivate(context));
-      }));
-    },
-    viewportsCanActivate: function(context) {
-      return this.queryViewports(context, (function(port) {
-        return $q.when(!port.canActivate || port.canActivate(context));
-      }));
-    },
-    queryViewports: function(context, fn) {
+    queryViewports: function(fn) {
       var allViewportQueries = mapObj(this.ports, fn);
-      return $q.all(allViewportQueries).then(booleanReduction);
+      return $q.all(allViewportQueries).then(booleanReduction).then(boolToPromise);
     }
   }, {});
-  Object.defineProperty(Router.prototype.navigate, "parameters", {get: function() {
-      return [[String], [Boolean]];
-    }});
   Object.defineProperty(Router.prototype.generate, "parameters", {get: function() {
       return [[$traceurRuntime.type.string], []];
     }});
@@ -1042,6 +1120,9 @@ function getDescriptors(object) {
     return arr.reduce((function(acc, val) {
       return acc && val;
     }), true);
+  }
+  function boolToPromise(value) {
+    return value ? $q.when(value) : $q.reject();
   }
 
 return new Router();}]);

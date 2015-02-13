@@ -11,6 +11,7 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
     this.parent = parent || null;
     this.navigating = false;
     this.ports = {};
+    this.rewrites = {};
     this.children = [];
     this.context = null;
     this.recognizer = new RouteRecognizer();
@@ -26,16 +27,23 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
     registerViewPort: function(view) {
       var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
       this.ports[name] = view;
-      if (this.fullContext) {
-        return this.activatePorts(this.fullContext);
-      }
+      return this.renavigate();
     },
     config: function(mapping) {
       var $__4 = this;
       if (mapping instanceof Array) {
-        return mapping.forEach((function(nav) {
-          return $__4.config(nav);
+        mapping.forEach((function(nav) {
+          return $__4.configOne(nav);
         }));
+      } else {
+        this.configOne(mapping);
+      }
+      return this.renavigate();
+    },
+    configOne: function(mapping) {
+      if (mapping.redirectTo) {
+        this.rewrites[mapping.path] = mapping.redirectTo;
+        return;
       }
       var component = mapping.component;
       if (typeof component === 'string') {
@@ -52,33 +60,34 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
         path: withChild.path,
         handler: withChild
       }]);
-      return this.renavigate();
     },
     navigate: function(url) {
-      var force = arguments[1] !== (void 0) ? arguments[1] : false;
       var $__4 = this;
+      if (url[0] === '.') {
+        url = url.substr(1);
+      }
+      var self = this;
       if (this.navigating) {
         return Promise.resolve();
       }
-      if (!force && url === this.previousUrl) {
-        return Promise.resolve();
-      }
-      this.previousUrl = url;
+      url = this.getCanonicalUrl(url);
+      this.lastNavigationAttempt = url;
       var context = this.recognizer.recognize(url);
+      var segment = url;
       if (notMatched(context)) {
         context = this.childRecognizer.recognize(url);
         if (notMatched(context)) {
-          return Promise.reject();
+          return Promise.resolve();
         }
         var path = context[0].handler.path;
-        var segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
+        segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
         if (this.previousSegment === segment) {
-          return this.navigateChildren(context);
+          startNavigating();
+          return this.navigateChildren(context).then(finishNavigating, cancelNavigating);
         }
-        this.previousSegment = segment;
       }
       if (notMatched(context)) {
-        return Promise.reject();
+        return Promise.resolve();
       }
       if (this.context === context[0]) {
         return Promise.resolve();
@@ -89,28 +98,51 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
       context.component = this.context.handler.component;
       return this.canNavigate(context).then((function(status) {
         return (status && $__4.activatePorts(context));
-      })).then((function() {
-        return $__4.navigating = false;
-      })).then((function() {
-        return $__4.previousContext = context;
-      }));
+      })).then(finishNavigating, cancelNavigating);
+      function startNavigating() {
+        self.context = context[0];
+        self.fullContext = context;
+        self.navigating = true;
+      }
+      function finishNavigating(childUrl) {
+        self.navigating = false;
+        self.previousSegment = segment;
+        self.previousContext = context;
+        return self.previousUrl = segment + (childUrl || '');
+      }
+      function cancelNavigating() {
+        self.previousUrl = url;
+        self.navigating = false;
+      }
+    },
+    getCanonicalUrl: function(url) {
+      forEach(this.rewrites, function(toUrl, fromUrl) {
+        if (fromUrl === '/') {
+          if (url === '/') {
+            url = toUrl;
+          }
+        } else if (url.indexOf(fromUrl) === 0) {
+          url = url.replace(fromUrl, toUrl);
+        }
+      });
+      return url;
     },
     renavigate: function() {
-      if (this.navigating) {
-        return Promise.resolve();
-      }
-      if (this.previousUrl) {
-        return this.navigate(this.previousUrl, true);
+      var renavigateDestination = this.previousUrl || this.lastNavigationAttempt;
+      if (!this.navigating && renavigateDestination) {
+        return this.navigate(renavigateDestination);
       } else {
         return Promise.resolve();
       }
     },
     navigateChildren: function(context) {
-      if (context[0].params.childRoute) {
-        var subNav = '/' + context[0].params.childRoute;
+      if (context[0].params.childRoute || this.children.length > 0) {
+        var subNav = '/' + (context[0].params.childRoute || '');
         return Promise.all(this.children.map((function(child) {
           return child.navigate(subNav);
-        })));
+        }))).then((function(childUrls) {
+          return childUrls[0];
+        }));
       }
       return Promise.resolve();
     },
@@ -122,7 +154,7 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
         router = router.parent;
       }
       if (!router) {
-        throw new Error('Can not find route');
+        return '';
       }
       var path = router.recognizer.generate(name, params);
       while (router = router.parent) {
@@ -133,7 +165,12 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
     activatePorts: function(context) {
       var $__4 = this;
       var activations = mapObj(this.ports, (function(port) {
-        return Promise.resolve(port.deactivate && port.deactivate(context)).then(port.activate(context));
+        return Promise.resolve(port.canReactivate && port.canReactivate(context)).then((function(status) {
+          if (status) {
+            return Promise.resolve(!port.reactivate || port.reactivate(context));
+          }
+          return Promise.resolve(port.deactivate && port.deactivate(context)).then(port.activate(context));
+        }));
       }));
       return Promise.all(activations).then((function() {
         return $__4.navigateChildren(context);
@@ -148,27 +185,28 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
       }), [this.navigationPredicate(context)]);
     },
     navigationPredicate: function(context) {
-      var $__4 = this;
-      return this.viewportsCanDeactivate(context).then((function(status) {
-        return (status && $__4.viewportsCanActivate(context));
+      return this.queryViewports((function(port) {
+        return Promise.resolve(port.canReactivate && port.canReactivate(context)).then((function(status) {
+          if (status) {
+            return true;
+          }
+          return Promise.resolve(!port.canDeactivate || port.canDeactivate(context)).then((function(status) {
+            if (status) {
+              port.instantiate(context);
+              return Promise.resolve(port.load(context)).then((function() {
+                return Promise.resolve(!port.canActivate || port.canActivate(context));
+              }));
+            }
+            return false;
+          }));
+        }));
       }));
     },
-    viewportsCanDeactivate: function(context) {
-      return this.queryViewports(context, (function(port) {
-        return Promise.resolve(!port.canDeactivate || port.canDeactivate(context));
-      }));
-    },
-    viewportsCanActivate: function(context) {
-      return this.queryViewports(context, (function(port) {
-        return Promise.resolve(!port.canActivate || port.canActivate(context));
-      }));
-    },
-    queryViewports: function(context, fn) {
+    queryViewports: function(fn) {
       var allViewportQueries = mapObj(this.ports, fn);
-      return Promise.all(allViewportQueries).then(booleanReduction);
+      return Promise.all(allViewportQueries).then(booleanReduction).then(boolToPromise);
     }
   }, {});
-  Router.prototype.navigate.parameters = [[String], [Boolean]];
   Router.prototype.generate.parameters = [[$traceurRuntime.type.string], []];
   function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -192,6 +230,9 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
     return arr.reduce((function(acc, val) {
       return acc && val;
     }), true);
+  }
+  function boolToPromise(value) {
+    return value ? Promise.resolve(value) : Promise.reject();
   }
   return {
     get Router() {
