@@ -3,8 +3,8 @@
   <meta charset="utf-8">
   <title>New Angular Router</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="style.css" rel="stylesheet">
-  <link href="highlight.css" rel="stylesheet">
+  <link href="/style.css" rel="stylesheet">
+  <link href="/highlight.css" rel="stylesheet">
 </head>
 <body lang="en">
   
@@ -31,7 +31,7 @@ node_modules/
   <span class="tag">&lt;<span class="title">title</span>&gt;</span>My app<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
 <span class="tag">&lt;/<span class="title">head</span>&gt;</span>
 <span class="tag">&lt;<span class="title">body</span> <span class="attribute">ng-app</span>=<span class="value">"myApp"</span>&gt;</span>
-  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-component</span>=<span class="value">"app"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"app"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
 
   <span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"/node_modules/angular/angular.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
   <span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"/dist/router.es5.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
@@ -39,7 +39,7 @@ node_modules/
 <span class="tag">&lt;/<span class="title">body</span>&gt;</span>
 <span class="tag">&lt;/<span class="title">html</span>&gt;</span>
 </code></pre>
-<p>This is a pretty typical angular app, except the <code>router-component</code> directive.
+<p>This is a pretty typical angular app, except the <code>router-view-port</code> directive.
 Let&#39;s talk about that for a bit.</p>
 <h2 id="a-component"><a class="anchor" href="#a-component"><span class="header-link"></span></a>A component</h2><p>In addition to the directive in our <code>index.html</code>, you probably noticed that we have a directory called <code>components</code>.</p>
 <p>What&#39;s all this &quot;component&quot; stuff?</p>
@@ -76,11 +76,11 @@ The configuration maps routes to components for each viewport.</p>
 <h2 id="multiple-viewports"><a class="anchor" href="#multiple-viewports"><span class="header-link"></span></a>Multiple Viewports</h2><p>A component can have multiple viewports:</p>
 <p><code>multiview.html</code></p>
 <pre><code class="lang-html"><span class="tag">&lt;<span class="title">div</span> <span class="attribute">class</span>=<span class="value">"container"</span>&gt;</span>
-  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">ng-view-port</span>=<span class="value">"left"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
-  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">ng-view-port</span>=<span class="value">"right"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"left"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"right"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
 <span class="tag">&lt;/<span class="title">div</span>&gt;</span>
 </code></pre>
-<p>Viewports are named with the <code>ng-view-port</code> attribute.</p>
+<p>Viewports are named with the <code>router-view-port</code> attribute.</p>
 <p>They are then configured like this:</p>
 <p><code>multiview.js</code></p>
 <pre><code class="lang-js"><span class="identifier">router</span>.<span class="identifier">config</span>([

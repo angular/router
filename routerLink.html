@@ -1,0 +1,31 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <title>New Angular Router</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/style.css" rel="stylesheet">
+  <link href="/highlight.css" rel="stylesheet">
+</head>
+<body lang="en">
+  
+
+<h1>routerLinkDirective</h1>
+<p><p>Lets you link to different parts of the app, and automatically generates hrefs.</p>
+<h2 id="use">Use</h2>
+<p>The directive uses a simple syntax: <code>router-link=&quot;componentName({ param: paramValue })&quot;</code></p>
+<h2 id="example">Example</h2>
+<pre><code class="lang-js">angular.module(&#39;myApp&#39;, [&#39;ngFuturisticRouter&#39;])
+.controller(&#39;AppController&#39;, [&#39;router&#39;, fucntion(router) {
+  router.config({ path: &#39;/user/:id&#39; component: &#39;user&#39; });
+  this.user = { name: &#39;Brian&#39;, id: 123 };
+});
+</code></pre>
+<pre><code class="lang-html">&lt;div ng-controller=&quot;AppController as app&quot;&gt;
+  &lt;a router-link=&quot;user({id: app.user.id})&quot;&gt;{{app.user.name}}&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+</p>
+
+
+</body>
+</html>

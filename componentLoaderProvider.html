@@ -3,14 +3,29 @@
   <meta charset="utf-8">
   <title>New Angular Router</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="style.css" rel="stylesheet">
-  <link href="highlight.css" rel="stylesheet">
+  <link href="/style.css" rel="stylesheet">
+  <link href="/highlight.css" rel="stylesheet">
 </head>
 <body lang="en">
   
 
-<h1>componentLoaderProvider (componentLoaderProvider.html)</h1>
+<h1>componentLoaderProvider</h1>
 <p><p>This lets you configure conventions for what controllers are named and where to load templates from.</p>
+<p>The default behavior is to dasherize and serve from <code>./components</code>. A component called <code>myWidget</code>
+uses a controller named <code>MyWidgetController</code> and a template loaded from <code>./components/my-widget/my-widget.html</code>.</p>
+<p>A component is:</p>
+<ul>
+<li>a controller</li>
+<li>a template</li>
+<li>an optional router</li>
+</ul>
+<p>This service makes it easy to group all of them into a single concept.</p>
+</p>
+<h2>componentLoaderProvider#setCtrlNameMapping</h2>
+<p><p>takes a function for mapping component names to component controller names</p>
+</p>
+<h2>componentLoaderProvider#setTemplateMapping</h2>
+<p><p>takes a function for mapping component names to component template URLs</p>
 </p>
 
 

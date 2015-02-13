@@ -3,12 +3,13 @@
   <meta charset="utf-8">
   <title>New Angular Router</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="style.css" rel="stylesheet">
-  <link href="highlight.css" rel="stylesheet">
+  <link href="/style.css" rel="stylesheet">
+  <link href="/highlight.css" rel="stylesheet">
 </head>
 <body lang="en">
   
-<h1>Configuring the Router</h1><p>A router takes an array of pairings like this:</p>
+<h1>Configuring the Router</h1><p>This guide shows the many ways to map URLs to components.</p>
+<p>A router takes an array of pairings like this:</p>
 <pre><code class="lang-js"><span class="identifier">router</span>.<span class="identifier">config</span>([
   { <span class="identifier">path</span>: <span class="string">'/user'</span>, <span class="identifier">component</span>: <span class="string">'user'</span> }
 ]);
@@ -22,16 +23,17 @@
   } }
 ]);
 </code></pre>
-<pre><code class="lang-html"><span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-component</span>=<span class="value">"master"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
-<span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-component</span>=<span class="value">"detail"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+<pre><code class="lang-html"><span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"master"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+<span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"detail"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
 </code></pre>
-<h2 id="redirect-to"><a class="anchor" href="#redirect-to"><span class="header-link"></span></a>redirectTo</h2><p>Useful for migrating to a new URL scheme, setting up defaults...</p>
-<p>Having multiple entries to one cannonical route...</p>
+<h2 id="redirect-to"><a class="anchor" href="#redirect-to"><span class="header-link"></span></a>redirectTo</h2><p>Useful for migrating to a new URL scheme and setting up default routes.</p>
+<p>With the following configuration:</p>
 <pre><code class="lang-js"><span class="identifier">router</span>.<span class="identifier">config</span>([
   { <span class="identifier">path</span>: <span class="string">'/'</span>, <span class="identifier">redirectTo</span>: <span class="string">'/user'</span> },
   { <span class="identifier">path</span>: <span class="string">'/user'</span>, <span class="identifier">component</span>: <span class="string">'user'</span> }
 ]);
 </code></pre>
+<p>A navigation to <code>/</code> will result in the URL changing to <code>/user</code> and the viewport at that level loading the <code>user</code> component.</p>
 
 
 </body>

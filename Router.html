@@ -1,0 +1,63 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <title>New Angular Router</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/style.css" rel="stylesheet">
+  <link href="/highlight.css" rel="stylesheet">
+</head>
+<body lang="en">
+  
+<h1>Router</h1>
+<p><p>The router is responsible for mapping URLs to components.</p>
+</p>
+
+<h2>Methods</h2>
+
+
+  <h3>childRouter</h3>
+  <p><p>constructs a child router.
+You probably don&#39;t need to use this unless you&#39;re writing a reusable component.</p>
+</p>
+
+
+  <h3>registerViewPort</h3>
+  <p><p>register an object to notify of route changes.
+You probably don&#39;t need to use this unless you&#39;re writing a reusable component.</p>
+</p>
+
+
+  <h3>config</h3>
+  <p><p>update the routing configuation and trigger a navigation</p>
+<pre><code class="lang-js">router.config({ path: &#39;/&#39;, component: &#39;/user&#39; });
+</code></pre>
+<p>For more, see the <a href="configuration">configuration</a> guide.</p>
+</p>
+
+
+
+
+
+  <h3>renavigate</h3>
+  <p><p>Navigates to either the last URL successfully naviagted to,
+or the last URL requested if the router has yet to successfully navigate.
+You shouldn&#39;t need to use this API very often.</p>
+</p>
+
+
+
+  <h3>generate</h3>
+  <p><p>generate a URL from a component name and optional map of parameters.
+The URL is relative to the app&#39;s base href.</p>
+</p>
+
+
+
+
+
+
+
+
+
+</body>
+</html>
