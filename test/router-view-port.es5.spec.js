@@ -314,11 +314,11 @@ describe('routerViewPort', function () {
     expect($location.path()).toBe('/new-parent/new-child');
     expect(elt.text()).toBe('inner { one }');
 
-    //router.navigate('/old-parent/old-child-two');
-    //$rootScope.$digest();
+    router.navigate('/old-parent/old-child-two');
+    $rootScope.$digest();
 
-    //expect($location.path()).toBe('/new-parent/new-child-two');
-    //expect(elt.text()).toBe('inner { two }');
+    expect($location.path()).toBe('/new-parent/new-child-two');
+    expect(elt.text()).toBe('inner { two }');
   }));
 
 
@@ -415,15 +415,16 @@ describe('routerViewPort animations', function () {
     $rootScope.$digest();
     expect(elt.text()).toBe('hello pete');
 
+    // "user pete" component enters
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.element.text()).toBe('hello pete');
 
     // "user brian" component leaves
     item = $animate.queue.shift();
     expect(item.event).toBe('leave');
     expect(item.element.text()).toBe('hello brian');
 
-    // "user pete" component enters
-    item = $animate.queue.shift();
-    expect(item.event).toBe('enter');
   }));
 
   function put (name, template) {

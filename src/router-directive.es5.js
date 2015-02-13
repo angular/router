@@ -7,6 +7,7 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
   value('routeParams', {}).
   provider('componentLoader', componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
+  directive('routerViewPort', routerViewPortFillContentDirective).
   directive('routerLink', routerLinkDirective);
 
 
@@ -45,46 +46,69 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
 
   return {
     restrict: 'AE',
-    require: '?^^routerViewPort',
+    transclude: 'element',
+    terminal: true,
+    priority: 400,
+    require: ['?^^routerViewPort', 'routerViewPort'],
     link: viewPortLink,
     controller: function() {},
     controllerAs: '$$routerViewPort'
   };
 
-  function viewPortLink(scope, elt, attrs, ctrl) {
+  function viewPortLink(scope, $element, attrs, ctrls, $transclude) {
     var viewPortName = attrs.routerViewPort || 'default',
+        ctrl = ctrls[0],
+        myCtrl = ctrls[1],
         router = (ctrl && ctrl.$$router) || rootRouter;
 
-    var oldCtrl = null,
-        oldChildScope = null,
-        oldLocals = null,
-        template = '',
-        ctrl = null,
-        childScope = null,
-        locals = null;
+    var currentScope,
+        newScope,
+        currentElement,
+        previousLeaveAnimation,
+        previousInstruction;
+
+    function cleanupLastView() {
+      if (previousLeaveAnimation) {
+        $animate.cancel(previousLeaveAnimation);
+        previousLeaveAnimation = null;
+      }
+
+      if (currentScope) {
+        currentScope.$destroy();
+        currentScope = null;
+      }
+      if (currentElement) {
+        previousLeaveAnimation = $animate.leave(currentElement);
+        previousLeaveAnimation.then(function() {
+          previousLeaveAnimation = null;
+        });
+        currentElement = null;
+      }
+    }
 
     function getComponentFromInstruction(instruction) {
-        var component = instruction[0].handler.component;
-        var componentName = typeof component === 'string' ? component : component[viewPortName];
-        return componentLoader(componentName);
+      var component = instruction[0].handler.component;
+      var componentName = typeof component === 'string' ? component : component[viewPortName];
+      return componentLoader(componentName);
     }
     router.registerViewPort({
       canDeactivate: function (instruction) {
         return !ctrl || !ctrl.canDeactivate || ctrl.canDeactivate();
       },
+      canReactivate: function (instruction) {
+        //TODO: expose controller hook
+        return JSON.stringify(instruction) === previousInstruction;
+      },
       instantiate: function (instruction) {
-        if (ctrl) {
-          oldCtrl = ctrl;
-          oldChildScope = childScope;
-        }
-
         var controllerName = getComponentFromInstruction(instruction).controllerName;
+        var component = instruction[0].handler.component;
+        var componentName = typeof component === 'string' ? component : component[viewPortName];
 
         // build up locals for controller
-        childScope = scope.$new();
+        newScope = scope.$new();
 
         var locals = {
-          $scope: childScope,
+          $scope: newScope,
           router: scope.$$routerViewPort.$$router = router.childRouter()
         };
 
@@ -92,6 +116,7 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
           locals.routeParams = router.context.params;
         }
         ctrl = $controller(controllerName, locals);
+        newScope[componentName] = ctrl;
       },
       canActivate: function (instruction) {
         return !ctrl || !ctrl.canActivate || ctrl.canActivate(instruction);
@@ -99,40 +124,43 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
       load: function (instruction) {
         var componentTemplateUrl = getComponentFromInstruction(instruction).template;
         return $templateRequest(componentTemplateUrl).then(function(templateHtml) {
-          template = templateHtml;
+          myCtrl.$$template = templateHtml;
         });
       },
       activate: function (instruction) {
         var component = instruction[0].handler.component;
         var componentName = typeof component === 'string' ? component : component[viewPortName];
 
-        // note that we remove the old contents, compile the new, then put back the old
-        var oldContents = elt.contents();
-        if (oldContents.length) {
-          oldContents.remove();
-        }
+        var clone = $transclude(newScope, function(clone) {
+          $animate.enter(clone, null, currentElement || $element);
+          cleanupLastView();
+        });
 
-        elt.html(template);
-        var link = $compile(elt.contents());
-        var newContents = elt.contents();
-        childScope[componentName] = ctrl;
-        link(childScope);
-        newContents.remove();
-
-        if (oldContents.length) {
-          elt.append(oldContents);
-          $animate.leave(oldContents);
-        }
-
-        $animate.enter(newContents, elt);
+        currentElement = clone;
+        currentScope = newScope;
 
         // finally, run the hook
         if (ctrl.activate) {
           ctrl.activate(instruction);
         }
+        previousInstruction = JSON.stringify(instruction);
       }
     }, viewPortName);
   }
+}
+
+function routerViewPortFillContentDirective($compile) {
+  return {
+    restrict: 'EA',
+    priority: -400,
+    require: 'routerViewPort',
+    link: function(scope, $element, attrs, ctrl) {
+      var template = ctrl.$$template;
+      $element.html(template);
+      var link = $compile($element.contents());
+      link(scope);
+    }
+  };
 }
 
 function makeComponentString(name) {
@@ -207,7 +235,7 @@ function routerLinkDirective(router, $location, $parse) {
         elt.attr('href', url);
       } else {
         scope.$watch(function() {
-          return routeParamsGetter(scope, ctrl.one);
+          return routeParamsGetter(scope);
         }, function(params) {
           url = '.' + router.generate(routeName, params);
           elt.attr('href', url);

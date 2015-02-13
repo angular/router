@@ -254,9 +254,14 @@ export class Router {
    * update viewports accordingly
    */
   activatePorts(context) {
-    var activations = mapObj(this.ports,
-        port => Promise.resolve(port.deactivate && port.deactivate(context))
-            .then(port.activate(context)));
+    var activations = mapObj(this.ports, port => {
+      return Promise.resolve(port.canReactivate && port.canReactivate(context)).then(status => {
+        if (status) {
+          return Promise.resolve(!port.reactivate || port.reactivate(context));
+        }
+        return Promise.resolve(port.deactivate && port.deactivate(context)).then(port.activate(context));
+      });
+    });
 
     return Promise.all(activations).then(() => this.navigateChildren(context));
   }
@@ -288,34 +293,26 @@ export class Router {
 
   /*
    * whether or not this level of router can navigate
-   *
-   * returns a promise<bool>
    */
   navigationPredicate(context) {
-    return this.viewportsCanDeactivate(context).
-        then(() => this.viewportsLoadConfig(context)).
-        then(() => this.viewportsCanActivate(context));
+    return this.queryViewports((port) => {
+      return Promise.resolve(port.canReactivate && port.canReactivate(context)).then(status => {
+        if (!status) {
+          return Promise.resolve(!port.canDeactivate || port.canDeactivate(context)).then(status => {
+            if (status) {
+              port.instantiate(context);
+              return port.load(context)
+                    .then(() => Promise.resolve(!port.canActivate || port.canActivate(context)));
+            }
+            return false;
+          });
+        }
+        return true;
+      });
+    });
   }
 
-  /*
-   * instantiates viewports, loading sub-router config
-   */
-  viewportsLoadConfig(context) {
-    forEach(this.ports, port => port.instantiate(context));
-    return Promise.all(mapObj(this.ports, port => port.load(context)));
-  }
-
-  viewportsCanDeactivate(context) {
-    return this.queryViewports(context,
-        port => Promise.resolve(!port.canDeactivate || port.canDeactivate(context)));
-  }
-
-  viewportsCanActivate(context) {
-    return this.queryViewports(context,
-        port => Promise.resolve(!port.canActivate || port.canActivate(context)));
-  }
-
-  queryViewports(context, fn) {
+  queryViewports(fn) {
     var allViewportQueries = mapObj(this.ports, fn);
 
     return Promise.all(allViewportQueries).
