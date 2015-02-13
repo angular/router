@@ -297,17 +297,17 @@ export class Router {
   navigationPredicate(context) {
     return this.queryViewports((port) => {
       return Promise.resolve(port.canReactivate && port.canReactivate(context)).then(status => {
-        if (!status) {
-          return Promise.resolve(!port.canDeactivate || port.canDeactivate(context)).then(status => {
-            if (status) {
-              port.instantiate(context);
-              return port.load(context)
-                    .then(() => Promise.resolve(!port.canActivate || port.canActivate(context)));
-            }
-            return false;
-          });
+        if (status) {
+          return true;
         }
-        return true;
+        return Promise.resolve(!port.canDeactivate || port.canDeactivate(context)).then(status => {
+          if (status) {
+            port.instantiate(context);
+            return Promise.resolve(port.load(context))
+                .then(() => Promise.resolve(!port.canActivate || port.canActivate(context)));
+          }
+          return false;
+        });
       });
     });
   }
