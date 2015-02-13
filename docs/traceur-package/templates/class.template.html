@@ -1,8 +1,7 @@
 {% extends 'layout/base.template.html' %}
 
 {% block body %}
-<h1>{$ doc.name $} <span class="type">class</span></h1>
-<p class="module">exported from {$ doc.moduleDoc | relativeLink(doc) $}</p>
+<h1>{$ doc.name $}</h1>
 <p>{$ doc.description | marked $}</p>
 
 <h2>Methods</h2>
