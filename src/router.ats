@@ -39,9 +39,7 @@ export class Router {
    */
   registerViewPort(view, name = 'default') {
     this.ports[name] = view;
-    if (this.fullContext) {
-      return this.renavigate();
-    }
+    return this.renavigate();
   }
 
 
