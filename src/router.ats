@@ -22,7 +22,8 @@ export class Router {
 
 
   /**
-   * @description constructs a child router.
+   * @description 
+   * Constructs a child router.
    * You probably don't need to use this unless you're writing a reusable component.
    */
   childRouter() {
@@ -34,7 +35,8 @@ export class Router {
 
 
   /**
-   * @description register an object to notify of route changes.
+   * @description 
+   * Register an object to notify of route changes.
    * You probably don't need to use this unless you're writing a reusable component.
    */
   registerViewPort(view, name = 'default') {
@@ -45,7 +47,7 @@ export class Router {
 
   /**
    * @description
-   * update the routing configuation and trigger a navigation
+   * Update the routing configuation and trigger a navigation.
    *
    * ```js
    * router.config({ path: '/', component: '/user' });
@@ -97,7 +99,7 @@ export class Router {
   /**
    * @name navigate
    *
-   * @descrive Navigate to a URL.
+   * @description Navigate to a URL.
    * Returns the cannonical URL for the route navigated to.
    */
   navigate(url) {
