@@ -5,7 +5,7 @@
  */
 angular.module('ngNewRouter', ['ngNewRouter.generated']).
   value('routeParams', {}).
-  provider('componentLoader', componentLoaderProvider).
+  provider('$componentLoader', $componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
   directive('routerViewPort', routerViewPortFillContentDirective).
   directive('routerLink', routerLinkDirective);
@@ -26,7 +26,7 @@ angular.module('ngNewRouter', ['ngNewRouter.generated']).
  *
  * The value for the `routerViewPort` attribute is optional.
  */
-function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, componentLoader, $router) {
+function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, $componentLoader, $router) {
   var rootRouter = $router;
 
   $rootScope.$watch(function () {
@@ -89,7 +89,7 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
     function getComponentFromInstruction(instruction) {
       var component = instruction[0].handler.component;
       var componentName = typeof component === 'string' ? component : component[viewPortName];
-      return componentLoader(componentName);
+      return $componentLoader(componentName);
     }
     router.registerViewPort({
       canDeactivate: function (instruction) {
@@ -250,7 +250,7 @@ function routerLinkDirective($router, $location, $parse) {
 
 
 /**
- * @name componentLoaderProvider
+ * @name $componentLoaderProvider
  * @description
  *
  * This lets you configure conventions for what controllers are named and where to load templates from.
@@ -265,7 +265,7 @@ function routerLinkDirective($router, $location, $parse) {
  *
  * This service makes it easy to group all of them into a single concept.
  */
-function componentLoaderProvider() {
+function $componentLoaderProvider() {
   var componentToCtrl = function componentToCtrlDefault(name) {
     return name[0].toUpperCase() +
         name.substr(1) +
@@ -289,7 +289,7 @@ function componentLoaderProvider() {
       return componentLoader;
     },
     /**
-     * @name componentLoaderProvider#setCtrlNameMapping
+     * @name $componentLoaderProvider#setCtrlNameMapping
      * @description takes a function for mapping component names to component controller names
      */
     setCtrlNameMapping: function(newFn) {
@@ -297,7 +297,7 @@ function componentLoaderProvider() {
       return this;
     },
     /**
-     * @name componentLoaderProvider#setTemplateMapping
+     * @name $componentLoaderProvider#setTemplateMapping
      * @description takes a function for mapping component names to component template URLs
      */
     setTemplateMapping: function(newFn) {
