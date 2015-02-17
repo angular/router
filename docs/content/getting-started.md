@@ -6,21 +6,36 @@ These are instuctions for starting a new app with the New Router with AngularJS 
 
 Make a new directory and `cd` into it.
 
-We're going to organize our code like this, and assume we have a simple HTTP server
-that serves files at a path corresponding to their location within the file system.
+We'll use `npm init` to setup a new project:
 
 ```
+npm init
+```
+
+You can answer the prompts however you like.
+
+Then we'll install Angular and the New Router:
+
+```
+npm install angular angular-new-router
+```
+
+Let's make a few other files to get started:
+
+```
+touch index.html app.js
+```
+
+Your directory should look something like this:
+
+```
+app.js
 index.html
 package.json
-components/
-├── app/
-│   ├── app.html
-│   └── app.js
-├── ...
 node_modules/
 └── ...
 ```
-We'll use `npm` to install Angular and the New Router.
+
 
 Let's start with the contents of `index.html`:
 
@@ -32,8 +47,8 @@ Let's start with the contents of `index.html`:
   <base href="/">
   <title>My app</title>
 </head>
-<body ng-app="myApp">
-  <div router-view-port="app"></div>
+<body ng-app="myApp" ng-controller="AppController as app">
+  <div router-view-port></div>
 
   <script src="/node_modules/angular/angular.js"></script>
   <script src="/dist/router.es5.js"></script>
@@ -43,16 +58,30 @@ Let's start with the contents of `index.html`:
 ```
 
 This is a pretty typical angular app, except the `router-view-port` directive.
-Let's talk about that for a bit.
+`router-view-port` is like `ng-view`; it's a placeholder for part of your app loaded
+dynamically based on the route configuration.
+
+So how do we configure the app? Let's open `app.js` and find out. Add this to the file:
+
+```js
+angular.module('app', ['ngNewRouter'])
+  .controller('AppController', ['$router', AppController]);
+
+function AppController ($router) {
+  $router.config([
+    {path: '/', component: 'home' }
+  ]);
+}
+```
+
+The `ngNewRouter` module provides a new service, `$router`. You notice in the configuration that
+we map paths to components. What's a component? Let's talk about that for a bit.
 
 
-## A component
+## Components
 
-In addition to the directive in our `index.html`, you probably noticed that we have a directory called `components`.
-
-What's all this "component" stuff?
-
-In Angular 1, a "routable component" is a template and a controller.
+In Angular 1, a "routable component" is a template, plus a controller, plus a router.
+You can configure how to map component names to controllers and templates in the [componentLoader](componentLoaderProvider) service.
 
 <!--
 <aside class="implementation detail">
@@ -62,62 +91,102 @@ In Angular 1, we need this component system to hook up child routers.
 </aside>
 -->
 
-A component's template can have "view ports," which are holes in the DOM for loading parts of your app based on the route configuration.
-
-A component's controller can have a router.
-
+A component's template can have "view ports," which are holes in the DOM for loading parts of your app based on the route configuration and its controller can have a router.
 A component's router tells the component what to put inside the view ports based on URL.
-The configuration maps routes to components for each viewport.
+The configuration maps routes to components for each view port.
 
-Let's see what this looks like:
+Let's male a `home` component that our app can route to. First, run `mkdir -p components/home` to make a few directories.
+Then `touch components/home/home.html` and `touch components/home/home.js`.
 
-`app/app.js`
+Let's open `home.html` and add some content:
+
+```html
+<h1>Hello {{home.name}}!</h1>
+```
+
+Components use the "controller as" syntax, so if we want to access property `name` of the controller, we write the binding as `home.name`.
+
+Then, let's make a controller:
+
 ```js
-angular.module('app', AppController);
+angular.module('app.home', [])
+  .controller('HomeController', [function () {
+    this.name = 'Friend';
+  }]);
+```
 
-function AppController (router) {
-  router.config([
-    {path: '', component: 'detail' }
+To wire this up, We need to add a `<script>` tag to our `index.html`:
+
+```html
+...
+<script src="./components/detail/detail.js"></script>
+```
+
+And add the controller's module as a dependency to our main module in `app.js:
+
+```js
+angular.module('app', ['ngNewRouter', 'app.home'])
+  .controller('AppController', ['$router', AppController]);
+// ...
+```
+
+If you load up the app, you should see `Hello Friend!`
+
+
+## Linking to routes
+
+Let's add another route and then link to it. This route will have a route parameter, `id`.
+
+In app.js:
+
+```js
+angular.module('app', ['ngNewRouter'])
+  .controller('AppController', ['$router', AppController]);
+
+function AppController ($router) {
+  $router.config([
+    { path: '/',           component: 'home' },
+    { path: '/detail/:id', component: 'detail' }
   ]);
 }
 ```
 
-## Linking to routes
+We can link to our `detail` component using the `router-link` directive.
+Add this to `index.html`:
 
-How do we link routes?
-
-## Nesting Routes
-
-```js
-module.controller('PhoneListController', function (router) {
-  router.config([
-    {path: '', component: 'detail' }
-  ]);
-});
-```
-
-## Multiple Viewports
-
-A component can have multiple viewports:
-
-`multiview.html`
 ```html
-<div class="container">
-  <div router-view-port="left"></div>
-  <div router-view-port="right"></div>
-</div>
+<body ng-app="myApp" ng-controller="AppController as app">
+  <a router-link="detail({id: 5})">link to detal</a>
+  ...
 ```
 
-Viewports are named with the `router-view-port` attribute.
+This directive will handle generating an `href` and updating the URL of the browser.
 
-They are then configured like this:
+We should also implement this component. Let's make these new files:
 
-`multiview.js`
+```
+mkdir components/detail
+touch components/detail/detail.html components/detail/detail.js
+```
+
+In `detail.js`, we can implement a controller that uses the `id` route parameter:
+
 ```js
-router.config([
-  { path: '/', components: { left: 'tree', right: 'detail' } }
-]);
+angular.module('app.detail', ['ngNewRouter'])
+  .controller('DetailController', ['$routeParams', DetailController]);
+
+function DetailController ($routeParams) {
+  this.id = $routeParams.id;
+}
 ```
+
+We can display the id in the template by adding this to `detail.html`:
+
+```html
+<p>detail #{{detail.id}}</p>
+```
+
+Then we'd have to wire up the controller by adding a script tag and making out `app` module depend on `app.detail`.
 
 
 ## Additional reading
