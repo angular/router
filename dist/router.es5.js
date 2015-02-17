@@ -3,9 +3,9 @@
 /*
  * A module for adding new a routing system Angular 1.
  */
-angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
-  value('routeParams', {}).
-  provider('componentLoader', componentLoaderProvider).
+angular.module('ngNewRouter', ['ngNewRouter.generated']).
+  value('$routeParams', {}).
+  provider('$componentLoader', $componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
   directive('routerViewPort', routerViewPortFillContentDirective).
   directive('routerLink', routerLinkDirective);
@@ -26,17 +26,17 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  *
  * The value for the `routerViewPort` attribute is optional.
  */
-function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, componentLoader, router) {
-  var rootRouter = router;
+function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, $componentLoader, $router) {
+  var rootRouter = $router;
 
   $rootScope.$watch(function () {
     return $location.path();
   }, function (newUrl) {
-    router.navigate(newUrl);
+    rootRouter.navigate(newUrl);
   });
 
-  var nav = router.navigate;
-  router.navigate = function (url) {
+  var nav = rootRouter.navigate;
+  rootRouter.navigate = function (url) {
     return nav.call(this, url).then(function (newUrl) {
       if (newUrl) {
         $location.path(newUrl);
@@ -89,7 +89,7 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
     function getComponentFromInstruction(instruction) {
       var component = instruction[0].handler.component;
       var componentName = typeof component === 'string' ? component : component[viewPortName];
-      return componentLoader(componentName);
+      return $componentLoader(componentName);
     }
     router.registerViewPort({
       canDeactivate: function (instruction) {
@@ -109,11 +109,11 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
 
         var locals = {
           $scope: newScope,
-          router: scope.$$routerViewPort.$$router = router.childRouter()
+          $router: scope.$$routerViewPort.$$router = router.childRouter()
         };
 
         if (router.context) {
-          locals.routeParams = router.context.params;
+          locals.$routeParams = router.context.params;
         }
         ctrl = $controller(controllerName, locals);
         newScope[componentName] = ctrl;
@@ -184,7 +184,7 @@ var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
  *
  * ```js
  * angular.module('myApp', ['ngFuturisticRouter'])
- *   .controller('AppController', ['router', fucntion(router) {
+ *   .controller('AppController', ['router', function(router) {
  *     router.config({ path: '/user/:id' component: 'user' });
  *     this.user = { name: 'Brian', id: 123 };
  *   });
@@ -196,8 +196,8 @@ var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
  * </div>
  * ```
  */
-function routerLinkDirective(router, $location, $parse) {
-  var rootRouter = router;
+function routerLinkDirective($router, $location, $parse) {
+  var rootRouter = $router;
 
   angular.element(document.body).on('click', function (ev) {
     var target = ev.target;
@@ -250,7 +250,7 @@ function routerLinkDirective(router, $location, $parse) {
 
 
 /**
- * @name componentLoaderProvider
+ * @name $componentLoaderProvider
  * @description
  *
  * This lets you configure conventions for what controllers are named and where to load templates from.
@@ -265,7 +265,7 @@ function routerLinkDirective(router, $location, $parse) {
  *
  * This service makes it easy to group all of them into a single concept.
  */
-function componentLoaderProvider() {
+function $componentLoaderProvider() {
   var componentToCtrl = function componentToCtrlDefault(name) {
     return name[0].toUpperCase() +
         name.substr(1) +
@@ -280,7 +280,7 @@ function componentLoaderProvider() {
   function componentLoader(name) {
     return {
       controllerName: componentToCtrl(name),
-      template: componentToTemplate(name),
+      template: componentToTemplate(name)
     };
   }
 
@@ -289,7 +289,7 @@ function componentLoaderProvider() {
       return componentLoader;
     },
     /**
-     * @name componentLoaderProvider#setCtrlNameMapping
+     * @name $componentLoaderProvider#setCtrlNameMapping
      * @description takes a function for mapping component names to component controller names
      */
     setCtrlNameMapping: function(newFn) {
@@ -297,7 +297,7 @@ function componentLoaderProvider() {
       return this;
     },
     /**
-     * @name componentLoaderProvider#setTemplateMapping
+     * @name $componentLoaderProvider#setTemplateMapping
      * @description takes a function for mapping component names to component template URLs
      */
     setTemplateMapping: function(newFn) {
@@ -313,7 +313,7 @@ function dashCase(str) {
   });
 }
 
-angular.module('ngFuturisticRouter.generated', []).factory('router', ['$q', function($q) {/*
+angular.module('ngNewRouter.generated', []).factory('$router', ['$q', function($q) {/*
  * artisinal, handcrafted subset of the traceur runtime for picky webdevs
  */
 
