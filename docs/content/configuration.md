@@ -5,7 +5,7 @@ This guide shows the many ways to map URLs to components.
 A router takes an array of pairings like this:
 
 ```js
-router.config([
+$router.config([
   { path: '/user', component: 'user' }
 ]);
 ```
@@ -15,7 +15,7 @@ router.config([
 You can configure multiple viewports on the same path like this:
 
 ```js
-router.config([
+$router.config([
   { path: '/user',
     components: {
       master: 'userList',
@@ -36,7 +36,7 @@ Useful for migrating to a new URL scheme and setting up default routes.
 With the following configuration:
 
 ```js
-router.config([
+$router.config([
   { path: '/', redirectTo: '/user' },
   { path: '/user', component: 'user' }
 ]);

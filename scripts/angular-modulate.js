@@ -104,7 +104,7 @@ function processFile (filePath, contents) {
 function angularModulate (src, opts) {
   return [
     'angular.module(\'' + opts.moduleName + '\', [])',
-    '.factory(\'router\', [\'$q\', function($q) {',
+    '.factory(\'$router\', [\'$q\', function($q) {',
       src,
       'return new Router();',
     '}]);'
@@ -144,4 +144,3 @@ function argsToSrc (node) {
     return node.source();
   }).join(', ');
 }
-

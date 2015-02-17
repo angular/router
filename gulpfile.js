@@ -32,7 +32,7 @@ gulp.task('angularify', ['transpile'], function() {
 
   var generated = gulp.src('./src/router.ats')
       .pipe(modulate({
-        moduleName: 'ngFuturisticRouter.generated'
+        moduleName: 'ngNewRouter.generated'
       }))
 
   return merge(directive, generated)

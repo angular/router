@@ -3,7 +3,7 @@
 /*
  * A module for adding new a routing system Angular 1.
  */
-angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
+angular.module('ngNewRouter', ['ngNewRouter.generated']).
   value('routeParams', {}).
   provider('componentLoader', componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
@@ -26,17 +26,17 @@ angular.module('ngFuturisticRouter', ['ngFuturisticRouter.generated']).
  *
  * The value for the `routerViewPort` attribute is optional.
  */
-function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, componentLoader, router) {
-  var rootRouter = router;
+function routerViewPortDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, componentLoader, $router) {
+  var rootRouter = $router;
 
   $rootScope.$watch(function () {
     return $location.path();
   }, function (newUrl) {
-    router.navigate(newUrl);
+    rootRouter.navigate(newUrl);
   });
 
-  var nav = router.navigate;
-  router.navigate = function (url) {
+  var nav = rootRouter.navigate;
+  rootRouter.navigate = function (url) {
     return nav.call(this, url).then(function (newUrl) {
       if (newUrl) {
         $location.path(newUrl);
@@ -109,7 +109,7 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
 
         var locals = {
           $scope: newScope,
-          router: scope.$$routerViewPort.$$router = router.childRouter()
+          $router: scope.$$routerViewPort.$$router = router.childRouter()
         };
 
         if (router.context) {
@@ -196,8 +196,8 @@ var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
  * </div>
  * ```
  */
-function routerLinkDirective(router, $location, $parse) {
-  var rootRouter = router;
+function routerLinkDirective($router, $location, $parse) {
+  var rootRouter = $router;
 
   angular.element(document.body).on('click', function (ev) {
     var target = ev.target;
@@ -280,7 +280,7 @@ function componentLoaderProvider() {
   function componentLoader(name) {
     return {
       controllerName: componentToCtrl(name),
-      template: componentToTemplate(name),
+      template: componentToTemplate(name)
     };
   }
 

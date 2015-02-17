@@ -1,6 +1,6 @@
 describe('componentLoader', function () {
 
-  beforeEach(module('ngFuturisticRouter'));
+  beforeEach(module('ngNewRouter'));
 
   it('should work', inject(function (componentLoader) {
     var component = componentLoader('foo');
