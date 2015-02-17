@@ -10,19 +10,20 @@
   
 <h1>Getting Started</h1><p>These are instuctions for starting a new app with the New Router with AngularJS 1.4.</p>
 <h2 id="project-structure"><a class="anchor" href="#project-structure"><span class="header-link"></span></a>Project Structure</h2><p>Make a new directory and <code>cd</code> into it.</p>
-<p>We&#39;re going to organize our code like this, and assume we have a simple HTTP server
-that serves files at a path corresponding to their location within the file system.</p>
-<pre><code>index.html
+<p>We&#39;ll use <code>npm init</code> to setup a new project:</p>
+<pre><code>npm init
+</code></pre><p>You can answer the prompts however you like.</p>
+<p>Then we&#39;ll install Angular and the New Router:</p>
+<pre><code>npm install angular angular-new-router
+</code></pre><p>Let&#39;s make a few other files to get started:</p>
+<pre><code>touch index.html app.js
+</code></pre><p>Your directory should look something like this:</p>
+<pre><code>app.js
+index.html
 package.json
-components/
-├── app/
-│   ├── app.html
-│   └── app.js
-├── ...
 node_modules/
 └── ...
-</code></pre><p>We&#39;ll use <code>npm</code> to install Angular and the New Router.</p>
-<p>Let&#39;s start with the contents of <code>index.html</code>:</p>
+</code></pre><p>Let&#39;s start with the contents of <code>index.html</code>:</p>
 <pre><code class="lang-html"><span class="doctype">&lt;!doctype html&gt;</span>
 <span class="tag">&lt;<span class="title">html</span> <span class="attribute">lang</span>=<span class="value">"en"</span>&gt;</span>
 <span class="tag">&lt;<span class="title">head</span>&gt;</span>
@@ -30,8 +31,8 @@ node_modules/
   <span class="tag">&lt;<span class="title">base</span> <span class="attribute">href</span>=<span class="value">"/"</span>&gt;</span>
   <span class="tag">&lt;<span class="title">title</span>&gt;</span>My app<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
 <span class="tag">&lt;/<span class="title">head</span>&gt;</span>
-<span class="tag">&lt;<span class="title">body</span> <span class="attribute">ng-app</span>=<span class="value">"myApp"</span>&gt;</span>
-  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"app"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+<span class="tag">&lt;<span class="title">body</span> <span class="attribute">ng-app</span>=<span class="value">"myApp"</span> <span class="attribute">ng-controller</span>=<span class="value">"AppController as app"</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
 
   <span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"/node_modules/angular/angular.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
   <span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"/dist/router.es5.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
@@ -40,10 +41,22 @@ node_modules/
 <span class="tag">&lt;/<span class="title">html</span>&gt;</span>
 </code></pre>
 <p>This is a pretty typical angular app, except the <code>router-view-port</code> directive.
-Let&#39;s talk about that for a bit.</p>
-<h2 id="a-component"><a class="anchor" href="#a-component"><span class="header-link"></span></a>A component</h2><p>In addition to the directive in our <code>index.html</code>, you probably noticed that we have a directory called <code>components</code>.</p>
-<p>What&#39;s all this &quot;component&quot; stuff?</p>
-<p>In Angular 1, a &quot;routable component&quot; is a template and a controller.</p>
+<code>router-view-port</code> is like <code>ng-view</code>; it&#39;s a placeholder for part of your app loaded
+dynamically based on the route configuration.</p>
+<p>So how do we configure the app? Let&#39;s open <code>app.js</code> and find out. Add this to the file:</p>
+<pre><code class="lang-js"><span class="identifier">angular</span>.<span class="identifier">module</span>(<span class="string">'app'</span>, [<span class="string">'ngNewRouter'</span>])
+  .<span class="identifier">controller</span>(<span class="string">'AppController'</span>, [<span class="string">'$router'</span>, <span class="identifier">AppController</span>]);
+
+<span class="keyword">function</span> <span class="identifier">AppController</span> (<span class="param">$router</span>) {
+  <span class="identifier">$router</span>.<span class="identifier">config</span>([
+    {<span class="identifier">path</span>: <span class="string">'/'</span>, <span class="identifier">component</span>: <span class="string">'home'</span> }
+  ]);
+}
+</code></pre>
+<p>The <code>ngNewRouter</code> module provides a new service, <code>$router</code>. You notice in the configuration that
+we map paths to components. What&#39;s a component? Let&#39;s talk about that for a bit.</p>
+<h2 id="components"><a class="anchor" href="#components"><span class="header-link"></span></a>Components</h2><p>In Angular 1, a &quot;routable component&quot; is a template, plus a controller, plus a router.
+You can configure how to map component names to controllers and templates in the <a href="componentLoaderProvider">componentLoader</a> service.</p>
 <!--
 <aside class="implementation detail">
 In Angular 2, the DI system understands how to... .
@@ -52,41 +65,65 @@ In Angular 1, we need this component system to hook up child routers.
 </aside>
 -->
 
-<p>A component&#39;s template can have &quot;view ports,&quot; which are holes in the DOM for loading parts of your app based on the route configuration.</p>
-<p>A component&#39;s controller can have a router.</p>
-<p>A component&#39;s router tells the component what to put inside the view ports based on URL.
-The configuration maps routes to components for each viewport.</p>
-<p>Let&#39;s see what this looks like:</p>
-<p><code>app/app.js</code></p>
-<pre><code class="lang-js"><span class="identifier">angular</span>.<span class="identifier">module</span>(<span class="string">'app'</span>, <span class="identifier">AppController</span>);
+<p>A component&#39;s template can have &quot;view ports,&quot; which are holes in the DOM for loading parts of your app based on the route configuration and its controller can have a router.
+A component&#39;s router tells the component what to put inside the view ports based on URL.
+The configuration maps routes to components for each view port.</p>
+<p>Let&#39;s male a <code>home</code> component that our app can route to. First, run <code>mkdir -p components/home</code> to make a few directories.
+Then <code>touch components/home/home.html</code> and <code>touch components/home/home.js</code>.</p>
+<p>Let&#39;s open <code>home.html</code> and add some content:</p>
+<pre><code class="lang-html"><span class="tag">&lt;<span class="title">h1</span>&gt;</span>Hello {{home.name}}!<span class="tag">&lt;/<span class="title">h1</span>&gt;</span>
+</code></pre>
+<p>Components use the &quot;controller as&quot; syntax, so if we want to access property <code>name</code> of the controller, we write the binding as <code>home.name</code>.</p>
+<p>Then, let&#39;s make a controller:</p>
+<pre><code class="lang-js"><span class="identifier">angular</span>.<span class="identifier">module</span>(<span class="string">'app.home'</span>, [])
+  .<span class="identifier">controller</span>(<span class="string">'HomeController'</span>, [<span class="keyword">function</span> () {
+    <span class="control-flow">this</span>.<span class="identifier">name</span> <span class="operator">=</span> <span class="string">'Friend'</span>;
+  }]);
+</code></pre>
+<p>To wire this up, We need to add a <code>&lt;script&gt;</code> tag to our <code>index.html</code>:</p>
+<pre><code class="lang-html">...
+<span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"./components/detail/detail.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
+</code></pre>
+<p>And add the controller&#39;s module as a dependency to our main module in `app.js:</p>
+<pre><code class="lang-js"><span class="identifier">angular</span>.<span class="identifier">module</span>(<span class="string">'app'</span>, [<span class="string">'ngNewRouter'</span>, <span class="string">'app.home'</span>])
+  .<span class="identifier">controller</span>(<span class="string">'AppController'</span>, [<span class="string">'$router'</span>, <span class="identifier">AppController</span>]);
+<span class="line-comment">// ...</span>
+</code></pre>
+<p>If you load up the app, you should see <code>Hello Friend!</code></p>
+<h2 id="linking-to-routes"><a class="anchor" href="#linking-to-routes"><span class="header-link"></span></a>Linking to routes</h2><p>Let&#39;s add another route and then link to it. This route will have a route parameter, <code>id</code>.</p>
+<p>In app.js:</p>
+<pre><code class="lang-js"><span class="identifier">angular</span>.<span class="identifier">module</span>(<span class="string">'app'</span>, [<span class="string">'ngNewRouter'</span>])
+  .<span class="identifier">controller</span>(<span class="string">'AppController'</span>, [<span class="string">'$router'</span>, <span class="identifier">AppController</span>]);
 
-<span class="keyword">function</span> <span class="identifier">AppController</span> (<span class="param">router</span>) {
-  <span class="identifier">router</span>.<span class="identifier">config</span>([
-    {<span class="identifier">path</span>: <span class="string">''</span>, <span class="identifier">component</span>: <span class="string">'detail'</span> }
+<span class="keyword">function</span> <span class="identifier">AppController</span> (<span class="param">$router</span>) {
+  <span class="identifier">$router</span>.<span class="identifier">config</span>([
+    { <span class="identifier">path</span>: <span class="string">'/'</span>,           <span class="identifier">component</span>: <span class="string">'home'</span> },
+    { <span class="identifier">path</span>: <span class="string">'/detail/:id'</span>, <span class="identifier">component</span>: <span class="string">'detail'</span> }
   ]);
 }
 </code></pre>
-<h2 id="linking-to-routes"><a class="anchor" href="#linking-to-routes"><span class="header-link"></span></a>Linking to routes</h2><p>How do we link routes?</p>
-<h2 id="nesting-routes"><a class="anchor" href="#nesting-routes"><span class="header-link"></span></a>Nesting Routes</h2><pre><code class="lang-js"><span class="identifier">module</span>.<span class="identifier">controller</span>(<span class="string">'PhoneListController'</span>, <span class="keyword">function</span> (<span class="param">router</span>) {
-  <span class="identifier">router</span>.<span class="identifier">config</span>([
-    {<span class="identifier">path</span>: <span class="string">''</span>, <span class="identifier">component</span>: <span class="string">'detail'</span> }
-  ]);
-});
+<p>We can link to our <code>detail</code> component using the <code>router-link</code> directive.
+Add this to <code>index.html</code>:</p>
+<pre><code class="lang-html"><span class="tag">&lt;<span class="title">body</span> <span class="attribute">ng-app</span>=<span class="value">"myApp"</span> <span class="attribute">ng-controller</span>=<span class="value">"AppController as app"</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">a</span> <span class="attribute">router-link</span>=<span class="value">"detail({id: 5})"</span>&gt;</span>link to detal<span class="tag">&lt;/<span class="title">a</span>&gt;</span>
+  ...
 </code></pre>
-<h2 id="multiple-viewports"><a class="anchor" href="#multiple-viewports"><span class="header-link"></span></a>Multiple Viewports</h2><p>A component can have multiple viewports:</p>
-<p><code>multiview.html</code></p>
-<pre><code class="lang-html"><span class="tag">&lt;<span class="title">div</span> <span class="attribute">class</span>=<span class="value">"container"</span>&gt;</span>
-  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"left"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
-  <span class="tag">&lt;<span class="title">div</span> <span class="attribute">router-view-port</span>=<span class="value">"right"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+<p>This directive will handle generating an <code>href</code> and updating the URL of the browser.</p>
+<p>We should also implement this component. Let&#39;s make these new files:</p>
+<pre><code>mkdir components/detail
+touch components/detail/detail.html components/detail/detail.js
+</code></pre><p>In <code>detail.js</code>, we can implement a controller that uses the <code>id</code> route parameter:</p>
+<pre><code class="lang-js"><span class="identifier">angular</span>.<span class="identifier">module</span>(<span class="string">'app.detail'</span>, [<span class="string">'ngNewRouter'</span>])
+  .<span class="identifier">controller</span>(<span class="string">'DetailController'</span>, [<span class="string">'$routeParams'</span>, <span class="identifier">DetailController</span>]);
+
+<span class="keyword">function</span> <span class="identifier">DetailController</span> (<span class="param">$routeParams</span>) {
+  <span class="control-flow">this</span>.<span class="identifier">id</span> <span class="operator">=</span> <span class="identifier">$routeParams</span>.<span class="identifier">id</span>;
+}
 </code></pre>
-<p>Viewports are named with the <code>router-view-port</code> attribute.</p>
-<p>They are then configured like this:</p>
-<p><code>multiview.js</code></p>
-<pre><code class="lang-js"><span class="identifier">router</span>.<span class="identifier">config</span>([
-  { <span class="identifier">path</span>: <span class="string">'/'</span>, <span class="identifier">components</span>: { <span class="identifier">left</span>: <span class="string">'tree'</span>, <span class="identifier">right</span>: <span class="string">'detail'</span> } }
-]);
+<p>We can display the id in the template by adding this to <code>detail.html</code>:</p>
+<pre><code class="lang-html"><span class="tag">&lt;<span class="title">p</span>&gt;</span>detail #{{detail.id}}<span class="tag">&lt;/<span class="title">p</span>&gt;</span>
 </code></pre>
+<p>Then we&#39;d have to wire up the controller by adding a script tag and making out <code>app</code> module depend on <code>app.detail</code>.</p>
 <h2 id="additional-reading"><a class="anchor" href="#additional-reading"><span class="header-link"></span></a>Additional reading</h2><p>See the <code>examples/</code> directory for common recipes.</p>
 
 

@@ -10,12 +10,12 @@
   
 <h1>Configuring the Router</h1><p>This guide shows the many ways to map URLs to components.</p>
 <p>A router takes an array of pairings like this:</p>
-<pre><code class="lang-js"><span class="identifier">router</span>.<span class="identifier">config</span>([
+<pre><code class="lang-js"><span class="identifier">$router</span>.<span class="identifier">config</span>([
   { <span class="identifier">path</span>: <span class="string">'/user'</span>, <span class="identifier">component</span>: <span class="string">'user'</span> }
 ]);
 </code></pre>
 <h2 id="sibling-viewports"><a class="anchor" href="#sibling-viewports"><span class="header-link"></span></a>Sibling Viewports</h2><p>You can configure multiple viewports on the same path like this:</p>
-<pre><code class="lang-js"><span class="identifier">router</span>.<span class="identifier">config</span>([
+<pre><code class="lang-js"><span class="identifier">$router</span>.<span class="identifier">config</span>([
   { <span class="identifier">path</span>: <span class="string">'/user'</span>,
     <span class="identifier">components</span>: {
       <span class="identifier">master</span>: <span class="string">'userList'</span>,
@@ -28,7 +28,7 @@
 </code></pre>
 <h2 id="redirect-to"><a class="anchor" href="#redirect-to"><span class="header-link"></span></a>redirectTo</h2><p>Useful for migrating to a new URL scheme and setting up default routes.</p>
 <p>With the following configuration:</p>
-<pre><code class="lang-js"><span class="identifier">router</span>.<span class="identifier">config</span>([
+<pre><code class="lang-js"><span class="identifier">$router</span>.<span class="identifier">config</span>([
   { <span class="identifier">path</span>: <span class="string">'/'</span>, <span class="identifier">redirectTo</span>: <span class="string">'/user'</span> },
   { <span class="identifier">path</span>: <span class="string">'/user'</span>, <span class="identifier">component</span>: <span class="string">'user'</span> }
 ]);

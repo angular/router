@@ -15,7 +15,7 @@
 <p>The directive uses a simple syntax: <code>router-link=&quot;componentName({ param: paramValue })&quot;</code></p>
 <h2 id="example">Example</h2>
 <pre><code class="lang-js">angular.module(&#39;myApp&#39;, [&#39;ngFuturisticRouter&#39;])
-.controller(&#39;AppController&#39;, [&#39;router&#39;, fucntion(router) {
+.controller(&#39;AppController&#39;, [&#39;router&#39;, function(router) {
   router.config({ path: &#39;/user/:id&#39; component: &#39;user&#39; });
   this.user = { name: &#39;Brian&#39;, id: 123 };
 });
