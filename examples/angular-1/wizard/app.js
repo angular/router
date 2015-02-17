@@ -1,5 +1,5 @@
 angular.module('myApp', [
-  'ngFuturisticRouter',
+  'ngNewRouter',
   'myApp.intro',
   'myApp.one',
   'myApp.two',
@@ -9,8 +9,8 @@ angular.module('myApp', [
     controller('AppController', ['router', AppController]).
     factory('answers', answersFactory);
 
-function AppController(router) {
-  router.config([
+function AppController($router) {
+  $router.config([
     { path: '/',       component: 'intro' },
     { path: '/one',    component: 'one' },
     { path: '/two',    component: 'two' },

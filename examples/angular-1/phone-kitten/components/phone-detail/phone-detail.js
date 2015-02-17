@@ -1,11 +1,11 @@
 'use strict';
 
 angular.module('phoneKitten.phoneDetail', []).
-    controller('PhoneDetailController', ['routeParams', 'Phone', PhoneDetailController]);
+    controller('PhoneDetailController', ['$routeParams', 'Phone', PhoneDetailController]);
 
-function PhoneDetailController(routeParams, Phone) {
+function PhoneDetailController($routeParams, Phone) {
   var self = this;
-  this.phone = Phone.get({phoneId: routeParams.phoneId}, function(phone) {
+  this.phone = Phone.get({phoneId: $routeParams.phoneId}, function(phone) {
     self.setImage(phone.images[0]);
   });
 }

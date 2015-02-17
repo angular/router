@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('phoneKitten', [
-  'ngFuturisticRouter',
+  'ngNewRouter',
   'ngAnimate',
 
   'phoneKitten.phoneDetail',
@@ -10,10 +10,10 @@ angular.module('phoneKitten', [
   'phoneKitten.filters',
   'phoneKitten.services'
 ]).
-controller('AppController', ['router', AppController]);
+controller('AppController', ['$router', AppController]);
 
-function AppController(router) {
-  router.config([
+function AppController($router) {
+  $router.config([
     { path: '/'               , redirectTo: '/phones'    },
     { path: '/phones'          , component: 'phoneList'   },
     { path: '/phones/:phoneId' , component: 'phoneDetail' }

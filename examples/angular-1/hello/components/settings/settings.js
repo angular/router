@@ -3,11 +3,11 @@
 angular.module('example.settings', []).
   controller('SettingsController', SettingsController);
 
-function SettingsController(router) {
+function SettingsController($router) {
   this.heading = 'Settings';
-  this.router = router;
+  this.router = $router;
 
-  router.config([
+  $router.config([
     { path: '/',         redirectTo: '/welcome' },
     { path: '/welcome',  component: 'welcome',  title:'Welcome' },
     { path: '/flickr',   component: 'flickr' }
