@@ -20,9 +20,9 @@ describe('routerViewPort', function () {
       $templateCache = _$templateCache_;
     });
 
-    put('user', '<div>hello {{name}}</div>');
-    $controllerProvider.register('UserController', function($scope, routeParams) {
-      $scope.name = routeParams.name || 'blank';
+    put('user', '<div>hello {{user.name}}</div>');
+    $controllerProvider.register('UserController', function($scope, $routeParams) {
+      this.name = $routeParams.name || 'blank';
     });
 
     put('one', '<div>{{number}}</div>');
@@ -383,9 +383,9 @@ describe('routerViewPort animations', function () {
       ctrl = this;
     });
 
-    put('user', '<div>hello {{name}}</div>');
-    $controllerProvider.register('UserController', function($scope, routeParams) {
-      $scope.name = routeParams.name || 'blank';
+    put('user', '<div>hello {{user.name}}</div>');
+    $controllerProvider.register('UserController', function($routeParams) {
+      this.name = $routeParams.name || 'blank';
     });
   });
 

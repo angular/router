@@ -4,7 +4,7 @@
  * A module for adding new a routing system Angular 1.
  */
 angular.module('ngNewRouter', ['ngNewRouter.generated']).
-  value('routeParams', {}).
+  value('$routeParams', {}).
   provider('$componentLoader', $componentLoaderProvider).
   directive('routerViewPort', routerViewPortDirective).
   directive('routerViewPort', routerViewPortFillContentDirective).
@@ -113,7 +113,7 @@ function routerViewPortDirective($animate, $compile, $controller, $templateReque
         };
 
         if (router.context) {
-          locals.routeParams = router.context.params;
+          locals.$routeParams = router.context.params;
         }
         ctrl = $controller(controllerName, locals);
         newScope[componentName] = ctrl;
