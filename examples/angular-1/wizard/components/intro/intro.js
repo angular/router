@@ -1,4 +1,4 @@
 angular.module('myApp.intro', []).
-  controller('IntroController', ['answers', IntroController]);
+  controller('IntroController', [IntroController]);
 
-function IntroController (answers) { }
+function IntroController () {}

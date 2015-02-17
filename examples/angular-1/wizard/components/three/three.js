@@ -8,11 +8,5 @@ function ThreeController(answers) {
 }
 
 ThreeController.prototype.canActivate = function () {
-  if (!this.answers.name) {
-    return new Redirect('one');
-  }
-  if (!this.answers.quest) {
-    return new Redirect('two');
-  }
-  return true;
+  return this.answers.name && this.answers.quest;
 };

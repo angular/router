@@ -6,17 +6,5 @@ function EndController(answers) {
 }
 
 EndController.prototype.canActivate = function() {
-  if(!this.answers.name) {
-    return new Redirect('one');
-  }
-
-  if(!this.answers.quest) {
-    return new Redirect('two');
-  }
-
-  if(!this.answers.favoriteColor) {
-    return new Redirect('three');
-  }
-
-  return true;
+  return this.answers.name && this.answers.quest && this.answers.favoriteColor;
 };
