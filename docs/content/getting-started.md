@@ -95,8 +95,14 @@ A component's template can have "view ports," which are holes in the DOM for loa
 A component's router tells the component what to put inside the view ports based on URL.
 The configuration maps routes to components for each view port.
 
-Let's make a `home` component that our app can route to. First, run `mkdir -p components/home` to make a few directories.
-Then `touch components/home/home.html` and `touch components/home/home.js`.
+Let's make a `home` component that our app can route to.
+
+```
+mkdir -p components/home
+touch components/home/home.html components/home/home.js
+```
+
+This creates our component directory and it's corresponding files, which is a template and a JavaScript component.
 
 Let's open `home.html` and add some content:
 
@@ -119,7 +125,7 @@ To wire this up, We need to add a `<script>` tag to our `index.html`:
 
 ```html
 ...
-<script src="./components/detail/detail.js"></script>
+<script src="./components/home/home.js"></script>
 ```
 
 And add the controller's module as a dependency to our main module in `app.js:
@@ -183,7 +189,7 @@ function DetailController ($routeParams) {
 We can display the id in the template by adding this to `detail.html`:
 
 ```html
-<p>detail #{{detail.id}}</p>
+<p>detail {{detail.id}}</p>
 ```
 
 Then we'd have to wire up the controller by adding a script tag and making out `app` module depend on `app.detail`.
