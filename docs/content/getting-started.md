@@ -95,7 +95,7 @@ A component's template can have "view ports," which are holes in the DOM for loa
 A component's router tells the component what to put inside the view ports based on URL.
 The configuration maps routes to components for each view port.
 
-Let's male a `home` component that our app can route to. First, run `mkdir -p components/home` to make a few directories.
+Let's make a `home` component that our app can route to. First, run `mkdir -p components/home` to make a few directories.
 Then `touch components/home/home.html` and `touch components/home/home.js`.
 
 Let's open `home.html` and add some content:
