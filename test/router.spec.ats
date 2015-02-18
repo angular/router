@@ -7,7 +7,7 @@ describe('Router', () => {
   beforeEach(() => {
     router = new Router();
     view = makeMockComponent('root');
-    router.registerViewPort(view);
+    router.registerViewport(view);
   });
 
   it('should initialize', () => {
@@ -79,7 +79,7 @@ describe('Router', () => {
       await router.navigate('/a');
       expect(view.activate).not.toHaveBeenCalled();
 
-      await router.registerViewPort(view);
+      await router.registerViewport(view);
       expect(view.activate).toHaveBeenCalled();
     }));
 
@@ -94,7 +94,7 @@ describe('Router', () => {
           { path: '/c', component: 'C' }
         ]);
         childView = makeMockComponent('child');
-        child.registerViewPort(childView);
+        child.registerViewport(childView);
       });
 
       it('should check if it can navigate', sync(async () => {

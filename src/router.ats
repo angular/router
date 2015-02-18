@@ -38,7 +38,7 @@ export class Router {
    * Register an object to notify of route changes.
    * You probably don't need to use this unless you're writing a reusable component.
    */
-  registerViewPort(view, name = 'default') {
+  registerViewport(view, name = 'default') {
     this.ports[name] = view;
     return this.renavigate();
   }

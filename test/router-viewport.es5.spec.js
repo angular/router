@@ -1,6 +1,6 @@
 'use strict';
 
-describe('routerViewPort', function () {
+describe('ngViewport', function () {
 
   var elt,
       $compile,
@@ -34,7 +34,7 @@ describe('routerViewPort', function () {
 
 
   it('should work in a simple case', inject(function ($router) {
-    compile('<router-view-port></router-view-port>');
+    compile('<ng-viewport></ng-viewport>');
 
     $router.config([
       { path: '/', component: 'user' }
@@ -51,7 +51,7 @@ describe('routerViewPort', function () {
     $router.config([
       { path: '/user/:name', component: 'user' }
     ]);
-    compile('<router-view-port></router-view-port>');
+    compile('<ng-viewport></ng-viewport>');
 
     $router.navigate('/user/brian');
     $rootScope.$digest();
@@ -67,8 +67,8 @@ describe('routerViewPort', function () {
     $router.config([
       { path: '/', component: {one: 'one', two: 'two'} }
     ]);
-    compile('port 1: <div router-view-port="one"></div> | ' +
-            'port 2: <div router-view-port="two"></div>');
+    compile('port 1: <div ng-viewport="one"></div> | ' +
+            'port 2: <div ng-viewport="two"></div>');
 
     $router.navigate('/');
     $rootScope.$digest();
@@ -78,7 +78,7 @@ describe('routerViewPort', function () {
 
 
   it('should work with nested viewports', inject(function ($router) {
-    put('childRouter', '<div>inner { <div router-view-port></div> }</div>');
+    put('childRouter', '<div>inner { <div ng-viewport></div> }</div>');
     $controllerProvider.register('ChildRouterController', function ($router) {
       $router.config([
         { path: '/b', component: 'one' }
@@ -88,7 +88,7 @@ describe('routerViewPort', function () {
     $router.config([
       { path: '/a', component: 'childRouter' }
     ]);
-    compile('<div>outer { <div router-view-port></div> }</div>');
+    compile('<div>outer { <div ng-viewport></div> }</div>');
 
     $router.navigate('/a/b');
     $rootScope.$digest();
@@ -99,13 +99,13 @@ describe('routerViewPort', function () {
 
   it('should work with recursive nested viewports', inject(function ($router) {
 
-    put('router', '<div>recur { <div router-view-port></div> }</div>');
+    put('router', '<div>recur { <div ng-viewport></div> }</div>');
     $router.config([
       { path: '/recur', component: 'router' },
       { path: '/', component: 'one' }
     ]);
 
-    compile('<div>root { <div router-view-port></div> }</div>');
+    compile('<div>root { <div ng-viewport></div> }</div>');
     $router.navigate('/');
     $rootScope.$digest();
     expect(elt.text()).toBe('root { one }');
@@ -113,13 +113,13 @@ describe('routerViewPort', function () {
 
 
   it('should update anchor hrefs with the routerLink directive', inject(function ($router) {
-    put('one', '<div><a router-link="two">{{number}}</a></div>');
+    put('one', '<div><a ng-link="two">{{number}}</a></div>');
 
     $router.config([
       { path: '/a', component: 'one' },
       { path: '/b', component: 'two' }
     ]);
-    compile('<div>outer { <div router-view-port></div> }</div>');
+    compile('<div>outer { <div ng-viewport></div> }</div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -129,14 +129,14 @@ describe('routerViewPort', function () {
 
 
   it('should allow params in routerLink directive', inject(function ($router) {
-    put('router', '<div>outer { <div router-view-port></div> }</div>');
-    put('one', '<div><a router-link="two({param: \'lol\'})">{{number}}</a></div>');
+    put('router', '<div>outer { <div ng-viewport></div> }</div>');
+    put('one', '<div><a ng-link="two({param: \'lol\'})">{{number}}</a></div>');
 
     $router.config([
       { path: '/a', component: 'one' },
       { path: '/b/:param', component: 'two' }
     ]);
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -148,14 +148,14 @@ describe('routerViewPort', function () {
 
 
   it('should update the href of links', inject(function ($router) {
-    put('router', '<div>outer { <div router-view-port></div> }</div>');
-    put('one', '<div><a router-link="two({param: number})">{{number}}</a></div>');
+    put('router', '<div>outer { <div ng-viewport></div> }</div>');
+    put('one', '<div><a ng-link="two({param: number})">{{number}}</a></div>');
 
     $router.config([
       { path: '/a', component: 'one' },
       { path: '/b/:param', component: 'two' }
     ]);
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -174,7 +174,7 @@ describe('routerViewPort', function () {
     $router.config([
       { path: '/a', component: 'activate' }
     ]);
-    compile('<div>outer { <div router-view-port></div> }</div>');
+    compile('<div>outer { <div ng-viewport></div> }</div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -195,7 +195,7 @@ describe('routerViewPort', function () {
     $router.config([
       { path: '/a', component: 'activate' }
     ]);
-    compile('<div>outer { <div router-view-port></div> }</div>');
+    compile('<div>outer { <div ng-viewport></div> }</div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -219,7 +219,7 @@ describe('routerViewPort', function () {
       { path: '/a', component: 'activate' },
       { path: '/b', component: 'one' }
     ]);
-    compile('<div>outer { <div router-view-port></div> }</div>');
+    compile('<div>outer { <div ng-viewport></div> }</div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -244,7 +244,7 @@ describe('routerViewPort', function () {
     $router.config([
       { path: '/a', component: 'activate' }
     ]);
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -260,7 +260,7 @@ describe('routerViewPort', function () {
       { path: '/user', component: 'user' }
     ]);
 
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
     $router.navigate('/user');
     $rootScope.$digest();
@@ -276,7 +276,7 @@ describe('routerViewPort', function () {
   */
 
   it('should change location to the cannonical route', inject(function ($router, $location) {
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
     $router.config([
       { path: '/',     redirectTo: '/user' },
@@ -296,9 +296,9 @@ describe('routerViewPort', function () {
       { path: '/new-parent', component:  'childRouter' }
     ]);
 
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
-    put('childRouter', '<div>inner { <div router-view-port></div> }</div>');
+    put('childRouter', '<div>inner { <div ng-viewport></div> }</div>');
     $controllerProvider.register('ChildRouterController', function ($router) {
       $router.config([
         { path: '/old-child', redirectTo: '/new-child' },
@@ -326,7 +326,7 @@ describe('routerViewPort', function () {
     $router.config([
       { path: '/user', component: 'user' }
     ]);
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
     $location.path('/user');
     $rootScope.$digest();
@@ -353,7 +353,7 @@ describe('routerViewPort', function () {
 });
 
 
-describe('routerViewPort animations', function () {
+describe('ngViewport animations', function () {
 
   var elt,
       ctrl,
@@ -378,7 +378,7 @@ describe('routerViewPort animations', function () {
       $templateCache = _$templateCache_;
     });
 
-    put('router', '<div router-view-port></div>');
+    put('router', '<div ng-viewport></div>');
     $controllerProvider.register('RouterController', function ($router) {
       ctrl = this;
     });
@@ -396,7 +396,7 @@ describe('routerViewPort animations', function () {
   it('should work in a simple case', inject(function ($router) {
     var item;
 
-    compile('<div router-view-port></div>');
+    compile('<div ng-viewport></div>');
 
     $router.config([
       { path: '/user/:name', component: 'user' }

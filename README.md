@@ -36,7 +36,7 @@ Below is a short summary of these goals:
 
 * Have sensible conventions and defaults
 * Be customizable at almost every point
-* Support sibling "view ports" (like `ng-view`s in Angular 1.x's ngRoute)
+* Support sibling "viewports" (like `ng-view`s in Angular 1.x's ngRoute)
 * Support nested routers
   * Allow components to encapsulate entire parts of an application
 * Expose a "navigation model" which can be used to generate a navigation UI (like menus)

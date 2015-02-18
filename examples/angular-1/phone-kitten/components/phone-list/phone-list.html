@@ -17,8 +17,8 @@
       <ul class="phones">
         <li ng-repeat="phone in phoneList.phones | filter:phoneList.query | orderBy:phoneList.orderProp"
             class="thumbnail phone-listing">
-          <a router-link="phoneDetail({phoneId: phone.id})" class="thumb"><img ng-src="{{phone.imageUrl}}"></a>
-          <a router-link="phoneDetail({phoneId: phone.id})">{{phone.name}}</a>
+          <a ng-link="phoneDetail({phoneId: phone.id})" class="thumb"><img ng-src="{{phone.imageUrl}}"></a>
+          <a ng-link="phoneDetail({phoneId: phone.id})">{{phone.name}}</a>
           <p>{{phone.snippet}}</p>
         </li>
       </ul>

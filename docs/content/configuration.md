@@ -25,8 +25,8 @@ $router.config([
 ```
 
 ```html
-<div router-view-port="master"></div>
-<div router-view-port="detail"></div>
+<div ng-viewport="master"></div>
+<div ng-viewport="detail"></div>
 ```
 
 ## redirectTo
