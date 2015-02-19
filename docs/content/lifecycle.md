@@ -110,7 +110,7 @@ SaveController.prototype.canDeactivate = function() {
 ```html
 <div>
   <div ng-show="showSaveDialog">
-    <p>Would you lke to save your work?</p>
+    <p>Would you like to save your work?</p>
     <button ng-click="save.deferred.resolve()">Save</button>
     <button ng-click="save.deferred.reject()">Discard</button>
   </div>

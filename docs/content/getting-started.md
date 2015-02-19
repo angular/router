@@ -128,7 +128,7 @@ To wire this up, We need to add a `<script>` tag to our `index.html`:
 <script src="./components/home/home.js"></script>
 ```
 
-And add the controller's module as a dependency to our main module in `app.js:
+And add the controller's module as a dependency to our main module in `app.js`:
 
 ```js
 angular.module('app', ['ngNewRouter', 'app.home'])
