@@ -194,6 +194,8 @@ digraph G {
 
   {
     node [fontname="Courier"];
+    "oldCtrl.canReuse()";
+    "oldCtrl.reuse()";
     "oldCtrl.canDeactivate()" [fillcolor=lightblue];
     "newCtrl = new Ctrl()" [fillcolor=lightsalmon];
     "newCtrl.canActivate()" [fillcolor=lightsalmon];
