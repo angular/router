@@ -81,7 +81,7 @@ we map paths to components. What's a component? Let's talk about that for a bit.
 ## Components
 
 In Angular 1, a "routable component" is a template, plus a controller, plus a router.
-You can configure how to map component names to controllers and templates in the [componentLoader](componentLoaderProvider) service.
+You can configure how to map component names to controllers and templates in the [$componentLoader]($componentLoaderProvider) service.
 
 <!--
 <aside class="implementation detail">
