@@ -17,12 +17,11 @@ export class Router {
     this.children = [];
     this.context = null;
     this.recognizer = new RouteRecognizer();
-    this.childRecognizer = new RouteRecognizer();
   }
 
 
   /**
-   * @description 
+   * @description
    * Constructs a child router.
    * You probably don't need to use this unless you're writing a reusable component.
    */
@@ -35,7 +34,7 @@ export class Router {
 
 
   /**
-   * @description 
+   * @description
    * Register an object to notify of route changes.
    * You probably don't need to use this unless you're writing a reusable component.
    */
@@ -89,7 +88,7 @@ export class Router {
 
     var withChild = copy(mapping);
     withChild.path += CHILD_ROUTE_SUFFIX;
-    this.childRecognizer.add([{
+    this.recognizer.add([{
       path: withChild.path,
       handler: withChild
     }]);
@@ -127,11 +126,11 @@ export class Router {
     var segment = url;
 
     if (notMatched(context)) {
-      context = this.childRecognizer.recognize(url);
+      return Promise.resolve();
+    }
 
-      if (notMatched(context)) {
-        return Promise.resolve();
-      }
+    var lastParams = context[context.length - 1].params;
+    if (lastParams && lastParams.childRoute) {
 
       var path = context[0].handler.path;
       segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
@@ -141,10 +140,6 @@ export class Router {
         return this.navigateChildren(context)
               .then(finishNavigating, cancelNavigating);
       }
-    }
-
-    if (notMatched(context)) {
-      return Promise.resolve();
     }
 
     // TODO: not sure if I can compare by identity here
