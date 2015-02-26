@@ -47,6 +47,22 @@ describe('ngViewport', function () {
   }));
 
 
+  // See https://github.com/angular/router/issues/105
+  it('should warn when instantiating a component with no controller', inject(function ($router) {
+    put('noController', '<div>{{ 2 + 2 }}</div>');
+    $router.config([
+      { path: '/', component: 'noController' }
+    ]);
+
+    spyOn(console, 'warn');
+    compile('<ng-viewport></ng-viewport>');
+    $router.navigate('/');
+
+    expect(console.warn).toHaveBeenCalledWith('Could not instantiate controller', 'NoControllerController');
+    expect(elt.text()).toBe('4');
+  }));
+
+
   it('should navigate between components with different parameters', inject(function ($router) {
     $router.config([
       { path: '/user/:name', component: 'user' }

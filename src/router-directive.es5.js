@@ -115,7 +115,12 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
         if (router.context) {
           locals.$routeParams = router.context.params;
         }
-        ctrl = $controller(controllerName, locals);
+        try {
+          ctrl = $controller(controllerName, locals);
+        } catch (e) {
+          console.warn && console.warn('Could not instantiate controller', controllerName);
+          ctrl = $controller(angular.noop, locals);
+        }
         newScope[componentName] = ctrl;
       },
       canActivate: function (instruction) {
