@@ -39,6 +39,9 @@ export class Router {
    * You probably don't need to use this unless you're writing a reusable component.
    */
   registerViewport(view, name = 'default') {
+    if (this.ports[name]) {
+      throw new Error(name + ' viewport is already registered');
+    }
     this.ports[name] = view;
     return this.renavigate();
   }

@@ -4,18 +4,16 @@ describe('Router', () => {
   var router,
       view;
 
-  beforeEach(() => {
-    router = new Router();
-    view = makeMockComponent('root');
-    router.registerViewport(view);
-  });
-
   it('should initialize', () => {
+    router = new Router();
     expect(router).toBeDefined();
   });
 
   describe('config', () => {
     it('should renavigate after being configured', sync(async () => {
+      router = new Router();
+      view = makeMockComponent('root');
+      await router.registerViewport(view);
       await router.navigate('/a');
       expect(view.activate).not.toHaveBeenCalled();
 
@@ -24,14 +22,24 @@ describe('Router', () => {
       ]);
       expect(view.activate).toHaveBeenCalled();
     }));
+
+    it('should throw if two viewports are registered with the same name', sync(async () => {
+      router = new Router();
+      view = makeMockComponent('root');
+      await router.registerViewport(view);
+      expect(() => router.registerViewport(view)).toThrow();
+    }));
   });
 
   describe('with a simple config', () => {
-    beforeEach(() => {
-      router.config([
+    beforeEach(sync(async () => {
+      router = new Router();
+      view = makeMockComponent('root');
+      await router.registerViewport(view);
+      await router.config([
         { path: '/a', component: 'A' }
       ]);
-    });
+    }));
 
     it('should activate viewports on navigation', sync(async () => {
       await router.navigate('/a');
