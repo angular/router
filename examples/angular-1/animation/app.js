@@ -6,7 +6,7 @@ angular.module('example', [
   'ngAnimate',
   'ngNewRouter'
 ]).
-  controller('AppController', AppController);
+  controller('AppController', ['$router', AppController]);
 
 function AppController($router) {
   $router.config([

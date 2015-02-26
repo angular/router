@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('example.settings', []).
-  controller('SettingsController', SettingsController);
+  controller('SettingsController', ['$router', SettingsController]);
 
 function SettingsController($router) {
   this.heading = 'Settings';

@@ -6,7 +6,7 @@ angular.module('example', [
   'example.welcome',
   'ngNewRouter'
 ]).
-  controller('AppController', AppController);
+  controller('AppController', ['$router', AppController]);
 
 function AppController($router) {
   $router.config([

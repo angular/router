@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('example.flickr', []).
-  controller('FlickrController', FlickrController);
+  controller('FlickrController', ['$http', FlickrController]);
 
 var URL = 'http://api.flickr.com/services/feeds/photos_public.gne?tags=angularjs&tagmode=any&format=json';
 
