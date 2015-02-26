@@ -15,7 +15,6 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
     this.children = [];
     this.context = null;
     this.recognizer = new RouteRecognizer();
-    this.childRecognizer = new RouteRecognizer();
   };
   var $Router = Router;
   ($traceurRuntime.createClass)(Router, {
@@ -24,8 +23,11 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
       this.children.push(child);
       return child;
     },
-    registerViewPort: function(view) {
+    registerViewport: function(view) {
       var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
+      if (this.ports[name]) {
+        throw new Error(name + ' viewport is already registered');
+      }
       this.ports[name] = view;
       return this.renavigate();
     },
@@ -56,7 +58,7 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
       this.recognizer.add([mapping], {as: component});
       var withChild = copy(mapping);
       withChild.path += CHILD_ROUTE_SUFFIX;
-      this.childRecognizer.add([{
+      this.recognizer.add([{
         path: withChild.path,
         handler: withChild
       }]);
@@ -75,19 +77,16 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
       var context = this.recognizer.recognize(url);
       var segment = url;
       if (notMatched(context)) {
-        context = this.childRecognizer.recognize(url);
-        if (notMatched(context)) {
-          return Promise.resolve();
-        }
+        return Promise.resolve();
+      }
+      var lastParams = context[context.length - 1].params;
+      if (lastParams && lastParams.childRoute) {
         var path = context[0].handler.path;
         segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
         if (this.previousSegment === segment) {
           startNavigating();
           return this.navigateChildren(context).then(finishNavigating, cancelNavigating);
         }
-      }
-      if (notMatched(context)) {
-        return Promise.resolve();
       }
       if (this.context === context[0]) {
         return Promise.resolve();
