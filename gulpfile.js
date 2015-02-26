@@ -5,6 +5,7 @@ var connect = require('gulp-connect');
 var concat = require('gulp-concat');
 var merge = require('merge-stream');
 var rename = require('gulp-rename');
+var ngAnnotate = require('gulp-ng-annotate');
 
 var modulate = require('./scripts/angular-modulate');
 
@@ -37,6 +38,7 @@ gulp.task('angularify', ['transpile'], function() {
 
   return merge(directive, generated)
       .pipe(concat('router.es5.js'))
+      .pipe(ngAnnotate())
       .pipe(gulp.dest(BUILD_DIR));
 });
 
