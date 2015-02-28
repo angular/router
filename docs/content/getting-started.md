@@ -162,7 +162,7 @@ Add this to `index.html`:
 
 ```html
 <body ng-app="myApp" ng-controller="AppController as app">
-  <a ng-link="detail({id: 5})">link to detal</a>
+  <a ng-link="detail({id: 5})">link to detail</a>
   ...
 ```
 
