@@ -44,8 +44,9 @@ module.exports = function (opts) {
   return stream;
 };
 
+var TRACEUR_CREATE_CLASS = new RegExp('\\$traceurRuntime\\.createClass', 'g');
 function detraceurify (contents) {
-  return traceurRuntime + ';\n' + contents.replace('$traceurRuntime.createClass', 'createClass');
+  return traceurRuntime + ';\n' + contents.replace(TRACEUR_CREATE_CLASS, 'createClass');
 }
 
 var moduleLocations = {
