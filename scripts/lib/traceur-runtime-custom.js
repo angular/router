@@ -6,7 +6,8 @@ var $defineProperty = Object.defineProperty,
     $defineProperties = Object.defineProperties,
     $create = Object.create,
     $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor,
-    $getOwnPropertyNames = Object.getOwnPropertyNames;
+    $getOwnPropertyNames = Object.getOwnPropertyNames,
+    $getPrototypeOf = Object.getPrototypeOf;
 
 function createClass(ctor, object, staticObject, superClass) {
   $defineProperty(object, 'constructor', {
@@ -57,4 +58,26 @@ function getDescriptors(object) {
   //   descriptors[$traceurRuntime.toProperty(symbol)] = $getOwnPropertyDescriptor(object, $traceurRuntime.toProperty(symbol));
   // }
   return descriptors;
+}
+function superDescriptor(homeObject, name) {
+  var proto = $getPrototypeOf(homeObject);
+  do {
+    var result = $getOwnPropertyDescriptor(proto, name);
+    if (result)
+      return result;
+    proto = $getPrototypeOf(proto);
+  } while (proto);
+  return undefined;
+}
+function superCall(self, homeObject, name, args) {
+  return superGet(self, homeObject, name).apply(self, args);
+}
+function superGet(self, homeObject, name) {
+  var descriptor = superDescriptor(homeObject, name);
+  if (descriptor) {
+    if (!descriptor.get)
+      return descriptor.value;
+    return descriptor.get.call(self);
+  }
+  return undefined;
 }

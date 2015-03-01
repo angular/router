@@ -32,6 +32,7 @@
     "gulp": "^3.8.9",
     "gulp-concat": "^2.4.2",
     "gulp-connect": "^2.0.6",
+    "gulp-merge": "^0.1.0",
     "gulp-ng-annotate": "^0.5.2",
     "gulp-rename": "^1.2.0",
     "gulp-traceur": "^0.13.0",
@@ -45,7 +46,6 @@
     "karma-traceur-preprocessor": "^0.4.0",
     "lodash": "^2.4.1",
     "marked": "^0.3.2",
-    "merge-stream": "^0.1.6",
     "protractor": "^0.21.0",
     "q": "^1.1.2",
     "through2": "^0.4.1"

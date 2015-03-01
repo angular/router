@@ -3,10 +3,9 @@ var Dgeni = require('dgeni');
 var traceur = require('gulp-traceur');
 var connect = require('gulp-connect');
 var concat = require('gulp-concat');
-var merge = require('merge-stream');
 var rename = require('gulp-rename');
 var ngAnnotate = require('gulp-ng-annotate');
-
+var gulpMerge = require('gulp-merge')
 var modulate = require('./scripts/angular-modulate');
 
 var CONFIG = require('./config');
@@ -31,12 +30,12 @@ gulp.task('transpile', function() {
 gulp.task('angularify', ['transpile'], function() {
   var directive = gulp.src('./src/*.es5.js');
 
-  var generated = gulp.src('./src/router.ats')
+  var generated = gulp.src('./src/**.ats')
       .pipe(modulate({
         moduleName: 'ngNewRouter.generated'
       }))
 
-  return merge(directive, generated)
+  return gulpMerge(directive, generated)
       .pipe(concat('router.es5.js'))
       .pipe(ngAnnotate())
       .pipe(gulp.dest(BUILD_DIR));
