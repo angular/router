@@ -3,15 +3,92 @@
 /*
  * A module for adding new a routing system Angular 1.
  */
-angular.module('ngNewRouter', ['ngNewRouter.generated']).
-  value('$routeParams', {}).
-  provider('$componentLoader', $componentLoaderProvider).
-  directive('ngViewport', ngViewportDirective).
-  directive('ngViewport', ngViewportFillContentDirective).
-  directive('ngLink', ngLinkDirective).
-  directive('a', anchorLinkDirective);
+angular.module('ngNewRouter', [])
+  .factory('$router', routerFactory)
+  .value('$routeParams', {})
+  .provider('$componentLoader', $componentLoaderProvider)
+  .factory('$$pipeline', pipelineFactory)
+  .directive('ngViewport', ngViewportDirective)
+  .directive('ngViewport', ngViewportFillContentDirective)
+  .directive('ngLink', ngLinkDirective)
+  .directive('a', anchorLinkDirective);
 
 
+/*
+ * A module for inspecting controller constructors
+ */
+angular.module('ng')
+  .provider('$controllerIntrospector', $controllerIntrospectorProvider)
+  .config(controllerProviderDecorator);
+
+/*
+ * decorates with routing info
+ */
+function controllerProviderDecorator($controllerProvider, $controllerIntrospectorProvider) {
+  var register = $controllerProvider.register;
+  $controllerProvider.register = function (name, ctrl) {
+    $controllerIntrospectorProvider.register(name, ctrl);
+    return register.apply(this, arguments);
+  };
+}
+
+/*
+ * private service that holds route mappings for each controller
+ */
+function $controllerIntrospectorProvider() {
+  var controllers = [];
+  var onControllerRegistered = null;
+  return {
+    register: function (name, constructor) {
+      if (angular.isArray(constructor)) {
+        constructor = constructor[constructor.length - 1];
+      }
+      if (constructor.$routeConfig) {
+        if (onControllerRegistered) {
+          onControllerRegistered(name, constructor.$routeConfig);
+        } else {
+          controllers.push({name: name, config: constructor.$routeConfig});
+        }
+      }
+    },
+    $get: ['$componentLoader', function ($componentLoader) {
+      return function (newOnControllerRegistered) {
+        onControllerRegistered = function (name, constructor) {
+          name = $componentLoader.component(name);
+          return newOnControllerRegistered(name, constructor);
+        };
+        while(controllers.length > 0) {
+          var rule = controllers.pop();
+          onControllerRegistered(rule.name, rule.config);
+        }
+      }
+    }]
+  }
+}
+
+function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controllerIntrospector) {
+
+  $controllerIntrospector(function (name, config) {
+    $$grammar.config(name, config);
+  });
+
+  $rootScope.$watch(function () {
+    return $location.path();
+  }, function (newUrl) {
+    $$rootRouter.navigate(newUrl);
+  });
+
+  var nav = $$rootRouter.navigate;
+  $$rootRouter.navigate = function (url) {
+    return nav.call(this, url).then(function (newUrl) {
+      if (newUrl) {
+        $location.path(newUrl);
+      }
+    });
+  }
+
+  return $$rootRouter;
+}
 
 /**
  * @name ngViewport
@@ -30,21 +107,6 @@ angular.module('ngNewRouter', ['ngNewRouter.generated']).
 function ngViewportDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, $componentLoader, $router) {
   var rootRouter = $router;
 
-  $rootScope.$watch(function () {
-    return $location.path();
-  }, function (newUrl) {
-    rootRouter.navigate(newUrl);
-  });
-
-  var nav = rootRouter.navigate;
-  rootRouter.navigate = function (url) {
-    return nav.call(this, url).then(function (newUrl) {
-      if (newUrl) {
-        $location.path(newUrl);
-      }
-    });
-  }
-
   return {
     restrict: 'AE',
     transclude: 'element',
@@ -58,12 +120,13 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
 
   function viewportLink(scope, $element, attrs, ctrls, $transclude) {
     var viewportName = attrs.ngViewport || 'default',
-        ctrl = ctrls[0],
+        parentCtrl = ctrls[0],
         myCtrl = ctrls[1],
-        router = (ctrl && ctrl.$$router) || rootRouter;
+        router = (parentCtrl && parentCtrl.$$router) || rootRouter;
 
     var currentScope,
         newScope,
+        currentController,
         currentElement,
         previousLeaveAnimation,
         previousInstruction;
@@ -87,67 +150,54 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
       }
     }
 
-    function getComponentName(instruction) {
-      return instruction[0].handler.components[viewportName];
-    }
     router.registerViewport({
       canDeactivate: function (instruction) {
-        return !ctrl || !ctrl.canDeactivate || ctrl.canDeactivate();
-      },
-      canReactivate: function (instruction) {
-        //TODO: expose controller hook
-        return JSON.stringify(instruction) === previousInstruction;
-      },
-      instantiate: function (instruction) {
-        var componentName = getComponentName(instruction);
-        var controllerName = $componentLoader(componentName).controllerName;
-
-        // build up locals for controller
-        newScope = scope.$new();
-
-        var locals = {
-          $scope: newScope,
-          $router: scope.$$ngViewport.$$router = router.childRouter()
-        };
-
-        if (router.context) {
-          locals.$routeParams = router.context.params;
+        if (currentController && currentController.canDeactivate) {
+          return currentController.canDeactivate();
         }
-        try {
-          ctrl = $controller(controllerName, locals);
-        } catch (e) {
-          console.warn && console.warn('Could not instantiate controller', controllerName);
-          ctrl = $controller(angular.noop, locals);
-        }
-        newScope[componentName] = ctrl;
-      },
-      canActivate: function (instruction) {
-        return !ctrl || !ctrl.canActivate || ctrl.canActivate(instruction);
-      },
-      load: function (instruction) {
-        var componentTemplateUrl = $componentLoader(getComponentName(instruction)).template;
-        return $templateRequest(componentTemplateUrl).then(function(templateHtml) {
-          myCtrl.$$template = templateHtml;
-        });
+        return true;
       },
       activate: function (instruction) {
-        var componentName = getComponentName(instruction);
+        var nextInstruction = serializeInstruction(instruction);
+        if (nextInstruction === previousInstruction) {
+          return;
+        }
 
+        newScope = scope.$new();
+        myCtrl.$$router = instruction.router;
+        myCtrl.$$template = instruction.template;
+        var componentName = instruction.component;
         var clone = $transclude(newScope, function(clone) {
           $animate.enter(clone, null, currentElement || $element);
           cleanupLastView();
         });
 
+        var ctrl = instruction.controller;
+        newScope[componentName] = ctrl;
+        currentController = ctrl;
+
         currentElement = clone;
         currentScope = newScope;
+
+        previousInstruction = nextInstruction;
 
         // finally, run the hook
         if (ctrl.activate) {
           ctrl.activate(instruction);
         }
-        previousInstruction = JSON.stringify(instruction);
       }
     }, viewportName);
+  }
+
+  // TODO: how best to serialize?
+  function serializeInstruction(instruction) {
+    return JSON.stringify({
+      path: instruction.path,
+      component: instruction.component,
+      params: Object.keys(instruction.params).reduce(function (acc, key) {
+        return (key !== 'childRoute' && (acc[key] = instruction.params[key])), acc;
+      }, {})
+    });
   }
 }
 
@@ -267,6 +317,31 @@ function anchorLinkDirective($router) {
   }
 }
 
+function pipelineFactory($controller, $componentLoader, $templateRequest) {
+  return {
+    init: function(instruction) {
+      var controllerName = $componentLoader.controllerName(instruction.component);
+
+      var locals = {
+        $router: instruction.router,
+        $routeParams: instruction.params || {}
+      };
+      var ctrl;
+      try {
+        ctrl = $controller(controllerName, locals);
+      } catch (e) {
+        console.warn && console.warn('Could not instantiate controller', controllerName);
+        ctrl = $controller(angular.noop, locals);
+      }
+      return ctrl;
+    },
+    load: function (instruction) {
+      var componentTemplateUrl = $componentLoader.template(instruction.component);
+      return $templateRequest(componentTemplateUrl);
+    }
+  };
+}
+
 /**
  * @name $componentLoaderProvider
  * @description
@@ -284,10 +359,11 @@ function anchorLinkDirective($router) {
  * This service makes it easy to group all of them into a single concept.
  */
 function $componentLoaderProvider() {
+
+  var DEFAULT_SUFFIX = 'Controller';
+
   var componentToCtrl = function componentToCtrlDefault(name) {
-    return name[0].toUpperCase() +
-        name.substr(1) +
-        'Controller';
+    return name[0].toUpperCase() + name.substr(1) + DEFAULT_SUFFIX;
   };
 
   var componentToTemplate = function componentToTemplateDefault(name) {
@@ -295,17 +371,19 @@ function $componentLoaderProvider() {
     return './components/' + dashName + '/' + dashName + '.html';
   };
 
-  function componentLoader(name) {
-    return {
-      controllerName: componentToCtrl(name),
-      template: componentToTemplate(name)
-    };
-  }
+  var ctrlToComponent = function ctrlToComponentDefault(name) {
+    return name[0].toLowerCase() + name.substr(1, name.length - DEFAULT_SUFFIX.length - 1);
+  };
 
   return {
     $get: function () {
-      return componentLoader;
+      return {
+        controllerName: componentToCtrl,
+        template: componentToTemplate,
+        component: ctrlToComponent
+      };
     },
+
     /**
      * @name $componentLoaderProvider#setCtrlNameMapping
      * @description takes a function for mapping component names to component controller names
@@ -314,6 +392,16 @@ function $componentLoaderProvider() {
       componentToCtrl = newFn;
       return this;
     },
+
+    /**
+     * @name $componentLoaderProvider#setCtrlNameMapping
+     * @description takes a function for mapping component controller names to component names
+     */
+    setComponentFromCtrlMapping: function (newFn) {
+      ctrlToComponent = newFn;
+      return this;
+    },
+
     /**
      * @name $componentLoaderProvider#setTemplateMapping
      * @description takes a function for mapping component names to component template URLs

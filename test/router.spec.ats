@@ -1,11 +1,15 @@
-import {Router} from '../src/router';
+import {Grammar} from '../src/grammar';
+import {RootRouter} from '../src/router';
+import {Pipeline} from '../src/pipeline';
 
-describe('Router', () => {
+describe('RootRouter', () => {
   var router,
       view;
 
   beforeEach(() => {
-    router = new Router();
+    var grammar = new Grammar();
+    var pipeline = new Pipeline();
+    router = new RootRouter(grammar, pipeline);
   });
 
   describe('config', () => {
@@ -19,12 +23,6 @@ describe('Router', () => {
         { path: '/a', component: 'A' }
       ]);
       expect(view.activate).toHaveBeenCalled();
-    }));
-
-    it('should throw if two viewports are registered with the same name', sync(async () => {
-      view = makeMockComponent('root');
-      await router.registerViewport(view);
-      expect(() => router.registerViewport(view)).toThrow();
     }));
 
     it('should allow aliasing', sync(async () => {
@@ -52,7 +50,7 @@ describe('Router', () => {
     });
   });
 
-  describe('with a simple config', () => {
+  describe('when configured', () => {
     beforeEach(sync(async () => {
       view = makeMockComponent('root');
       await router.registerViewport(view);
@@ -67,30 +65,29 @@ describe('Router', () => {
     }));
 
     it('should check if it can navigate', sync(async () => {
-      spyOn(router, 'navigationPredicate').and.callThrough();
-      var status = await router.canNavigate('/a');
+      var status = await router.navigate('/a');
 
       expect(status).toBe(true);
-      expect(router.navigationPredicate).toHaveBeenCalled();
+      expect(view.canNavigate).toHaveBeenCalled();
     }));
 
     it('should check the canActivate hook to see if it can navigate', sync(async () => {
       view.canActivate = jasmine.createSpy('canActivate component').and.returnValue(true);
-      var status = await router.canNavigate('/a/b');
+      var status = await router.navigate('/a');
       expect(status).toBe(true);
 
       view.canActivate = jasmine.createSpy('canActivate component').and.returnValue(false);
-      status = await router.canNavigate('/a/b');
+      status = await router.navigate('/a');
       expect(status).toBe(false);
     }));
 
     it('should check the canDeactivate hook to see if it can navigate', sync(async () => {
       view.canDeactivate = jasmine.createSpy('canDeactivate component').and.returnValue(true);
-      var status = await router.canNavigate('/a/b');
+      var status = await router.navigate('/a');
       expect(status).toBe(true);
 
       view.canDeactivate = jasmine.createSpy('canDeactivate component').and.returnValue(false);
-      status = await router.canNavigate('/a/b');
+      status = await router.navigate('/a');
       expect(status).toBe(false);
     }));
 
@@ -99,7 +96,7 @@ describe('Router', () => {
     });
 
     it('should navigate viewports registered after a navigation happens', sync(async () => {
-      router = new Router();
+      router = new RootRouter(new Grammar(), new Pipeline());
       view = makeMockComponent('root');
       await router.config([
         { path: '/a', component: 'A' }
@@ -116,7 +113,7 @@ describe('Router', () => {
       var child, childView;
 
       beforeEach(() => {
-        child = router.childRouter();
+        child = router.childRouter('A');
         child.config([
           { path: '/b', component: 'B' },
           { path: '/c', component: 'C' }
@@ -126,11 +123,10 @@ describe('Router', () => {
       });
 
       it('should check if it can navigate', sync(async () => {
-        spyOn(child, 'navigationPredicate').and.callThrough();
-        var status = await router.canNavigate('/a/b');
+        var status = await router.navigate('/a/b');
 
         expect(status).toBe(true);
-        expect(child.navigationPredicate).toHaveBeenCalled();
+        expect(child.canActivate).toHaveBeenCalled();
       }));
 
       it('should activate viewports on navigation', sync(async () => {
@@ -170,7 +166,7 @@ describe('Router', () => {
       }));
 
       it('should not activate viewports if a predicate returns false', sync(async () => {
-        child.navigationPredicate = () => Promise.resolve(false);
+        childView.canActivate = () => Promise.resolve(false);
         await router.navigate('/a/b');
 
         expect(view.activate).not.toHaveBeenCalled();
@@ -178,12 +174,45 @@ describe('Router', () => {
       }));
 
       it('should generate URLs', sync(async () => {
-        // a child can't generate a route unless it has been navigated to
-        await router.navigate('/a/c');
-
-        expect(router.generate('A', {})).toBe('/a');
-        expect(child.generate('C', {})).toBe('/a/c');
+        expect(child.generate('C')).toBe('/a/c');
+        expect(router.generate('C')).toBe('/a/c');
       }));
+
+      it('should generate URLs with params', sync(async () => {
+        await child.config({ path: '/d/:param', component: 'D'});
+        expect(child.generate('D', {param: 'foo'})).toBe('/a/d/foo');
+        expect(router.generate('D', {param: 'foo'})).toBe('/a/d/foo');
+      }));
+
+      // TODO: test recursive routes
+    });
+
+    describe('with sibbling routers', () => {
+      var left, right;
+
+      beforeEach(sync(async () => {
+        left = router.childRouter('A');
+        right = router.childRouter('A');
+      }));
+
+      it('should work', sync(async() => {
+        await left.config({ path: '/left', component: 'L' });
+        await right.config({ path: '/right', component: 'R' });
+      }));
+
+      it('should throw if children cannot agree on a cannonical URL', sync(async() => {
+        expect(() => {
+          left.config([
+            { path: '/b', redirectTo: '/one' },
+            { path: '/one', component: 'C' }
+          ]);
+          right.config([
+            { path: '/b', redirectTo: '/other' },
+            { path: '/other', component: 'C' }
+          ]);
+        }).toThrowError('"/b" already maps to "/one"');
+      }));
+
     });
   });
 });
@@ -205,6 +234,8 @@ function makeMockComponent (name = '') {
     instantiate: () => {},
     load: () => {},
     activate: jasmine.createSpy(name + ' activate component').and.returnValue(Promise.resolve()),
-    deactivate: jasmine.createSpy(name + ' deactivate component').and.returnValue(Promise.resolve())
+    deactivate: jasmine.createSpy(name + ' deactivate component').and.returnValue(Promise.resolve()),
+    canActivate: jasmine.createSpy(name + ' canActivate component').and.returnValue(Promise.resolve()),
+    canDeactivate: jasmine.createSpy(name + ' canDeactivate component').and.returnValue(Promise.resolve())
   };
 }

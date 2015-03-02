@@ -23,6 +23,13 @@ var MODULE_LOCATIONS = {
   'route-recognizer': 'node_modules/route-recognizer/lib/route-recognizer'
 };
 
+/*
+ * just add dep, don't try to transpile
+ */
+var STUB_LOCATIONS = {
+  './pipeline': true
+};
+
 
 var TRACEUR_CREATE_CLASS = new RegExp('\\$traceurRuntime\\.(createClass|superCall)', 'g');
 function detraceurify (contents) {

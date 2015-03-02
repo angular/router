@@ -1,6 +1,5 @@
-import RouteRecognizer from 'route-recognizer';
-
-var CHILD_ROUTE_SUFFIX = '/*childRoute';
+import {Grammar} from './grammar';
+import {Pipeline} from './pipeline';
 
 /**
  * @name Router
@@ -8,15 +7,18 @@ var CHILD_ROUTE_SUFFIX = '/*childRoute';
  * @description
  * The router is responsible for mapping URLs to components.
  */
-export class Router {
-  constructor(parent, configPrefix) {
+class Router {
+  constructor(grammar:Grammar, pipeline:Pipeline, parent, name) {
+    this.name = name;
     this.parent = parent || null;
+    this.root = parent ? parent.root : this;
     this.navigating = false;
     this.ports = {};
     this.rewrites = {};
-    this.children = [];
-    this.context = null;
-    this.recognizer = new RouteRecognizer();
+    this.children = {};
+    this.registry = grammar;
+    this.pipeline = pipeline;
+    this.instruction = null;
   }
 
 
@@ -25,11 +27,11 @@ export class Router {
    * Constructs a child router.
    * You probably don't need to use this unless you're writing a reusable component.
    */
-  childRouter() {
-    var child = new Router(this);
-    // the child isn't "live" until we add it to our children array
-    this.children.push(child);
-    return child;
+  childRouter(name = 'default') {
+    if (!this.children[name]) {
+      this.children[name] = new ChildRouter(this, name);
+    }
+    return this.children[name];
   }
 
 
@@ -40,7 +42,7 @@ export class Router {
    */
   registerViewport(view, name = 'default') {
     if (this.ports[name]) {
-      throw new Error(name + ' viewport is already registered');
+      //throw new Error(name + ' viewport is already registered');
     }
     this.ports[name] = view;
     return this.renavigate();
@@ -58,157 +60,110 @@ export class Router {
    * For more, see the [configuration](configuration) guide.
    */
   config(mapping) {
-    if (mapping instanceof Array) {
-      mapping.forEach(nav => this.configOne(nav));
-    } else {
-      this.configOne(mapping);
-    }
-
+    this.registry.config(this.name, mapping);
     return this.renavigate();
   }
 
 
-  /*
-   * this should be private
-   */
-  configOne(mapping) {
-    if (mapping.redirectTo) {
-      this.rewrites[mapping.path] = mapping.redirectTo;
-      return;
-    }
-
-    // normalize "component" and "components" in config
-    if (mapping.component) {
-      if (mapping.components) {
-        throw new Error('A route config should have either a "component" or "components" property, but not both.');
-      }
-      mapping.components = mapping.component;
-      delete mapping.component;
-    }
-    if (typeof mapping.components === 'string') {
-      mapping.components = { default: mapping.components };
-    }
-    var aliases;
-    if (mapping.as) {
-      aliases = [mapping.as];
-    } else {
-      aliases = mapObj(mapping.components,
-          (componentName, viewportName) => viewportName + ':' + componentName);
-
-      if (mapping.components.default) {
-        aliases.push(mapping.components.default);
-      }
-    }
-    aliases.forEach(alias => this.recognizer.add([{ path: mapping.path, handler: mapping }], { as: alias }))
-
-    var withChild = copy(mapping);
-    withChild.path += CHILD_ROUTE_SUFFIX;
-    this.recognizer.add([{
-      path: withChild.path,
-      handler: withChild
-    }]);
-  }
-
-
   /**
-   * @name navigate
-   *
    * @description Navigate to a URL.
    * Returns the cannonical URL for the route navigated to.
    */
   navigate(url) {
-
-    var self = this;
-
-    // TODO: test this behavior
-    // we need this check because a navigation might cause additional config
-    // to be loaded and we dont want to kick off two navigations
-    // also maybe this should return a promise that resolves when the navigation finishes
     if (this.navigating) {
       return Promise.resolve();
     }
 
-    url = this.getCanonicalUrl(url);
-
-    // TODO: not sure whether to do before or after redirects
     this.lastNavigationAttempt = url;
 
-    var context = this.recognize(url);
-    var segment = url;
+    var instruction = this.recognize(url);
+    //console.log(JSON.stringify(instruction, null, 2));
+    //console.log(instruction);
 
-    if (notMatched(context)) {
-      return Promise.resolve();
+    if (notMatched(instruction)) {
+      return Promise.reject();
     }
 
-    var lastParams = context[context.length - 1].params;
-    if (lastParams && lastParams.childRoute) {
+    // top-level instruction object
+    this.makeDescendantRouters(instruction);
 
-      var path = context[0].handler.path;
-      segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
-
-      if (this.previousSegment === segment) {
-        startNavigating();
-        return this.navigateChildren(context)
-              .then(finishNavigating, cancelNavigating);
-      }
-    }
-
-    // TODO: not sure if I can compare by identity here
-    if (this.context === context[0]) {
-      return Promise.resolve();
-    }
-    this.context = context[0];
-    this.fullContext = context;
-    this.navigating = true;
-
-    // TODO: this will become the pipeline
-    return this.canNavigate(context)
-               .then(status => (status && this.activatePorts(context)))
-               .then(finishNavigating, cancelNavigating);
-
-    function startNavigating() {
-      self.context = context[0];
-      self.fullContext = context;
-      self.navigating = true;
-    }
-
-    function finishNavigating(childUrl) {
-      self.navigating = false;
-      self.previousSegment = segment;
-      self.previousContext = context;
-      return self.previousUrl = segment + (childUrl || '');
-    }
-
-    function cancelNavigating() {
-      self.previousUrl = url;
-      self.navigating = false;
-    }
+    return this.canDeactivatePorts(instruction)
+    .then(() => this.traverseInstruction(instruction, (instruction, viewportName) => {
+      return instruction.controller = this.pipeline.init(instruction);
+    }))
+    .then(() => this.traverseInstruction(instruction, (instruction, viewportName) => {
+      var controller = instruction.controller;
+      return !controller.canActivate || controller.canActivate();
+    }))
+    .then(() => this.traverseInstruction(instruction, (instruction, viewportName) => {
+      return this.pipeline.load(instruction).then((templateHtml) => {
+        return instruction.template = templateHtml;
+      });
+    }))
+    .then(() => this.activatePorts(instruction))
+    .then(() => instruction.canonicalUrl);
   }
+
+  makeDescendantRouters(instruction) {
+    instruction.router = this;
+    this.traverseInstructionSync(instruction, (instruction, childInstruction) => {
+      childInstruction.router = instruction.router.childRouter(childInstruction.component);
+    });
+  }
+
+
+  traverseInstructionSync(instruction, fn) {
+    forEach(instruction.viewports,
+        (childInstruction, viewportName) => fn(instruction, childInstruction));
+    forEach(instruction.viewports,
+        (childInstruction) => this.traverseInstructionSync(childInstruction, fn));
+  }
+
+
+  traverseInstruction(instruction, fn) {
+    if (!instruction) {
+      return Promise.resolve();
+    }
+    return Promise.all(mapObj(instruction.viewports,
+      (childInstruction, viewportName) => boolToPromise(fn(childInstruction, viewportName))))
+      .then(() => Promise.all(mapObj(instruction.viewports, (childInstruction, viewportName) => {
+        return childInstruction.router.traverseInstruction(childInstruction, fn);
+      })));
+  }
+
+
+  /*
+   * given a instruction obj
+   * update viewports accordingly
+   */
+  activatePorts(instruction) {
+    return Promise.all(mapObj(this.ports, (port, name) => {
+      return port.activate(instruction.viewports[name]);
+    }))
+    .then(() => Promise.all(mapObj(instruction.viewports, (instruction, viewportName) => {
+      return instruction.router.activatePorts(instruction);
+    })));
+  }
+
+
+  /*
+   * given a instruction obj
+   * update viewports accordingly
+   */
+  canDeactivatePorts(instruction) {
+    return Promise.all(mapObj(this.ports, (port, name) => {
+      return boolToPromise(port.canDeactivate(instruction.viewports[name]));
+    }))
+    .then(() => Promise.all(mapObj(this.children, (child) => {
+      return child.canDeactivatePorts(instruction);
+    })));
+  }
+
 
   recognize(url) {
-    url = this.getCanonicalUrl(url);
-    return this.recognizer.recognize(url);
+    return this.registry.recognize(url);
   }
 
-  getCanonicalUrl(url) {
-
-    if (url[0] === '.') {
-      url = url.substr(1);
-    }
-
-    // TODO: normalize this
-    forEach(this.rewrites, function (toUrl, fromUrl) {
-      if (fromUrl === '/') {
-        if (url === '/') {
-          url = toUrl;
-        }
-      } else if (url.indexOf(fromUrl) === 0) {
-        url = url.replace(fromUrl, toUrl);
-      }
-    });
-
-    return url;
-  }
 
 
   /**
@@ -226,109 +181,26 @@ export class Router {
   }
 
 
-  navigateChildren(context) {
-    if (context[0].params.childRoute || this.children.length > 0) {
-      var subNav = '/' + (context[0].params.childRoute || '');
-      return Promise.all(this.children.map(child => child.navigate(subNav)))
-            .then(childUrls => childUrls[0]);
-    }
-    return Promise.resolve();
-  }
-
-
   /**
    * @description generate a URL from a component name and optional map of parameters.
    * The URL is relative to the app's base href.
    */
   generate(name:string, params) {
-    var router = this,
-        prefix = '';
-
-    while (router && !router.recognizer.hasRoute(name)) {
-      router = router.parent;
-    }
-
-    if (!router) {
-      return '';
-    }
-
-    var path = router.recognizer.generate(name, params);
-
-    while (router = router.parent) {
-      prefix += router.previousSegment;
-    }
-    return prefix + path;
+    return this.registry.generate(name, params);
   }
 
-  /*
-   * given a context obj
-   * update viewports accordingly
-   */
-  activatePorts(context) {
-    var activations = mapObj(this.ports, port => {
-      return Promise.resolve(port.canReactivate && port.canReactivate(context)).then(status => {
-        if (status) {
-          return Promise.resolve(!port.reactivate || port.reactivate(context));
-        }
-        return Promise.resolve(port.deactivate && port.deactivate(context)).then(port.activate(context));
-      });
-    });
+}
 
-    return Promise.all(activations).then(() => this.navigateChildren(context));
+export class RootRouter extends Router {
+  constructor(grammar:Grammar, pipeline:Pipeline) {
+    super(grammar, pipeline, null, '/');
   }
+}
 
-
-  /*
-   * given a context obj
-   * returns a Promise<bool> that represents
-   * whether this router and all the descendants can navigate
-   */
-  canNavigate(context) {
-    return Promise.all(this.gatherNagigationPredicates(context))
-                  .then(booleanReduction);
-  }
-
-
-  /*
-   * given a context obj
-   * returns an Array<Promise<bool>> that represents
-   * whether this router and all the descendants can navigate
-   */
-  gatherNagigationPredicates(context) {
-    return this.children.reduce(
-        (promises, child) => promises.concat(child.gatherNagigationPredicates(context)),
-        [this.navigationPredicate(context)]
-    );
-  }
-
-
-  /*
-   * whether or not this level of router can navigate
-   */
-  navigationPredicate(context) {
-    return this.queryViewports((port) => {
-      return Promise.resolve(port.canReactivate && port.canReactivate(context)).then(status => {
-        if (status) {
-          return true;
-        }
-        return Promise.resolve(!port.canDeactivate || port.canDeactivate(context)).then(status => {
-          if (status) {
-            port.instantiate(context);
-            return Promise.resolve(port.load(context))
-                .then(() => Promise.resolve(!port.canActivate || port.canActivate(context)));
-          }
-          return false;
-        });
-      });
-    });
-  }
-
-  queryViewports(fn) {
-    var allViewportQueries = mapObj(this.ports, fn);
-
-    return Promise.all(allViewportQueries).
-        then(booleanReduction).
-        then(boolToPromise);
+class ChildRouter extends Router {
+  constructor(parent, name) {
+    super(parent.registry, parent.pipeline, parent, name);
+    this.parent = parent;
   }
 }
 
@@ -336,8 +208,8 @@ function copy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-function notMatched(context) {
-  return context == null || context.length < 1;
+function notMatched(instruction) {
+  return instruction == null || instruction.length < 1;
 }
 
 function forEach(obj, fn) {
@@ -348,10 +220,6 @@ function mapObj(obj, fn) {
   var result = [];
   Object.keys(obj).forEach(key => result.push(fn(obj[key], key)));
   return result;
-}
-
-function booleanReduction (arr) {
-  return arr.reduce((acc, val) => acc && val, true);
 }
 
 function boolToPromise (value) {

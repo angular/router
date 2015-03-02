@@ -30,7 +30,7 @@ gulp.task('transpile', function() {
 gulp.task('angularify', ['transpile'], function() {
   var directive = gulp.src('./src/*.es5.js');
 
-  var generated = gulp.src('./src/**.ats')
+  var generated = gulp.src(['./src/router.ats', './src/grammar.ats'])
       .pipe(modulate({
         moduleName: 'ngNewRouter.generated'
       }))
