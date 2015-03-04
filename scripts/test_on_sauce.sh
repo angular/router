@@ -1,5 +1,10 @@
 #! /bin/bash
 SCRIPT_DIR=$(dirname $0)
+
+# install deps for this example
+cd $SCRIPT_DIR/../examples/angular-1/confirm-unsaved
+npm install
+
 cd $SCRIPT_DIR/..
 
 function killServer {
