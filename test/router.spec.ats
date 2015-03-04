@@ -48,10 +48,10 @@ describe('Router', () => {
 
     it('should throw it a config uses both "component" and "components"', () => {
       expect(() => {
-        $router.config([
+        router.config([
           { path: '/', component: 'one', components: 'two' }
         ]);
-      }).toThrow();
+      }).toThrowError('A route config should have either a "component" or "components" property, but not both.');
     });
   });
 
