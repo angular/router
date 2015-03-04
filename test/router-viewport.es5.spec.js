@@ -81,15 +81,19 @@ describe('ngViewport', function () {
 
   it('should work with multiple named viewports', inject(function ($router) {
     $router.config([
-      { path: '/', component: {one: 'one', two: 'two'} }
+      { path: '/',         component:  {one: 'one', two: 'two'} },
+      { path: '/switched', components: {one: 'two', two: 'one'} }
     ]);
     compile('port 1: <div ng-viewport="one"></div> | ' +
             'port 2: <div ng-viewport="two"></div>');
 
     $router.navigate('/');
     $rootScope.$digest();
-
     expect(elt.text()).toBe('port 1: one | port 2: two');
+
+    $router.navigate('/switched');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('port 1: two | port 2: one');
   }));
 
 

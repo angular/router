@@ -77,17 +77,23 @@ export class Router {
       return;
     }
 
-    var component = mapping.component;
-
-    if (typeof component === 'string') {
-      mapping.handler = { component: component };
-    } else if (typeof component === 'function') {
-      mapping.handler = component();
-    } else if (!mapping.handler) {
-      mapping.handler = { component: component };
+    // normalize "component" and "components" in config
+    if (mapping.component) {
+      if (mapping.components) {
+        throw new Error('A route config should have either a "component" or "components" property, but not both.');
+      }
+      if (typeof mapping.component === 'string') {
+        mapping.components = { default: mapping.component };
+      } else {
+        mapping.components = mapping.component;
+      }
+      delete mapping.component;
     }
-
-    this.recognizer.add([mapping], { as: component });
+    if (mapping.components.default) {
+      this.recognizer.add([{ path: mapping.path, handler: mapping }], { as: mapping.components.default });
+    } else {
+      this.recognizer.add([{ path: mapping.path, handler: mapping }]);
+    }
 
     var withChild = copy(mapping);
     withChild.path += CHILD_ROUTE_SUFFIX;
@@ -152,11 +158,6 @@ export class Router {
     this.context = context[0];
     this.fullContext = context;
     this.navigating = true;
-
-    // TODO: not sure what types of things to pass to the handler
-    //       the handler should represent a deserialization from params to resources,
-    //       but I think this is better owned by the pipeline
-    context.component = this.context.handler.component;
 
     // TODO: this will become the pipeline
     return this.canNavigate(context)

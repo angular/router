@@ -29,6 +29,14 @@ describe('Router', () => {
       await router.registerViewport(view);
       expect(() => router.registerViewport(view)).toThrow();
     }));
+
+    it('should throw it a config uses both "component" and "components"', () => {
+      expect(() => {
+        $router.config([
+          { path: '/', component: 'one', components: 'two' }
+        ]);
+      }).toThrow();
+    });
   });
 
   describe('with a simple config', () => {

@@ -86,10 +86,8 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
       }
     }
 
-    function getComponentFromInstruction(instruction) {
-      var component = instruction[0].handler.component;
-      var componentName = typeof component === 'string' ? component : component[viewportName];
-      return $componentLoader(componentName);
+    function getComponentName(instruction) {
+      return instruction[0].handler.components[viewportName];
     }
     router.registerViewport({
       canDeactivate: function (instruction) {
@@ -100,9 +98,8 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
         return JSON.stringify(instruction) === previousInstruction;
       },
       instantiate: function (instruction) {
-        var controllerName = getComponentFromInstruction(instruction).controllerName;
-        var component = instruction[0].handler.component;
-        var componentName = typeof component === 'string' ? component : component[viewportName];
+        var componentName = getComponentName(instruction);
+        var controllerName = $componentLoader(componentName).controllerName;
 
         // build up locals for controller
         newScope = scope.$new();
@@ -127,14 +124,13 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
         return !ctrl || !ctrl.canActivate || ctrl.canActivate(instruction);
       },
       load: function (instruction) {
-        var componentTemplateUrl = getComponentFromInstruction(instruction).template;
+        var componentTemplateUrl = $componentLoader(getComponentName(instruction)).template;
         return $templateRequest(componentTemplateUrl).then(function(templateHtml) {
           myCtrl.$$template = templateHtml;
         });
       },
       activate: function (instruction) {
-        var component = instruction[0].handler.component;
-        var componentName = typeof component === 'string' ? component : component[viewportName];
+        var componentName = getComponentName(instruction);
 
         var clone = $transclude(newScope, function(clone) {
           $animate.enter(clone, null, currentElement || $element);
