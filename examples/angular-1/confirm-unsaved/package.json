@@ -1,0 +1,10 @@
+{
+  "name": "confirm-unsaved",
+  "version": "0.0.0",
+  "description": "angular new router example app",
+  "author": "Angular Core Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "angular-modal": "^0.5.0"
+  }
+}
