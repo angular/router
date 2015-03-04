@@ -4,14 +4,12 @@ describe('Router', () => {
   var router,
       view;
 
-  it('should initialize', () => {
+  beforeEach(() => {
     router = new Router();
-    expect(router).toBeDefined();
   });
 
   describe('config', () => {
     it('should renavigate after being configured', sync(async () => {
-      router = new Router();
       view = makeMockComponent('root');
       await router.registerViewport(view);
       await router.navigate('/a');
@@ -24,7 +22,6 @@ describe('Router', () => {
     }));
 
     it('should throw if two viewports are registered with the same name', sync(async () => {
-      router = new Router();
       view = makeMockComponent('root');
       await router.registerViewport(view);
       expect(() => router.registerViewport(view)).toThrow();
@@ -57,7 +54,6 @@ describe('Router', () => {
 
   describe('with a simple config', () => {
     beforeEach(sync(async () => {
-      router = new Router();
       view = makeMockComponent('root');
       await router.registerViewport(view);
       await router.config([
@@ -105,7 +101,7 @@ describe('Router', () => {
     it('should navigate viewports registered after a navigation happens', sync(async () => {
       router = new Router();
       view = makeMockComponent('root');
-      router.config([
+      await router.config([
         { path: '/a', component: 'A' }
       ]);
       await router.navigate('/a');
