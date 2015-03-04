@@ -82,18 +82,24 @@ export class Router {
       if (mapping.components) {
         throw new Error('A route config should have either a "component" or "components" property, but not both.');
       }
-      if (typeof mapping.component === 'string') {
-        mapping.components = { default: mapping.component };
-      } else {
-        mapping.components = mapping.component;
-      }
+      mapping.components = mapping.component;
       delete mapping.component;
     }
-    if (mapping.components.default) {
-      this.recognizer.add([{ path: mapping.path, handler: mapping }], { as: mapping.components.default });
-    } else {
-      this.recognizer.add([{ path: mapping.path, handler: mapping }]);
+    if (typeof mapping.components === 'string') {
+      mapping.components = { default: mapping.components };
     }
+    var aliases;
+    if (mapping.as) {
+      aliases = [mapping.as];
+    } else {
+      aliases = mapObj(mapping.components,
+          (componentName, viewportName) => viewportName + ':' + componentName);
+
+      if (mapping.components.default) {
+        aliases.push(mapping.components.default);
+      }
+    }
+    aliases.forEach(alias => this.recognizer.add([{ path: mapping.path, handler: mapping }], { as: alias }))
 
     var withChild = copy(mapping);
     withChild.path += CHILD_ROUTE_SUFFIX;

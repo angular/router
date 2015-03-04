@@ -30,6 +30,22 @@ describe('Router', () => {
       expect(() => router.registerViewport(view)).toThrow();
     }));
 
+    it('should allow aliasing', sync(async () => {
+      view = makeMockComponent('root');
+      await router.config([
+        { path: '/a', component: 'A', as: 'B' }
+      ]);
+      expect(router.generate('B')).toBe('/a');
+    }));
+
+    it('should alias configs with no default based on viewport name', sync(async () => {
+      await router.config([
+        { path: '/a', components: { master: 'A', detail: 'B' } }
+      ]);
+      expect(router.generate('master:A')).toBe('/a');
+      expect(router.generate('detail:B')).toBe('/a');
+    }));
+
     it('should throw it a config uses both "component" and "components"', () => {
       expect(() => {
         $router.config([
