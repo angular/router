@@ -112,10 +112,6 @@ export class Router {
    */
   navigate(url) {
 
-    if (url[0] === '.') {
-      url = url.substr(1);
-    }
-
     var self = this;
 
     // TODO: test this behavior
@@ -131,7 +127,7 @@ export class Router {
     // TODO: not sure whether to do before or after redirects
     this.lastNavigationAttempt = url;
 
-    var context = this.recognizer.recognize(url);
+    var context = this.recognize(url);
     var segment = url;
 
     if (notMatched(context)) {
@@ -183,7 +179,17 @@ export class Router {
     }
   }
 
+  recognize(url) {
+    url = this.getCanonicalUrl(url);
+    return this.recognizer.recognize(url);
+  }
+
   getCanonicalUrl(url) {
+
+    if (url[0] === '.') {
+      url = url.substr(1);
+    }
+
     // TODO: normalize this
     forEach(this.rewrites, function (toUrl, fromUrl) {
       if (fromUrl === '/') {

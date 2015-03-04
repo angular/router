@@ -8,7 +8,8 @@ angular.module('ngNewRouter', ['ngNewRouter.generated']).
   provider('$componentLoader', $componentLoaderProvider).
   directive('ngViewport', ngViewportDirective).
   directive('ngViewport', ngViewportFillContentDirective).
-  directive('ngLink', ngLinkDirective);
+  directive('ngLink', ngLinkDirective).
+  directive('a', anchorLinkDirective);
 
 
 
@@ -200,15 +201,6 @@ var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
 function ngLinkDirective($router, $location, $parse) {
   var rootRouter = $router;
 
-  angular.element(document.body).on('click', function (ev) {
-    var target = ev.target;
-    if (target.attributes['ng-link']) {
-      ev.preventDefault();
-      var url = target.attributes.href.value;
-      rootRouter.navigate(url);
-    }
-  });
-
   return {
     require: '?^^ngViewport',
     restrict: 'A',
@@ -249,6 +241,31 @@ function ngLinkDirective($router, $location, $parse) {
   }
 }
 
+
+function anchorLinkDirective($router) {
+  return {
+    restrict: 'E',
+    link: function(scope, element) {
+      // If the linked element is not an anchor tag anymore, do nothing
+      if (element[0].nodeName.toLowerCase() !== 'a') return;
+
+      // SVGAElement does not use the href attribute, but rather the 'xlinkHref' attribute.
+      var hrefAttrName = toString.call(element.prop('href')) === '[object SVGAnimatedString]' ?
+                     'xlink:href' : 'href';
+
+      element.on('click', function(event) {
+        var href = element.attr(hrefAttrName);
+        if (!href) {
+          event.preventDefault();
+        }
+        if ($router.recognize(href)) {
+          $router.navigate(href);
+          event.preventDefault();
+        }
+      });
+    }
+  }
+}
 
 /**
  * @name $componentLoaderProvider

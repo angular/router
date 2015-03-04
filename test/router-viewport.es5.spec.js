@@ -288,6 +288,23 @@ describe('ngViewport', function () {
     expect($location.path()).toBe('/user');
   }));
 
+
+  it('should navigate when a link url matches a route', inject(function ($router) {
+
+    $router.config([
+      { path: '/', component: 'one' },
+      { path: '/two', component: 'two' },
+    ]);
+
+    compile('<div><a href="./two">link</a> | <div ng-viewport></div></div>');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('link | one');
+    elt.find('a')[0].click();
+
+    $rootScope.$digest();
+    expect(elt.text()).toBe('link | two');
+  }));
+
   // TODO: location path base href
   /*
   it('should change the location according to...', fuction () {
