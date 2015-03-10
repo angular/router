@@ -6,7 +6,7 @@ angular.module('myApp', [
   'myApp.three',
   'myApp.end'
 ]).
-    controller('AppController', ['router', AppController]).
+    controller('AppController', ['$router', AppController]).
     factory('answers', answersFactory);
 
 function AppController($router) {
