@@ -54,15 +54,22 @@ module.exports = function renderMarkdownProcessor() {
         if (doc.docType !== 'markdownFile') {
           return doc;
         }
-        return Q.nfcall(markdownize, doc.fileInfo.content).then(function (rendered) {
-          return {
-            fileInfo: doc.fileInfo,
-            name: getTitle(doc.fileInfo.content),
-            summary: getDescription(doc.fileInfo.content),
-            renderedContent: rendered,
-            docType: 'markdown'
-          };
-        });
+        return Q.nfcall(markdownize, doc.fileInfo.content).then(
+          function (rendered) {
+            return {
+              fileInfo: doc.fileInfo,
+              name: getTitle(doc.fileInfo.content),
+              summary: getDescription(doc.fileInfo.content),
+              renderedContent: rendered,
+              docType: 'markdown'
+            };
+          },
+          function(){
+            // Add empty error handler to make
+            // sure that EPIPE errors on Travis
+            // are not causing the script to exit
+          }
+        );
       }));
     }
   };
