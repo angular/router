@@ -1,130 +1,125 @@
-define(["assert", 'route-recognizer'], function($__0,$__2) {
+define(["assert", './grammar', './pipeline'], function($__0,$__2,$__4) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   if (!$__2 || !$__2.__esModule)
     $__2 = {default: $__2};
+  if (!$__4 || !$__4.__esModule)
+    $__4 = {default: $__4};
   var assert = $__0.assert;
-  var RouteRecognizer = $__2.default;
-  var CHILD_ROUTE_SUFFIX = '/*childRoute';
-  var Router = function Router(parent, configPrefix) {
+  var Grammar = $__2.Grammar;
+  var Pipeline = $__4.Pipeline;
+  var Router = function Router(grammar, pipeline, parent, name) {
+    assert.argumentTypes(grammar, Grammar, pipeline, Pipeline, parent, $traceurRuntime.type.any, name, $traceurRuntime.type.any);
+    this.name = name;
     this.parent = parent || null;
+    this.root = parent ? parent.root : this;
     this.navigating = false;
     this.ports = {};
     this.rewrites = {};
-    this.children = [];
-    this.context = null;
-    this.recognizer = new RouteRecognizer();
+    this.children = {};
+    this.registry = grammar;
+    this.pipeline = pipeline;
+    this.instruction = null;
   };
-  var $Router = Router;
   ($traceurRuntime.createClass)(Router, {
     childRouter: function() {
-      var child = new $Router(this);
-      this.children.push(child);
-      return child;
+      var name = arguments[0] !== (void 0) ? arguments[0] : 'default';
+      if (!this.children[name]) {
+        this.children[name] = new ChildRouter(this, name);
+      }
+      return this.children[name];
     },
     registerViewport: function(view) {
       var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
-      if (this.ports[name]) {
-        throw new Error(name + ' viewport is already registered');
-      }
+      if (this.ports[name]) {}
       this.ports[name] = view;
       return this.renavigate();
     },
     config: function(mapping) {
-      var $__4 = this;
-      if (mapping instanceof Array) {
-        mapping.forEach((function(nav) {
-          return $__4.configOne(nav);
-        }));
-      } else {
-        this.configOne(mapping);
-      }
+      this.registry.config(this.name, mapping);
       return this.renavigate();
     },
-    configOne: function(mapping) {
-      if (mapping.redirectTo) {
-        this.rewrites[mapping.path] = mapping.redirectTo;
-        return;
-      }
-      var component = mapping.component;
-      if (typeof component === 'string') {
-        mapping.handler = {component: component};
-      } else if (typeof component === 'function') {
-        mapping.handler = component();
-      } else if (!mapping.handler) {
-        mapping.handler = {component: component};
-      }
-      this.recognizer.add([mapping], {as: component});
-      var withChild = copy(mapping);
-      withChild.path += CHILD_ROUTE_SUFFIX;
-      this.recognizer.add([{
-        path: withChild.path,
-        handler: withChild
-      }]);
-    },
     navigate: function(url) {
-      var $__4 = this;
-      if (url[0] === '.') {
-        url = url.substr(1);
-      }
-      var self = this;
+      var $__6 = this;
       if (this.navigating) {
         return Promise.resolve();
       }
-      url = this.getCanonicalUrl(url);
       this.lastNavigationAttempt = url;
-      var context = this.recognizer.recognize(url);
-      var segment = url;
-      if (notMatched(context)) {
-        return Promise.resolve();
+      var instruction = this.recognize(url);
+      if (notMatched(instruction)) {
+        return Promise.reject();
       }
-      var lastParams = context[context.length - 1].params;
-      if (lastParams && lastParams.childRoute) {
-        var path = context[0].handler.path;
-        segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
-        if (this.previousSegment === segment) {
-          startNavigating();
-          return this.navigateChildren(context).then(finishNavigating, cancelNavigating);
-        }
-      }
-      if (this.context === context[0]) {
-        return Promise.resolve();
-      }
-      this.context = context[0];
-      this.fullContext = context;
-      this.navigating = true;
-      context.component = this.context.handler.component;
-      return this.canNavigate(context).then((function(status) {
-        return (status && $__4.activatePorts(context));
-      })).then(finishNavigating, cancelNavigating);
-      function startNavigating() {
-        self.context = context[0];
-        self.fullContext = context;
-        self.navigating = true;
-      }
-      function finishNavigating(childUrl) {
-        self.navigating = false;
-        self.previousSegment = segment;
-        self.previousContext = context;
-        return self.previousUrl = segment + (childUrl || '');
-      }
-      function cancelNavigating() {
-        self.previousUrl = url;
-        self.navigating = false;
-      }
+      this.makeDescendantRouters(instruction);
+      return this.canDeactivatePorts(instruction).then((function() {
+        return $__6.traverseInstruction(instruction, (function(instruction, viewportName) {
+          return instruction.controller = $__6.pipeline.init(instruction);
+        }));
+      })).then((function() {
+        return $__6.traverseInstruction(instruction, (function(instruction, viewportName) {
+          var controller = instruction.controller;
+          return !controller.canActivate || controller.canActivate();
+        }));
+      })).then((function() {
+        return $__6.traverseInstruction(instruction, (function(instruction, viewportName) {
+          return $__6.pipeline.load(instruction).then((function(templateHtml) {
+            return instruction.template = templateHtml;
+          }));
+        }));
+      })).then((function() {
+        return $__6.activatePorts(instruction);
+      })).then((function() {
+        return instruction.canonicalUrl;
+      }));
     },
-    getCanonicalUrl: function(url) {
-      forEach(this.rewrites, function(toUrl, fromUrl) {
-        if (fromUrl === '/') {
-          if (url === '/') {
-            url = toUrl;
-          }
-        } else if (url.indexOf(fromUrl) === 0) {
-          url = url.replace(fromUrl, toUrl);
-        }
-      });
-      return url;
+    makeDescendantRouters: function(instruction) {
+      instruction.router = this;
+      this.traverseInstructionSync(instruction, (function(instruction, childInstruction) {
+        childInstruction.router = instruction.router.childRouter(childInstruction.component);
+      }));
+    },
+    traverseInstructionSync: function(instruction, fn) {
+      var $__6 = this;
+      forEach(instruction.viewports, (function(childInstruction, viewportName) {
+        return fn(instruction, childInstruction);
+      }));
+      forEach(instruction.viewports, (function(childInstruction) {
+        return $__6.traverseInstructionSync(childInstruction, fn);
+      }));
+    },
+    traverseInstruction: function(instruction, fn) {
+      if (!instruction) {
+        return Promise.resolve();
+      }
+      return Promise.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+        return boolToPromise(fn(childInstruction, viewportName));
+      }))).then((function() {
+        return Promise.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+          return childInstruction.router.traverseInstruction(childInstruction, fn);
+        })));
+      }));
+    },
+    activatePorts: function(instruction) {
+      return Promise.all(mapObj(this.ports, (function(port, name) {
+        return port.activate(instruction.viewports[name]);
+      }))).then((function() {
+        return Promise.all(mapObj(instruction.viewports, (function(instruction, viewportName) {
+          return instruction.router.activatePorts(instruction);
+        })));
+      }));
+    },
+    canDeactivatePorts: function(instruction) {
+      var $__6 = this;
+      return Promise.all(mapObj(this.ports, (function(port, name) {
+        return boolToPromise(port.canDeactivate(instruction.viewports[name]));
+      }))).then((function() {
+        return Promise.all(mapObj($__6.children, (function(child) {
+          return child.canDeactivatePorts(instruction);
+        })));
+      }));
+    },
+    recognize: function(url) {
+      return this.registry.recognize(url);
     },
     renavigate: function() {
       var renavigateDestination = this.previousUrl || this.lastNavigationAttempt;
@@ -134,84 +129,31 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
         return Promise.resolve();
       }
     },
-    navigateChildren: function(context) {
-      if (context[0].params.childRoute || this.children.length > 0) {
-        var subNav = '/' + (context[0].params.childRoute || '');
-        return Promise.all(this.children.map((function(child) {
-          return child.navigate(subNav);
-        }))).then((function(childUrls) {
-          return childUrls[0];
-        }));
-      }
-      return Promise.resolve();
-    },
     generate: function(name, params) {
       assert.argumentTypes(name, $traceurRuntime.type.string, params, $traceurRuntime.type.any);
-      var router = this,
-          prefix = '';
-      while (router && !router.recognizer.hasRoute(name)) {
-        router = router.parent;
-      }
-      if (!router) {
-        return '';
-      }
-      var path = router.recognizer.generate(name, params);
-      while (router = router.parent) {
-        prefix += router.previousSegment;
-      }
-      return prefix + path;
-    },
-    activatePorts: function(context) {
-      var $__4 = this;
-      var activations = mapObj(this.ports, (function(port) {
-        return Promise.resolve(port.canReactivate && port.canReactivate(context)).then((function(status) {
-          if (status) {
-            return Promise.resolve(!port.reactivate || port.reactivate(context));
-          }
-          return Promise.resolve(port.deactivate && port.deactivate(context)).then(port.activate(context));
-        }));
-      }));
-      return Promise.all(activations).then((function() {
-        return $__4.navigateChildren(context);
-      }));
-    },
-    canNavigate: function(context) {
-      return Promise.all(this.gatherNagigationPredicates(context)).then(booleanReduction);
-    },
-    gatherNagigationPredicates: function(context) {
-      return this.children.reduce((function(promises, child) {
-        return promises.concat(child.gatherNagigationPredicates(context));
-      }), [this.navigationPredicate(context)]);
-    },
-    navigationPredicate: function(context) {
-      return this.queryViewports((function(port) {
-        return Promise.resolve(port.canReactivate && port.canReactivate(context)).then((function(status) {
-          if (status) {
-            return true;
-          }
-          return Promise.resolve(!port.canDeactivate || port.canDeactivate(context)).then((function(status) {
-            if (status) {
-              port.instantiate(context);
-              return Promise.resolve(port.load(context)).then((function() {
-                return Promise.resolve(!port.canActivate || port.canActivate(context));
-              }));
-            }
-            return false;
-          }));
-        }));
-      }));
-    },
-    queryViewports: function(fn) {
-      var allViewportQueries = mapObj(this.ports, fn);
-      return Promise.all(allViewportQueries).then(booleanReduction).then(boolToPromise);
+      return this.registry.generate(name, params);
     }
   }, {});
+  Router.parameters = [[Grammar], [Pipeline], [], []];
   Router.prototype.generate.parameters = [[$traceurRuntime.type.string], []];
+  var RootRouter = function RootRouter(grammar, pipeline) {
+    assert.argumentTypes(grammar, Grammar, pipeline, Pipeline);
+    $traceurRuntime.superCall(this, $RootRouter.prototype, "constructor", [grammar, pipeline, null, '/']);
+  };
+  var $RootRouter = RootRouter;
+  ($traceurRuntime.createClass)(RootRouter, {}, {}, Router);
+  RootRouter.parameters = [[Grammar], [Pipeline]];
+  var ChildRouter = function ChildRouter(parent, name) {
+    $traceurRuntime.superCall(this, $ChildRouter.prototype, "constructor", [parent.registry, parent.pipeline, parent, name]);
+    this.parent = parent;
+  };
+  var $ChildRouter = ChildRouter;
+  ($traceurRuntime.createClass)(ChildRouter, {}, {}, Router);
   function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
   }
-  function notMatched(context) {
-    return context == null || context.length < 1;
+  function notMatched(instruction) {
+    return instruction == null || instruction.length < 1;
   }
   function forEach(obj, fn) {
     Object.keys(obj).forEach((function(key) {
@@ -225,17 +167,12 @@ define(["assert", 'route-recognizer'], function($__0,$__2) {
     }));
     return result;
   }
-  function booleanReduction(arr) {
-    return arr.reduce((function(acc, val) {
-      return acc && val;
-    }), true);
-  }
   function boolToPromise(value) {
     return value ? Promise.resolve(value) : Promise.reject();
   }
   return {
-    get Router() {
-      return Router;
+    get RootRouter() {
+      return RootRouter;
     },
     __esModule: true
   };

@@ -3,14 +3,94 @@
 /*
  * A module for adding new a routing system Angular 1.
  */
-angular.module('ngNewRouter', ['ngNewRouter.generated']).
-  value('$routeParams', {}).
-  provider('$componentLoader', $componentLoaderProvider).
-  directive('ngViewport', ngViewportDirective).
-  directive('ngViewport', ngViewportFillContentDirective).
-  directive('ngLink', ngLinkDirective);
+angular.module('ngNewRouter', [])
+  .factory('$router', routerFactory)
+  .value('$routeParams', {})
+  .provider('$componentLoader', $componentLoaderProvider)
+  .factory('$$pipeline', pipelineFactory)
+  .directive('ngViewport', ngViewportDirective)
+  .directive('ngViewport', ngViewportFillContentDirective)
+  .directive('ngLink', ngLinkDirective)
+  .directive('a', anchorLinkDirective);
 
 
+/*
+ * A module for inspecting controller constructors
+ */
+angular.module('ng')
+  .provider('$controllerIntrospector', $controllerIntrospectorProvider)
+  .config(controllerProviderDecorator);
+
+/*
+ * decorates with routing info
+ */
+function controllerProviderDecorator($controllerProvider, $controllerIntrospectorProvider) {
+  var register = $controllerProvider.register;
+  $controllerProvider.register = function (name, ctrl) {
+    $controllerIntrospectorProvider.register(name, ctrl);
+    return register.apply(this, arguments);
+  };
+}
+controllerProviderDecorator.$inject = ["$controllerProvider", "$controllerIntrospectorProvider"];
+
+/*
+ * private service that holds route mappings for each controller
+ */
+function $controllerIntrospectorProvider() {
+  var controllers = [];
+  var onControllerRegistered = null;
+  return {
+    register: function (name, constructor) {
+      if (angular.isArray(constructor)) {
+        constructor = constructor[constructor.length - 1];
+      }
+      if (constructor.$routeConfig) {
+        if (onControllerRegistered) {
+          onControllerRegistered(name, constructor.$routeConfig);
+        } else {
+          controllers.push({name: name, config: constructor.$routeConfig});
+        }
+      }
+    },
+    $get: ['$componentLoader', function ($componentLoader) {
+      return function (newOnControllerRegistered) {
+        onControllerRegistered = function (name, constructor) {
+          name = $componentLoader.component(name);
+          return newOnControllerRegistered(name, constructor);
+        };
+        while(controllers.length > 0) {
+          var rule = controllers.pop();
+          onControllerRegistered(rule.name, rule.config);
+        }
+      }
+    }]
+  }
+}
+
+function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controllerIntrospector) {
+
+  $controllerIntrospector(function (name, config) {
+    $$grammar.config(name, config);
+  });
+
+  $rootScope.$watch(function () {
+    return $location.path();
+  }, function (newUrl) {
+    $$rootRouter.navigate(newUrl);
+  });
+
+  var nav = $$rootRouter.navigate;
+  $$rootRouter.navigate = function (url) {
+    return nav.call(this, url).then(function (newUrl) {
+      if (newUrl) {
+        $location.path(newUrl);
+      }
+    });
+  }
+
+  return $$rootRouter;
+}
+routerFactory.$inject = ["$$rootRouter", "$rootScope", "$location", "$$grammar", "$controllerIntrospector"];
 
 /**
  * @name ngViewport
@@ -29,21 +109,6 @@ angular.module('ngNewRouter', ['ngNewRouter.generated']).
 function ngViewportDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, $componentLoader, $router) {
   var rootRouter = $router;
 
-  $rootScope.$watch(function () {
-    return $location.path();
-  }, function (newUrl) {
-    rootRouter.navigate(newUrl);
-  });
-
-  var nav = rootRouter.navigate;
-  rootRouter.navigate = function (url) {
-    return nav.call(this, url).then(function (newUrl) {
-      if (newUrl) {
-        $location.path(newUrl);
-      }
-    });
-  }
-
   return {
     restrict: 'AE',
     transclude: 'element',
@@ -57,12 +122,13 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
 
   function viewportLink(scope, $element, attrs, ctrls, $transclude) {
     var viewportName = attrs.ngViewport || 'default',
-        ctrl = ctrls[0],
+        parentCtrl = ctrls[0],
         myCtrl = ctrls[1],
-        router = (ctrl && ctrl.$$router) || rootRouter;
+        router = (parentCtrl && parentCtrl.$$router) || rootRouter;
 
     var currentScope,
         newScope,
+        currentController,
         currentElement,
         previousLeaveAnimation,
         previousInstruction;
@@ -86,71 +152,54 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
       }
     }
 
-    function getComponentFromInstruction(instruction) {
-      var component = instruction[0].handler.component;
-      var componentName = typeof component === 'string' ? component : component[viewportName];
-      return $componentLoader(componentName);
-    }
     router.registerViewport({
       canDeactivate: function (instruction) {
-        return !ctrl || !ctrl.canDeactivate || ctrl.canDeactivate();
-      },
-      canReactivate: function (instruction) {
-        //TODO: expose controller hook
-        return JSON.stringify(instruction) === previousInstruction;
-      },
-      instantiate: function (instruction) {
-        var controllerName = getComponentFromInstruction(instruction).controllerName;
-        var component = instruction[0].handler.component;
-        var componentName = typeof component === 'string' ? component : component[viewportName];
-
-        // build up locals for controller
-        newScope = scope.$new();
-
-        var locals = {
-          $scope: newScope,
-          $router: scope.$$ngViewport.$$router = router.childRouter()
-        };
-
-        if (router.context) {
-          locals.$routeParams = router.context.params;
+        if (currentController && currentController.canDeactivate) {
+          return currentController.canDeactivate();
         }
-        try {
-          ctrl = $controller(controllerName, locals);
-        } catch (e) {
-          console.warn && console.warn('Could not instantiate controller', controllerName);
-          ctrl = $controller(angular.noop, locals);
-        }
-        newScope[componentName] = ctrl;
-      },
-      canActivate: function (instruction) {
-        return !ctrl || !ctrl.canActivate || ctrl.canActivate(instruction);
-      },
-      load: function (instruction) {
-        var componentTemplateUrl = getComponentFromInstruction(instruction).template;
-        return $templateRequest(componentTemplateUrl).then(function(templateHtml) {
-          myCtrl.$$template = templateHtml;
-        });
+        return true;
       },
       activate: function (instruction) {
-        var component = instruction[0].handler.component;
-        var componentName = typeof component === 'string' ? component : component[viewportName];
+        var nextInstruction = serializeInstruction(instruction);
+        if (nextInstruction === previousInstruction) {
+          return;
+        }
 
+        newScope = scope.$new();
+        myCtrl.$$router = instruction.router;
+        myCtrl.$$template = instruction.template;
+        var componentName = instruction.component;
         var clone = $transclude(newScope, function(clone) {
           $animate.enter(clone, null, currentElement || $element);
           cleanupLastView();
         });
 
+        var ctrl = instruction.controller;
+        newScope[componentName] = ctrl;
+        currentController = ctrl;
+
         currentElement = clone;
         currentScope = newScope;
+
+        previousInstruction = nextInstruction;
 
         // finally, run the hook
         if (ctrl.activate) {
           ctrl.activate(instruction);
         }
-        previousInstruction = JSON.stringify(instruction);
       }
     }, viewportName);
+  }
+
+  // TODO: how best to serialize?
+  function serializeInstruction(instruction) {
+    return JSON.stringify({
+      path: instruction.path,
+      component: instruction.component,
+      params: Object.keys(instruction.params).reduce(function (acc, key) {
+        return (key !== 'childRoute' && (acc[key] = instruction.params[key])), acc;
+      }, {})
+    });
   }
 }
 ngViewportDirective.$inject = ["$animate", "$compile", "$controller", "$templateRequest", "$rootScope", "$location", "$componentLoader", "$router"];
@@ -206,15 +255,6 @@ var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
 function ngLinkDirective($router, $location, $parse) {
   var rootRouter = $router;
 
-  angular.element(document.body).on('click', function (ev) {
-    var target = ev.target;
-    if (target.attributes['ng-link']) {
-      ev.preventDefault();
-      var url = target.attributes.href.value;
-      rootRouter.navigate(url);
-    }
-  });
-
   return {
     require: '?^^ngViewport',
     restrict: 'A',
@@ -257,6 +297,58 @@ function ngLinkDirective($router, $location, $parse) {
 ngLinkDirective.$inject = ["$router", "$location", "$parse"];
 
 
+function anchorLinkDirective($router) {
+  return {
+    restrict: 'E',
+    link: function(scope, element) {
+      // If the linked element is not an anchor tag anymore, do nothing
+      if (element[0].nodeName.toLowerCase() !== 'a') return;
+
+      // SVGAElement does not use the href attribute, but rather the 'xlinkHref' attribute.
+      var hrefAttrName = toString.call(element.prop('href')) === '[object SVGAnimatedString]' ?
+                     'xlink:href' : 'href';
+
+      element.on('click', function(event) {
+        var href = element.attr(hrefAttrName);
+        if (!href) {
+          event.preventDefault();
+        }
+        if ($router.recognize(href)) {
+          $router.navigate(href);
+          event.preventDefault();
+        }
+      });
+    }
+  }
+}
+anchorLinkDirective.$inject = ["$router"];
+
+function pipelineFactory($controller, $componentLoader, $templateRequest) {
+  return {
+    init: function(instruction) {
+      var controllerName = $componentLoader.controllerName(instruction.component);
+
+      var locals = {
+        $router: instruction.router,
+        $routeParams: instruction.params || {}
+      };
+      var ctrl;
+      try {
+        ctrl = $controller(controllerName, locals);
+      } catch (e) {
+        console.warn && console.warn('Could not instantiate controller', controllerName);
+        ctrl = $controller(angular.noop, locals);
+      }
+      return ctrl;
+    },
+    load: function (instruction) {
+      var componentTemplateUrl = $componentLoader.template(instruction.component);
+      return $templateRequest(componentTemplateUrl);
+    }
+  };
+}
+pipelineFactory.$inject = ["$controller", "$componentLoader", "$templateRequest"];
+
 /**
  * @name $componentLoaderProvider
  * @description
@@ -274,10 +366,11 @@ ngLinkDirective.$inject = ["$router", "$location", "$parse"];
  * This service makes it easy to group all of them into a single concept.
  */
 function $componentLoaderProvider() {
+
+  var DEFAULT_SUFFIX = 'Controller';
+
   var componentToCtrl = function componentToCtrlDefault(name) {
-    return name[0].toUpperCase() +
-        name.substr(1) +
-        'Controller';
+    return name[0].toUpperCase() + name.substr(1) + DEFAULT_SUFFIX;
   };
 
   var componentToTemplate = function componentToTemplateDefault(name) {
@@ -285,17 +378,19 @@ function $componentLoaderProvider() {
     return './components/' + dashName + '/' + dashName + '.html';
   };
 
-  function componentLoader(name) {
-    return {
-      controllerName: componentToCtrl(name),
-      template: componentToTemplate(name)
-    };
-  }
+  var ctrlToComponent = function ctrlToComponentDefault(name) {
+    return name[0].toLowerCase() + name.substr(1, name.length - DEFAULT_SUFFIX.length - 1);
+  };
 
   return {
     $get: function () {
-      return componentLoader;
+      return {
+        controllerName: componentToCtrl,
+        template: componentToTemplate,
+        component: ctrlToComponent
+      };
     },
+
     /**
      * @name $componentLoaderProvider#setCtrlNameMapping
      * @description takes a function for mapping component names to component controller names
@@ -304,6 +399,16 @@ function $componentLoaderProvider() {
       componentToCtrl = newFn;
       return this;
     },
+
+    /**
+     * @name $componentLoaderProvider#setCtrlNameMapping
+     * @description takes a function for mapping component controller names to component names
+     */
+    setComponentFromCtrlMapping: function (newFn) {
+      ctrlToComponent = newFn;
+      return this;
+    },
+
     /**
      * @name $componentLoaderProvider#setTemplateMapping
      * @description takes a function for mapping component names to component template URLs
@@ -321,7 +426,9 @@ function dashCase(str) {
   });
 }
 
-angular.module('ngNewRouter.generated', []).factory('$router', ['$q', function($q) {/*
+
+angular.module('ngNewRouter').factory('$$rootRouter', ['$q', '$$grammar', '$$pipeline', function ($q, $$grammar, $$pipeline) {
+/*
  * artisinal, handcrafted subset of the traceur runtime for picky webdevs
  */
 
@@ -329,7 +436,8 @@ var $defineProperty = Object.defineProperty,
     $defineProperties = Object.defineProperties,
     $create = Object.create,
     $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor,
-    $getOwnPropertyNames = Object.getOwnPropertyNames;
+    $getOwnPropertyNames = Object.getOwnPropertyNames,
+    $getPrototypeOf = Object.getPrototypeOf;
 
 function createClass(ctor, object, staticObject, superClass) {
   $defineProperty(object, 'constructor', {
@@ -380,10 +488,286 @@ function getDescriptors(object) {
   //   descriptors[$traceurRuntime.toProperty(symbol)] = $getOwnPropertyDescriptor(object, $traceurRuntime.toProperty(symbol));
   // }
   return descriptors;
-};
+}
+function superDescriptor(homeObject, name) {
+  var proto = $getPrototypeOf(homeObject);
+  do {
+    var result = $getOwnPropertyDescriptor(proto, name);
+    if (result)
+      return result;
+    proto = $getPrototypeOf(proto);
+  } while (proto);
+  return undefined;
+}
+function superCall(self, homeObject, name, args) {
+  return superGet(self, homeObject, name).apply(self, args);
+}
+function superGet(self, homeObject, name) {
+  var descriptor = superDescriptor(homeObject, name);
+  if (descriptor) {
+    if (!descriptor.get)
+      return descriptor.value;
+    return descriptor.get.call(self);
+  }
+  return undefined;
+}
 
-  "use strict";
-  var RouteRecognizer = (function() {
+"use strict";
+var Router = function Router(grammar, pipeline, parent, name) {
+    this.name = name;
+    this.parent = parent || null;
+    this.root = parent ? parent.root : this;
+    this.navigating = false;
+    this.ports = {};
+    this.rewrites = {};
+    this.children = {};
+    this.registry = grammar;
+    this.pipeline = pipeline;
+    this.instruction = null;
+  };
+(createClass)(Router, {
+    childRouter: function() {
+      var name = arguments[0] !== (void 0) ? arguments[0] : 'default';
+      if (!this.children[name]) {
+        this.children[name] = new ChildRouter(this, name);
+      }
+      return this.children[name];
+    },
+    registerViewport: function(view) {
+      var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
+      if (this.ports[name]) {}
+      this.ports[name] = view;
+      return this.renavigate();
+    },
+    config: function(mapping) {
+      this.registry.config(this.name, mapping);
+      return this.renavigate();
+    },
+    navigate: function(url) {
+      var $__0 = this;
+      if (this.navigating) {
+        return $q.when();
+      }
+      this.lastNavigationAttempt = url;
+      var instruction = this.recognize(url);
+      if (notMatched(instruction)) {
+        return $q.reject();
+      }
+      this.makeDescendantRouters(instruction);
+      return this.canDeactivatePorts(instruction).then((function() {
+        return $__0.traverseInstruction(instruction, (function(instruction, viewportName) {
+          return instruction.controller = $__0.pipeline.init(instruction);
+        }));
+      })).then((function() {
+        return $__0.traverseInstruction(instruction, (function(instruction, viewportName) {
+          var controller = instruction.controller;
+          return !controller.canActivate || controller.canActivate();
+        }));
+      })).then((function() {
+        return $__0.traverseInstruction(instruction, (function(instruction, viewportName) {
+          return $__0.pipeline.load(instruction).then((function(templateHtml) {
+            return instruction.template = templateHtml;
+          }));
+        }));
+      })).then((function() {
+        return $__0.activatePorts(instruction);
+      })).then((function() {
+        return instruction.canonicalUrl;
+      }));
+    },
+    makeDescendantRouters: function(instruction) {
+      instruction.router = this;
+      this.traverseInstructionSync(instruction, (function(instruction, childInstruction) {
+        childInstruction.router = instruction.router.childRouter(childInstruction.component);
+      }));
+    },
+    traverseInstructionSync: function(instruction, fn) {
+      var $__0 = this;
+      forEach(instruction.viewports, (function(childInstruction, viewportName) {
+        return fn(instruction, childInstruction);
+      }));
+      forEach(instruction.viewports, (function(childInstruction) {
+        return $__0.traverseInstructionSync(childInstruction, fn);
+      }));
+    },
+    traverseInstruction: function(instruction, fn) {
+      if (!instruction) {
+        return $q.when();
+      }
+      return $q.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+        return boolToPromise(fn(childInstruction, viewportName));
+      }))).then((function() {
+        return $q.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+          return childInstruction.router.traverseInstruction(childInstruction, fn);
+        })));
+      }));
+    },
+    activatePorts: function(instruction) {
+      return $q.all(mapObj(this.ports, (function(port, name) {
+        return port.activate(instruction.viewports[name]);
+      }))).then((function() {
+        return $q.all(mapObj(instruction.viewports, (function(instruction, viewportName) {
+          return instruction.router.activatePorts(instruction);
+        })));
+      }));
+    },
+    canDeactivatePorts: function(instruction) {
+      var $__0 = this;
+      return $q.all(mapObj(this.ports, (function(port, name) {
+        return boolToPromise(port.canDeactivate(instruction.viewports[name]));
+      }))).then((function() {
+        return $q.all(mapObj($__0.children, (function(child) {
+          return child.canDeactivatePorts(instruction);
+        })));
+      }));
+    },
+    recognize: function(url) {
+      return this.registry.recognize(url);
+    },
+    renavigate: function() {
+      var renavigateDestination = this.previousUrl || this.lastNavigationAttempt;
+      if (!this.navigating && renavigateDestination) {
+        return this.navigate(renavigateDestination);
+      } else {
+        return $q.when();
+      }
+    },
+    generate: function(name, params) {
+      return this.registry.generate(name, params);
+    }
+  }, {});
+Object.defineProperty(Router, "parameters", {get: function() {
+      return [[Grammar], [Pipeline], [], []];
+    }});
+Object.defineProperty(Router.prototype.generate, "parameters", {get: function() {
+      return [[$traceurRuntime.type.string], []];
+    }});
+var RootRouter = function RootRouter(grammar, pipeline) {
+    superCall(this, $RootRouter.prototype, "constructor", [grammar, pipeline, null, '/']);
+  };
+var $RootRouter = RootRouter;
+(createClass)(RootRouter, {}, {}, Router);
+Object.defineProperty(RootRouter, "parameters", {get: function() {
+      return [[Grammar], [Pipeline]];
+    }});
+var ChildRouter = function ChildRouter(parent, name) {
+    superCall(this, $ChildRouter.prototype, "constructor", [parent.registry, parent.pipeline, parent, name]);
+    this.parent = parent;
+  };
+var $ChildRouter = ChildRouter;
+(createClass)(ChildRouter, {}, {}, Router);
+function copy(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+function notMatched(instruction) {
+    return instruction == null || instruction.length < 1;
+  }
+function forEach(obj, fn) {
+    Object.keys(obj).forEach((function(key) {
+      return fn(obj[key], key);
+    }));
+  }
+function mapObj(obj, fn) {
+    var result = [];
+    Object.keys(obj).forEach((function(key) {
+      return result.push(fn(obj[key], key));
+    }));
+    return result;
+  }
+function boolToPromise(value) {
+    return value ? $q.when(value) : $q.reject();
+  }
+return new RootRouter($$grammar, $$pipeline);
+}]);
+
+
+angular.module('ngNewRouter').factory('$$grammar', ['$q', function ($q) {
+/*
+ * artisinal, handcrafted subset of the traceur runtime for picky webdevs
+ */
+
+var $defineProperty = Object.defineProperty,
+    $defineProperties = Object.defineProperties,
+    $create = Object.create,
+    $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor,
+    $getOwnPropertyNames = Object.getOwnPropertyNames,
+    $getPrototypeOf = Object.getPrototypeOf;
+
+function createClass(ctor, object, staticObject, superClass) {
+  $defineProperty(object, 'constructor', {
+    value: ctor,
+    configurable: true,
+    enumerable: false,
+    writable: true
+  });
+  if (arguments.length > 3) {
+    if (typeof superClass === 'function')
+      ctor.__proto__ = superClass;
+    ctor.prototype = $create(getProtoParent(superClass), getDescriptors(object));
+  } else {
+    ctor.prototype = object;
+  }
+  $defineProperty(ctor, 'prototype', {
+    configurable: false,
+    writable: false
+  });
+  return $defineProperties(ctor, getDescriptors(staticObject));
+}
+
+function getProtoParent(superClass) {
+  if (typeof superClass === 'function') {
+    var prototype = superClass.prototype;
+    if (Object(prototype) === prototype || prototype === null)
+      return superClass.prototype;
+    throw new TypeError('super prototype must be an Object or null');
+  }
+  if (superClass === null)
+    return null;
+  throw new TypeError(("Super expression must either be null or a function, not " + typeof superClass + "."));
+}
+
+function getDescriptors(object) {
+  var descriptors = {};
+  var names = $getOwnPropertyNames(object);
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
+    descriptors[name] = $getOwnPropertyDescriptor(object, name);
+  }
+  // TODO: someday you might use symbols and you'll have to re-evaluate
+  //       your life choices that led to the creation of this file
+
+  // var symbols = getOwnPropertySymbols(object);
+  // for (var i = 0; i < symbols.length; i++) {
+  //   var symbol = symbols[i];
+  //   descriptors[$traceurRuntime.toProperty(symbol)] = $getOwnPropertyDescriptor(object, $traceurRuntime.toProperty(symbol));
+  // }
+  return descriptors;
+}
+function superDescriptor(homeObject, name) {
+  var proto = $getPrototypeOf(homeObject);
+  do {
+    var result = $getOwnPropertyDescriptor(proto, name);
+    if (result)
+      return result;
+    proto = $getPrototypeOf(proto);
+  } while (proto);
+  return undefined;
+}
+function superCall(self, homeObject, name, args) {
+  return superGet(self, homeObject, name).apply(self, args);
+}
+function superGet(self, homeObject, name) {
+  var descriptor = superDescriptor(homeObject, name);
+  if (descriptor) {
+    if (!descriptor.get)
+      return descriptor.value;
+    return descriptor.get.call(self);
+  }
+  return undefined;
+}
+
+"use strict";
+var RouteRecognizer = (function() {
     var map = (function() {
       function Target(path, matcher, delegate) {
         this.path = path;
@@ -472,7 +856,6 @@ function getDescriptors(object) {
         }, this);
       };
     }());
-    ;
     var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
     var escapeRegex = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
     function isArray(test) {
@@ -902,32 +1285,85 @@ function getDescriptors(object) {
     RouteRecognizer.VERSION = 'VERSION_STRING_PLACEHOLDER';
     return RouteRecognizer;
   }());
-  ;
-  var CHILD_ROUTE_SUFFIX = '/*childRoute';
-  var Router = function Router(parent, configPrefix) {
-    this.parent = parent || null;
-    this.navigating = false;
-    this.ports = {};
+var CHILD_ROUTE_SUFFIX = '/*childRoute';
+var Grammar = function Grammar() {
+    this.rules = {};
+  };
+(createClass)(Grammar, {
+    config: function(name, config) {
+      if (name === 'app') {
+        name = '/';
+      }
+      if (!this.rules[name]) {
+        this.rules[name] = new MiniRecognizer(name);
+      }
+      this.rules[name].config(config);
+    },
+    recognize: function(url) {
+      var componentName = arguments[1] !== (void 0) ? arguments[1] : '/';
+      var $__0 = this;
+      var componentRecognizer = this.rules[componentName];
+      if (!componentRecognizer) {
+        return;
+      }
+      var context = componentRecognizer.recognize(url);
+      if (!context) {
+        return;
+      }
+      var lastContextChunk = context[context.length - 1];
+      var lastHandler = lastContextChunk.handler;
+      var lastParams = lastContextChunk.params;
+      var instruction = {
+        viewports: {},
+        params: lastParams
+      };
+      if (lastParams && lastParams.childRoute) {
+        var childUrl = '/' + lastParams.childRoute;
+        instruction.canonicalUrl = lastHandler.rewroteUrl.substr(0, lastHandler.rewroteUrl.length - (lastParams.childRoute.length + 1));
+        forEach(lastHandler.components, (function(componentName, viewportName) {
+          instruction.viewports[viewportName] = $__0.recognize(childUrl, componentName);
+        }));
+        instruction.canonicalUrl += instruction.viewports[Object.keys(instruction.viewports)[0]].canonicalUrl;
+      } else {
+        instruction.canonicalUrl = lastHandler.rewroteUrl;
+        forEach(lastHandler.components, (function(componentName, viewportName) {
+          instruction.viewports[viewportName] = {viewports: {}};
+        }));
+      }
+      forEach(instruction.viewports, (function(instruction, componentName) {
+        instruction.component = lastHandler.components[componentName];
+        instruction.params = lastParams;
+      }));
+      return instruction;
+    },
+    generate: function(name, params) {
+      var path = '';
+      var solution;
+      do {
+        solution = null;
+        forEach(this.rules, (function(recognizer) {
+          if (recognizer.hasRoute(name)) {
+            path = recognizer.generate(name, params) + path;
+            solution = recognizer;
+          }
+        }));
+        if (!solution) {
+          return '';
+        }
+        name = solution.name;
+      } while (solution.name !== '/');
+      return path;
+    }
+  }, {});
+Object.defineProperty(Grammar.prototype.recognize, "parameters", {get: function() {
+      return [[$traceurRuntime.type.string], []];
+    }});
+var MiniRecognizer = function MiniRecognizer(name) {
+    this.name = name;
     this.rewrites = {};
-    this.children = [];
-    this.context = null;
     this.recognizer = new RouteRecognizer();
   };
-  var $Router = Router;
-  (createClass)(Router, {
-    childRouter: function() {
-      var child = new $Router(this);
-      this.children.push(child);
-      return child;
-    },
-    registerViewport: function(view) {
-      var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
-      if (this.ports[name]) {
-        throw new Error(name + ' viewport is already registered');
-      }
-      this.ports[name] = view;
-      return this.renavigate();
-    },
+(createClass)(MiniRecognizer, {
     config: function(mapping) {
       var $__0 = this;
       if (mapping instanceof Array) {
@@ -937,81 +1373,14 @@ function getDescriptors(object) {
       } else {
         this.configOne(mapping);
       }
-      return this.renavigate();
     },
-    configOne: function(mapping) {
-      if (mapping.redirectTo) {
-        this.rewrites[mapping.path] = mapping.redirectTo;
-        return;
-      }
-      var component = mapping.component;
-      if (typeof component === 'string') {
-        mapping.handler = {component: component};
-      } else if (typeof component === 'function') {
-        mapping.handler = component();
-      } else if (!mapping.handler) {
-        mapping.handler = {component: component};
-      }
-      this.recognizer.add([mapping], {as: component});
-      var withChild = copy(mapping);
-      withChild.path += CHILD_ROUTE_SUFFIX;
-      this.recognizer.add([{
-        path: withChild.path,
-        handler: withChild
-      }]);
-    },
-    navigate: function(url) {
-      var $__0 = this;
+    getCanonicalUrl: function(url) {
       if (url[0] === '.') {
         url = url.substr(1);
       }
-      var self = this;
-      if (this.navigating) {
-        return $q.when();
+      if (url === '' || url[0] !== '/') {
+        url = '/' + url;
       }
-      url = this.getCanonicalUrl(url);
-      this.lastNavigationAttempt = url;
-      var context = this.recognizer.recognize(url);
-      var segment = url;
-      if (notMatched(context)) {
-        return $q.when();
-      }
-      var lastParams = context[context.length - 1].params;
-      if (lastParams && lastParams.childRoute) {
-        var path = context[0].handler.path;
-        segment = path.substr(0, path.length - CHILD_ROUTE_SUFFIX.length);
-        if (this.previousSegment === segment) {
-          startNavigating();
-          return this.navigateChildren(context).then(finishNavigating, cancelNavigating);
-        }
-      }
-      if (this.context === context[0]) {
-        return $q.when();
-      }
-      this.context = context[0];
-      this.fullContext = context;
-      this.navigating = true;
-      context.component = this.context.handler.component;
-      return this.canNavigate(context).then((function(status) {
-        return (status && $__0.activatePorts(context));
-      })).then(finishNavigating, cancelNavigating);
-      function startNavigating() {
-        self.context = context[0];
-        self.fullContext = context;
-        self.navigating = true;
-      }
-      function finishNavigating(childUrl) {
-        self.navigating = false;
-        self.previousSegment = segment;
-        self.previousContext = context;
-        return self.previousUrl = segment + (childUrl || '');
-      }
-      function cancelNavigating() {
-        self.previousUrl = url;
-        self.navigating = false;
-      }
-    },
-    getCanonicalUrl: function(url) {
       forEach(this.rewrites, function(toUrl, fromUrl) {
         if (fromUrl === '/') {
           if (url === '/') {
@@ -1023,113 +1392,78 @@ function getDescriptors(object) {
       });
       return url;
     },
-    renavigate: function() {
-      var renavigateDestination = this.previousUrl || this.lastNavigationAttempt;
-      if (!this.navigating && renavigateDestination) {
-        return this.navigate(renavigateDestination);
+    configOne: function(mapping) {
+      var $__0 = this;
+      if (mapping.redirectTo) {
+        if (this.rewrites[mapping.path]) {
+          throw new Error('"' + mapping.path + '" already maps to "' + this.rewrites[mapping.path] + '"');
+        }
+        this.rewrites[mapping.path] = mapping.redirectTo;
+        return;
+      }
+      if (mapping.component) {
+        if (mapping.components) {
+          throw new Error('A route config should have either a "component" or "components" property, but not both.');
+        }
+        mapping.components = mapping.component;
+        delete mapping.component;
+      }
+      if (typeof mapping.components === 'string') {
+        mapping.components = {default: mapping.components};
+      }
+      var aliases;
+      if (mapping.as) {
+        aliases = [mapping.as];
       } else {
-        return $q.when();
-      }
-    },
-    navigateChildren: function(context) {
-      if (context[0].params.childRoute || this.children.length > 0) {
-        var subNav = '/' + (context[0].params.childRoute || '');
-        return $q.all(this.children.map((function(child) {
-          return child.navigate(subNav);
-        }))).then((function(childUrls) {
-          return childUrls[0];
+        aliases = mapObj(mapping.components, (function(componentName, viewportName) {
+          return viewportName + ':' + componentName;
         }));
+        if (mapping.components.default) {
+          aliases.push(mapping.components.default);
+        }
       }
-      return $q.when();
+      aliases.forEach((function(alias) {
+        return $__0.recognizer.add([{
+          path: mapping.path,
+          handler: mapping
+        }], {as: alias});
+      }));
+      var withChild = copy(mapping);
+      withChild.path += CHILD_ROUTE_SUFFIX;
+      this.recognizer.add([{
+        path: withChild.path,
+        handler: withChild
+      }]);
+    },
+    recognize: function(url) {
+      var canonicalUrl = this.getCanonicalUrl(url);
+      var context = this.recognizer.recognize(canonicalUrl);
+      if (context) {
+        context[0].handler.rewroteUrl = canonicalUrl;
+      }
+      return context;
     },
     generate: function(name, params) {
-      var router = this,
-          prefix = '';
-      while (router && !router.recognizer.hasRoute(name)) {
-        router = router.parent;
-      }
-      if (!router) {
-        return '';
-      }
-      var path = router.recognizer.generate(name, params);
-      while (router = router.parent) {
-        prefix += router.previousSegment;
-      }
-      return prefix + path;
+      return this.recognizer.generate(name, params);
     },
-    activatePorts: function(context) {
-      var $__0 = this;
-      var activations = mapObj(this.ports, (function(port) {
-        return $q.when(port.canReactivate && port.canReactivate(context)).then((function(status) {
-          if (status) {
-            return $q.when(!port.reactivate || port.reactivate(context));
-          }
-          return $q.when(port.deactivate && port.deactivate(context)).then(port.activate(context));
-        }));
-      }));
-      return $q.all(activations).then((function() {
-        return $__0.navigateChildren(context);
-      }));
-    },
-    canNavigate: function(context) {
-      return $q.all(this.gatherNagigationPredicates(context)).then(booleanReduction);
-    },
-    gatherNagigationPredicates: function(context) {
-      return this.children.reduce((function(promises, child) {
-        return promises.concat(child.gatherNagigationPredicates(context));
-      }), [this.navigationPredicate(context)]);
-    },
-    navigationPredicate: function(context) {
-      return this.queryViewports((function(port) {
-        return $q.when(port.canReactivate && port.canReactivate(context)).then((function(status) {
-          if (status) {
-            return true;
-          }
-          return $q.when(!port.canDeactivate || port.canDeactivate(context)).then((function(status) {
-            if (status) {
-              port.instantiate(context);
-              return $q.when(port.load(context)).then((function() {
-                return $q.when(!port.canActivate || port.canActivate(context));
-              }));
-            }
-            return false;
-          }));
-        }));
-      }));
-    },
-    queryViewports: function(fn) {
-      var allViewportQueries = mapObj(this.ports, fn);
-      return $q.all(allViewportQueries).then(booleanReduction).then(boolToPromise);
+    hasRoute: function(name) {
+      return this.recognizer.hasRoute(name);
     }
   }, {});
-  Object.defineProperty(Router.prototype.generate, "parameters", {get: function() {
-      return [[$traceurRuntime.type.string], []];
-    }});
-  function copy(obj) {
+function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
   }
-  function notMatched(context) {
-    return context == null || context.length < 1;
-  }
-  function forEach(obj, fn) {
+function forEach(obj, fn) {
     Object.keys(obj).forEach((function(key) {
       return fn(obj[key], key);
     }));
   }
-  function mapObj(obj, fn) {
+function mapObj(obj, fn) {
     var result = [];
     Object.keys(obj).forEach((function(key) {
       return result.push(fn(obj[key], key));
     }));
     return result;
   }
-  function booleanReduction(arr) {
-    return arr.reduce((function(acc, val) {
-      return acc && val;
-    }), true);
-  }
-  function boolToPromise(value) {
-    return value ? $q.when(value) : $q.reject();
-  }
-
-return new Router();}]);
+return new Grammar();
+}]);
