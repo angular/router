@@ -104,7 +104,7 @@ function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controll
  *
  * The value for the `ngViewport` attribute is optional.
  */
-function ngViewportDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, $componentLoader, $router) {
+function ngViewportDirective($animate, $compile, $controller, $templateRequest, $location, $componentLoader, $router) {
   var rootRouter = $router;
 
   return {
