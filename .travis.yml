@@ -13,11 +13,9 @@ env:
 install:
   - mkdir -p $LOGS_DIR
   - ./scripts/sauce_connect_setup.sh
-  - npm install
   - npm install -g npm
-  - npm install -g gulp
-  - npm install -g karma-cli
-  - npm install -g protractor
+  - npm install -g gulp karma-cli protractor
+  - npm install
   - ./scripts/wait_for_browser_provider.sh
 
 script:
