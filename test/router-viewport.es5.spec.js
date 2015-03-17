@@ -235,6 +235,29 @@ describe('ngViewport', function () {
   }));
 
 
+  it('should run the deactivate hook of controllers', inject(function ($router) {
+    put('activate', 'hi');
+
+    $controllerProvider.register('ActivateController', ActivateController);
+    function ActivateController() {}
+    var spy = ActivateController.prototype.deactivate = jasmine.createSpy('deactivate');
+
+    $router.config([
+      { path: '/a', component: 'activate' },
+      { path: '/b', component: 'one' }
+    ]);
+    compile('<div>outer { <div ng-viewport></div> }</div>');
+
+    $router.navigate('/a');
+    $rootScope.$digest();
+    expect(spy).not.toHaveBeenCalled();
+
+    $router.navigate('/b');
+    $rootScope.$digest();
+    expect(spy).toHaveBeenCalled();
+  }));
+
+
   it('should not activate a component when canActivate returns false', inject(function ($router) {
     put('activate', 'hi');
     $controllerProvider.register('ActivateController', ActivateController);

@@ -104,7 +104,7 @@ function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controll
  *
  * The value for the `ngViewport` attribute is optional.
  */
-function ngViewportDirective($animate, $compile, $controller, $templateRequest, $location, $componentLoader, $router) {
+function ngViewportDirective($animate, $compile, $controller, $templateRequest, $q, $location, $componentLoader, $router) {
   var rootRouter = $router;
 
   return {
@@ -172,9 +172,15 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
           cleanupLastView();
         });
 
-        var ctrl = instruction.controller;
-        newScope[componentName] = ctrl;
-        currentController = ctrl;
+        var newController = instruction.controller;
+        newScope[componentName] = newController;
+
+        var result;
+        if (currentController && currentController.deactivate) {
+          result = $q.when(currentController.deactivate());
+        }
+
+        currentController = newController;
 
         currentElement = clone;
         currentScope = newScope;
@@ -182,9 +188,15 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
         previousInstruction = nextInstruction;
 
         // finally, run the hook
-        if (ctrl.activate) {
-          ctrl.activate(instruction);
+        if (newController.activate) {
+          var activationResult = $q.when(newController.activate(instruction));
+          if (result) {
+            return result.then(activationResult);
+          } else {
+            return activationResult;
+          }
         }
+        return result;
       }
     }, viewportName);
   }
