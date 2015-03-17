@@ -67,11 +67,10 @@ So how do we configure the app? Let's open `app.js` and find out. Add this to th
 angular.module('app', ['ngNewRouter'])
   .controller('AppController', ['$router', AppController]);
 
-function AppController ($router) {
-  $router.config([
-    {path: '/', component: 'home' }
-  ]);
-}
+AppController.$routeConfig([
+  {path: '/', component: 'home' }
+]);
+function AppController ($router) {}
 ```
 
 The `ngNewRouter` module provides a new service, `$router`. You notice in the configuration that
@@ -149,12 +148,11 @@ In app.js:
 angular.module('app', ['ngNewRouter'])
   .controller('AppController', ['$router', AppController]);
 
-function AppController ($router) {
-  $router.config([
-    { path: '/',           component: 'home' },
-    { path: '/detail/:id', component: 'detail' }
-  ]);
-}
+AppController.$routeConfig = [
+  { path: '/',           component: 'home' },
+  { path: '/detail/:id', component: 'detail' }
+];
+function AppController ($router) {}
 ```
 
 We can link to our `detail` component using the `ng-link` directive.
