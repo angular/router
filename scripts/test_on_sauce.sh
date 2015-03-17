@@ -1,11 +1,6 @@
 #! /bin/bash
-PWD=`pwd`
-
-# install deps for this example
-cd ./examples/angular-1/confirm-unsaved
-npm install
-
-cd $PWD
+SCRIPT_DIR=$(dirname $0)
+cd $SCRIPT_DIR/..
 
 function killServer {
   kill $serverPid
