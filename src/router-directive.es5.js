@@ -104,7 +104,7 @@ function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controll
  *
  * The value for the `ngViewport` attribute is optional.
  */
-function ngViewportDirective($animate, $compile, $controller, $templateRequest, $q, $location, $componentLoader, $router) {
+function ngViewportDirective($animate, $compile, $controller, $injector, $templateRequest, $q, $router) {
   var rootRouter = $router;
 
   return {
@@ -117,6 +117,12 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
     controller: function() {},
     controllerAs: '$$ngViewport'
   };
+
+  function invoke(method, context, instruction) {
+    return $injector.invoke(method, context, {
+      $routeParams: instruction.params
+    });
+  }
 
   function viewportLink(scope, $element, attrs, ctrls, $transclude) {
     var viewportName = attrs.ngViewport || 'default',
@@ -153,7 +159,7 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
     router.registerViewport({
       canDeactivate: function (instruction) {
         if (currentController && currentController.canDeactivate) {
-          return currentController.canDeactivate();
+          return invoke(currentController.canDeactivate, currentController, instruction);
         }
         return true;
       },
@@ -177,7 +183,7 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
 
         var result;
         if (currentController && currentController.deactivate) {
-          result = $q.when(currentController.deactivate());
+          result = $q.when(invoke(currentController.deactivate, currentController, instruction));
         }
 
         currentController = newController;
@@ -189,7 +195,7 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
 
         // finally, run the hook
         if (newController.activate) {
-          var activationResult = $q.when(newController.activate(instruction));
+          var activationResult = $q.when(invoke(newController.activate, newController, instruction));
           if (result) {
             return result.then(activationResult);
           } else {
@@ -329,7 +335,14 @@ function anchorLinkDirective($router) {
   }
 }
 
-function pipelineFactory($controller, $componentLoader, $templateRequest) {
+function pipelineFactory($controller, $componentLoader, $injector, $templateRequest) {
+
+  function invoke(method, context, instruction) {
+    return $injector.invoke(method, context, {
+      $routeParams: instruction.params
+    });
+  }
+
   return {
     init: function(instruction) {
       var controllerName = $componentLoader.controllerName(instruction.component);
@@ -350,6 +363,10 @@ function pipelineFactory($controller, $componentLoader, $templateRequest) {
     load: function (instruction) {
       var componentTemplateUrl = $componentLoader.template(instruction.component);
       return $templateRequest(componentTemplateUrl);
+    },
+    canActivate: function (instruction) {
+      var controller = instruction.controller;
+      return !controller.canActivate || invoke(controller.canActivate, controller, instruction);
     }
   };
 }

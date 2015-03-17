@@ -88,14 +88,13 @@ class Router {
     this.makeDescendantRouters(instruction);
 
     return this.canDeactivatePorts(instruction)
-    .then(() => this.traverseInstruction(instruction, (instruction, viewportName) => {
+    .then(() => this.traverseInstruction(instruction, (instruction) => {
       return instruction.controller = this.pipeline.init(instruction);
     }))
-    .then(() => this.traverseInstruction(instruction, (instruction, viewportName) => {
-      var controller = instruction.controller;
-      return !controller.canActivate || controller.canActivate();
+    .then(() => this.traverseInstruction(instruction, (instruction) => {
+      return this.pipeline.canActivate(instruction);
     }))
-    .then(() => this.traverseInstruction(instruction, (instruction, viewportName) => {
+    .then(() => this.traverseInstruction(instruction, (instruction) => {
       return this.pipeline.load(instruction).then((templateHtml) => {
         return instruction.template = templateHtml;
       });

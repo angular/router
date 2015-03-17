@@ -225,6 +225,25 @@ describe('ngViewport', function () {
   });
 
 
+  it('should inject into the activate hook of a controller', inject(function ($http) {
+    var spy = jasmine.createSpy('activate');
+    spy.$inject = ['$routeParams', '$http'];
+    registerComponent('user', '', {
+      activate: spy
+    });
+
+    $router.config([
+      { path: '/user/:name', component: 'user' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/user/brian');
+    $rootScope.$digest();
+
+    expect(spy).toHaveBeenCalledWith({name: 'brian'}, $http);
+  }));
+
+
   it('should run the deactivate hook of controllers', function () {
     var spy = jasmine.createSpy('deactivate');
     registerComponent('deactivate', '', {
@@ -239,15 +258,34 @@ describe('ngViewport', function () {
 
     $router.navigate('/a');
     $rootScope.$digest();
-    expect(spy).not.toHaveBeenCalled();
-
     $router.navigate('/b');
     $rootScope.$digest();
     expect(spy).toHaveBeenCalled();
   });
 
 
-  it('should run the deactivate before the activate hook', function () {
+  it('should inject into the deactivate hook of controllers', inject(function ($http) {
+    var spy = jasmine.createSpy('deactivate');
+    spy.$inject = ['$routeParams', '$http'];
+    registerComponent('deactivate', '', {
+      deactivate: spy
+    });
+
+    $router.config([
+      { path: '/user/:name', component: 'deactivate' },
+      { path: '/post/:id', component: 'one' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/user/brian');
+    $rootScope.$digest();
+    $router.navigate('/post/123');
+    $rootScope.$digest();
+    expect(spy).toHaveBeenCalledWith({id: '123'}, $http);
+  }));
+
+
+  it('should run the deactivate hook before the activate hook', function () {
     var log = [];
 
     registerComponent('activate', '', {
@@ -313,7 +351,65 @@ describe('ngViewport', function () {
   }));
 
 
-  it('should not activate a component when canDeactivate returns false', function () {
+  it('should activate a component when canActivate returns true', function () {
+    var spy = jasmine.createSpy('activate');
+    registerComponent('activate', 'hi', {
+      canActivate: function () { return true; },
+      activate: spy
+    });
+
+    $router.config([
+      { path: '/a', component: 'activate' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/a');
+    $rootScope.$digest();
+
+    expect(spy).toHaveBeenCalled();
+    expect(elt.text()).toBe('hi');
+  });
+
+
+  it('should activate a component when canActivate returns a resolved promise', inject(function ($q) {
+    var spy = jasmine.createSpy('activate');
+    registerComponent('activate', 'hi', {
+      canActivate: function () { return $q.when(); },
+      activate: spy
+    });
+
+    $router.config([
+      { path: '/a', component: 'activate' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/a');
+    $rootScope.$digest();
+
+    expect(spy).toHaveBeenCalled();
+    expect(elt.text()).toBe('hi');
+  }));
+
+
+  it('should inject into the canActivate hook of controllers', inject(function ($http) {
+    var spy = jasmine.createSpy('canActivate').and.returnValue(true);
+    spy.$inject = ['$routeParams', '$http'];
+    registerComponent('activate', '', {
+      canActivate: spy
+    });
+
+    $router.config([
+      { path: '/user/:name', component: 'activate' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/user/brian');
+    $rootScope.$digest();
+    expect(spy).toHaveBeenCalledWith({name: 'brian'}, $http);
+  }));
+
+
+  it('should not navigate when canDeactivate returns false', function () {
     registerComponent('activate', 'hi', {
       canDeactivate: function () { return false; }
     });
@@ -334,7 +430,7 @@ describe('ngViewport', function () {
   });
 
 
-  it('should not activate a component when canDeactivate returns a rejected promise', inject(function ($q) {
+  it('should not navigate when canDeactivate returns a rejected promise', inject(function ($q) {
     registerComponent('activate', 'hi', {
       canDeactivate: function () { return $q.reject(); }
     });
@@ -355,7 +451,7 @@ describe('ngViewport', function () {
   }));
 
 
-  it('should activate a component when canDeactivate returns true', function () {
+  it('should navigate when canDeactivate returns true', function () {
     registerComponent('activate', 'hi', {
       canDeactivate: function () { return true; }
     });
@@ -396,23 +492,24 @@ describe('ngViewport', function () {
   });
 
 
-  it('should activate a component when canActivate returns a resolved promise', inject(function ($q) {
-    var spy = jasmine.createSpy('activate');
-    registerComponent('activate', 'hi', {
-      canActivate: function () { return $q.when(); },
-      activate: spy
+  it('should inject into the canDeactivate hook of controllers', inject(function ($http) {
+    var spy = jasmine.createSpy('canDeactivate').and.returnValue(true);
+    spy.$inject = ['$routeParams', '$http'];
+    registerComponent('deactivate', '', {
+      canDeactivate: spy
     });
 
     $router.config([
-      { path: '/a', component: 'activate' }
+      { path: '/user/:name', component: 'deactivate' },
+      { path: '/post/:id', component: 'one' }
     ]);
     compile('<div ng-viewport></div>');
 
-    $router.navigate('/a');
+    $router.navigate('/user/brian');
     $rootScope.$digest();
-
-    expect(spy).toHaveBeenCalled();
-    expect(elt.text()).toBe('hi');
+    $router.navigate('/post/123');
+    $rootScope.$digest();
+    expect(spy).toHaveBeenCalledWith({id: '123'}, $http);
   }));
 
 
