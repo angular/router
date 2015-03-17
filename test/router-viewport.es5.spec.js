@@ -5,6 +5,7 @@ describe('ngViewport', function () {
   var elt,
       $compile,
       $rootScope,
+      $router,
       $templateCache,
       $controllerProvider;
 
@@ -16,41 +17,37 @@ describe('ngViewport', function () {
       $controllerProvider = _$controllerProvider_;
     });
 
-    inject(function(_$compile_, _$rootScope_, _$templateCache_) {
+    inject(function(_$compile_, _$rootScope_, _$router_, _$templateCache_) {
       $compile = _$compile_;
       $rootScope = _$rootScope_;
+      $router = _$router_;
       $templateCache = _$templateCache_;
     });
 
-    put('user', '<div>hello {{user.name}}</div>');
-    $controllerProvider.register('UserController', function($routeParams) {
-      this.name = $routeParams.name || 'blank';
+    registerComponent('user', '<div>hello {{user.name}}</div>', function($routeParams) {
+      this.name = $routeParams.name;
     });
-
-    put('one', '<div>{{one.number}}</div>');
-    $controllerProvider.register('OneController', boringController('number', 'one'));
-
-    put('two', '<div>{{two.number}}</div>');
-    $controllerProvider.register('TwoController', boringController('number', 'two'));
+    registerComponent('one', '<div>{{one.number}}</div>', boringController('number', 'one'));
+    registerComponent('two', '<div>{{two.number}}</div>', boringController('number', 'two'));
   });
 
 
-  it('should work in a simple case', inject(function ($router) {
+  it('should work in a simple case', function () {
     compile('<ng-viewport></ng-viewport>');
 
     $router.config([
-      { path: '/', component: 'user' }
+      { path: '/', component: 'one' }
     ]);
 
     $router.navigate('/');
     $rootScope.$digest();
 
-    expect(elt.text()).toBe('hello blank');
-  }));
+    expect(elt.text()).toBe('one');
+  });
 
 
   // See https://github.com/angular/router/issues/105
-  it('should warn when instantiating a component with no controller', inject(function ($router) {
+  it('should warn when instantiating a component with no controller', function () {
     put('noController', '<div>{{ 2 + 2 }}</div>');
     $router.config([
       { path: '/', component: 'noController' }
@@ -62,10 +59,10 @@ describe('ngViewport', function () {
 
     expect(console.warn).toHaveBeenCalledWith('Could not instantiate controller', 'NoControllerController');
     expect(elt.text()).toBe('4');
-  }));
+  });
 
 
-  it('should navigate between components with different parameters', inject(function ($router) {
+  it('should navigate between components with different parameters', function () {
     $router.config([
       { path: '/user/:name', component: 'user' }
     ]);
@@ -78,18 +75,17 @@ describe('ngViewport', function () {
     $router.navigate('/user/igor');
     $rootScope.$digest();
     expect(elt.text()).toBe('hello igor');
-  }));
+  });
 
 
-  it('should not reactivate a parent when navigating between child components with different parameters', inject(function ($router) {
+  it('should not reactivate a parent when navigating between child components with different parameters', function () {
     ParentController.$routeConfig = [
       { path: '/user/:name', component: 'user' }
     ];
     function ParentController () {}
     var spy = ParentController.prototype.activate = jasmine.createSpy('activate');
 
-    $controllerProvider.register('ParentController', ParentController);
-    put('parent', 'parent { <ng-viewport></ng-viewport> }');
+    registerComponent('parent', 'parent { <ng-viewport></ng-viewport> }', ParentController);
 
     $router.config([
       { path: '/parent', component: 'parent' }
@@ -107,10 +103,10 @@ describe('ngViewport', function () {
     $rootScope.$digest();
     expect(spy).not.toHaveBeenCalled();
     expect(elt.text()).toBe('parent { hello igor }');
-  }));
+  });
 
 
-  it('should work with multiple named viewports', inject(function ($router) {
+  it('should work with multiple named viewports', function () {
     $router.config([
       { path: '/',         component:  {left: 'one', right: 'two'} },
       { path: '/switched', components: {left: 'two', right: 'one'} }
@@ -125,17 +121,13 @@ describe('ngViewport', function () {
     $router.navigate('/switched');
     $rootScope.$digest();
     expect(elt.text()).toBe('port 1: two | port 2: one');
-  }));
+  });
 
 
-  it('should work with nested viewports', inject(function ($router) {
-    put('childRouter', '<div>inner { <div ng-viewport></div> }</div>');
-
-    ChildRouterController.$routeConfig = [
+  it('should work with nested viewports', function () {
+    registerComponent('childRouter', '<div>inner { <div ng-viewport></div> }</div>', [
       { path: '/b', component: 'one' }
-    ];
-    function ChildRouterController($router) {}
-    $controllerProvider.register('ChildRouterController', ChildRouterController);
+    ]);
 
     $router.config([
       { path: '/a', component: 'childRouter' }
@@ -146,11 +138,10 @@ describe('ngViewport', function () {
     $rootScope.$digest();
 
     expect(elt.text()).toBe('outer { inner { one } }');
-  }));
+  });
 
 
-  it('should work with recursive nested viewports', inject(function ($router) {
-
+  it('should work with recursive nested viewports', function () {
     put('router', '<div>recur { <div ng-viewport></div> }</div>');
     $router.config([
       { path: '/recur', component: 'router' },
@@ -161,10 +152,10 @@ describe('ngViewport', function () {
     $router.navigate('/');
     $rootScope.$digest();
     expect(elt.text()).toBe('root { one }');
-  }));
+  });
 
 
-  it('should update anchor hrefs with the routerLink directive', inject(function ($router) {
+  it('should update anchor hrefs with the routerLink directive', function () {
     put('one', '<div><a ng-link="two">{{number}}</a></div>');
 
     $router.config([
@@ -177,10 +168,10 @@ describe('ngViewport', function () {
     $rootScope.$digest();
 
     expect(elt.find('a').attr('href')).toBe('./b');
-  }));
+  });
 
 
-  it('should allow params in routerLink directive', inject(function ($router) {
+  it('should allow params in routerLink directive', function () {
     put('router', '<div>outer { <div ng-viewport></div> }</div>');
     put('one', '<div><a ng-link="two({param: \'lol\'})">{{number}}</a></div>');
 
@@ -194,12 +185,12 @@ describe('ngViewport', function () {
     $rootScope.$digest();
 
     expect(elt.find('a').attr('href')).toBe('./b/lol');
-  }));
+  });
 
   // TODO: test dynamic links
 
 
-  it('should update the href of links', inject(function ($router) {
+  it('should update the href of links', function () {
     put('router', '<div>outer { <div ng-viewport></div> }</div>');
     put('one', '<div><a ng-link="two({param: one.number})">{{one.number}}</a></div>');
 
@@ -213,15 +204,14 @@ describe('ngViewport', function () {
     $rootScope.$digest();
 
     expect(elt.find('a').attr('href')).toBe('./b/one');
-  }));
+  });
 
 
-  it('should run the activate hook of controllers', inject(function ($router) {
-    put('activate', 'hi');
-
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    var spy = ActivateController.prototype.activate = jasmine.createSpy('activate');
+  it('should run the activate hook of controllers', function () {
+    var spy = jasmine.createSpy('activate');
+    registerComponent('activate', '', {
+      activate: spy
+    });
 
     $router.config([
       { path: '/a', component: 'activate' }
@@ -232,21 +222,20 @@ describe('ngViewport', function () {
     $rootScope.$digest();
 
     expect(spy).toHaveBeenCalled();
-  }));
+  });
 
 
-  it('should run the deactivate hook of controllers', inject(function ($router) {
-    put('activate', 'hi');
-
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    var spy = ActivateController.prototype.deactivate = jasmine.createSpy('deactivate');
+  it('should run the deactivate hook of controllers', function () {
+    var spy = jasmine.createSpy('deactivate');
+    registerComponent('deactivate', '', {
+      deactivate: spy
+    });
 
     $router.config([
-      { path: '/a', component: 'activate' },
+      { path: '/a', component: 'deactivate' },
       { path: '/b', component: 'one' }
     ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
+    compile('<div ng-viewport></div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -255,17 +244,61 @@ describe('ngViewport', function () {
     $router.navigate('/b');
     $rootScope.$digest();
     expect(spy).toHaveBeenCalled();
-  }));
+  });
 
 
-  it('should not activate a component when canActivate returns false', inject(function ($router) {
-    put('activate', 'hi');
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    ActivateController.prototype.canActivate = function () {
-      return false;
-    };
-    var spy = ActivateController.prototype.activate = jasmine.createSpy('activate');
+  it('should run the deactivate before the activate hook', function () {
+    var log = [];
+
+    registerComponent('activate', '', {
+      activate: function () { log.push('activate'); }
+    });
+
+    registerComponent('deactivate', '', {
+      deactivate: function () { log.push('deactivate'); }
+    });
+
+    $router.config([
+      { path: '/a', component: 'deactivate' },
+      { path: '/b', component: 'activate' }
+    ]);
+    compile('<div>outer { <div ng-viewport></div> }</div>');
+
+    $router.navigate('/a');
+    $rootScope.$digest();
+    $router.navigate('/b');
+    $rootScope.$digest();
+
+    expect(log).toEqual(['deactivate', 'activate']);
+  });
+
+
+  it('should not activate a component when canActivate returns false', function () {
+    var spy = jasmine.createSpy('activate');
+    registerComponent('activate', '', {
+      canActivate: function () { return false; },
+      activate: spy
+    });
+
+    $router.config([
+      { path: '/a', component: 'activate' }
+    ]);
+    compile('<div>outer { <div ng-viewport></div> }</div>');
+
+    $router.navigate('/a');
+    $rootScope.$digest();
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(elt.text()).toBe('outer {  }');
+  });
+
+
+  it('should not activate a component when canActivate returns a rejected promise', inject(function ($q) {
+    var spy = jasmine.createSpy('activate');
+    registerComponent('activate', '', {
+      canActivate: function () { return $q.reject(); },
+      activate: spy
+    });
 
     $router.config([
       { path: '/a', component: 'activate' }
@@ -280,36 +313,31 @@ describe('ngViewport', function () {
   }));
 
 
-  it('should not activate a component when canActivate returns a rejected promise', inject(function ($router, $q) {
-    put('activate', 'hi');
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    ActivateController.prototype.canActivate = function () {
-      return $q.reject();
-    };
-    var spy = ActivateController.prototype.activate = jasmine.createSpy('activate');
+  it('should not activate a component when canDeactivate returns false', function () {
+    registerComponent('activate', 'hi', {
+      canDeactivate: function () { return false; }
+    });
 
     $router.config([
-      { path: '/a', component: 'activate' }
+      { path: '/a', component: 'activate' },
+      { path: '/b', component: 'one' }
     ]);
     compile('<div>outer { <div ng-viewport></div> }</div>');
 
     $router.navigate('/a');
     $rootScope.$digest();
+    expect(elt.text()).toBe('outer { hi }');
 
-    expect(spy).not.toHaveBeenCalled();
-    expect(elt.text()).toBe('outer {  }');
-  }));
+    $router.navigate('/b');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('outer { hi }');
+  });
 
 
-  it('should not activate a component when canDeactivate returns false', inject(function ($router) {
-    put('activate', 'hi');
-
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    ActivateController.prototype.canDeactivate = function () {
-      return false;
-    };
+  it('should not activate a component when canDeactivate returns a rejected promise', inject(function ($q) {
+    registerComponent('activate', 'hi', {
+      canDeactivate: function () { return $q.reject(); }
+    });
 
     $router.config([
       { path: '/a', component: 'activate' },
@@ -327,45 +355,16 @@ describe('ngViewport', function () {
   }));
 
 
-  it('should not activate a component when canDeactivate returns a rejected promise', inject(function ($router, $q) {
-    put('activate', 'hi');
-
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    ActivateController.prototype.canDeactivate = function () {
-      return $q.reject();
-    };
+  it('should activate a component when canDeactivate returns true', function () {
+    registerComponent('activate', 'hi', {
+      canDeactivate: function () { return true; }
+    });
 
     $router.config([
       { path: '/a', component: 'activate' },
       { path: '/b', component: 'one' }
     ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
-
-    $router.navigate('/a');
-    $rootScope.$digest();
-    expect(elt.text()).toBe('outer { hi }');
-
-    $router.navigate('/b');
-    $rootScope.$digest();
-    expect(elt.text()).toBe('outer { hi }');
-  }));
-
-
-  it('should activate a component when canDeactivate returns true', inject(function ($router) {
-    put('activate', 'hi');
-
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    ActivateController.prototype.canDeactivate = function () {
-      return true;
-    };
-
-    $router.config([
-      { path: '/a', component: 'activate' },
-      { path: '/b', component: 'one' }
-    ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
+    compile('outer { <div ng-viewport></div> }');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -374,18 +373,35 @@ describe('ngViewport', function () {
     $router.navigate('/b');
     $rootScope.$digest();
     expect(elt.text()).toBe('outer { one }');
-  }));
+  });
 
 
-  it('should activate a component when canActivate returns true', inject(function ($router) {
-    put('activate', 'hi');
+  it('should activate a component when canActivate returns true', function () {
+    var spy = jasmine.createSpy('activate');
+    registerComponent('activate', 'hi', {
+      canActivate: function () { return true; },
+      activate: spy
+    });
 
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    ActivateController.prototype.canActivate = function () {
-      return true;
-    };
-    var spy = ActivateController.prototype.activate = jasmine.createSpy('activate');
+    $router.config([
+      { path: '/a', component: 'activate' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/a');
+    $rootScope.$digest();
+
+    expect(spy).toHaveBeenCalled();
+    expect(elt.text()).toBe('hi');
+  });
+
+
+  it('should activate a component when canActivate returns a resolved promise', inject(function ($q) {
+    var spy = jasmine.createSpy('activate');
+    registerComponent('activate', 'hi', {
+      canActivate: function () { return $q.when(); },
+      activate: spy
+    });
 
     $router.config([
       { path: '/a', component: 'activate' }
@@ -400,30 +416,7 @@ describe('ngViewport', function () {
   }));
 
 
-  it('should activate a component when canActivate returns a resolved promise', inject(function ($router, $q) {
-    put('activate', 'hi');
-
-    $controllerProvider.register('ActivateController', ActivateController);
-    function ActivateController() {}
-    ActivateController.prototype.canActivate = function () {
-      return $q.when();
-    };
-    var spy = ActivateController.prototype.activate = jasmine.createSpy('activate');
-
-    $router.config([
-      { path: '/a', component: 'activate' }
-    ]);
-    compile('<div ng-viewport></div>');
-
-    $router.navigate('/a');
-    $rootScope.$digest();
-
-    expect(spy).toHaveBeenCalled();
-    expect(elt.text()).toBe('hi');
-  }));
-
-
-  it('should change location path', inject(function ($router, $location) {
+  it('should change location path', inject(function ($location) {
     $router.config([
       { path: '/user', component: 'user' }
     ]);
@@ -438,29 +431,23 @@ describe('ngViewport', function () {
 
   // TODO: test injecting $scope
 
-  it('should navigate when a link url matches a route', inject(function ($router) {
+  it('should navigate when a link url matches a route', function () {
     $router.config([
       { path: '/', component: 'one' },
       { path: '/two', component: 'two' },
     ]);
 
-    compile('<div><a href="./two">link</a> | <div ng-viewport></div></div>');
+    compile('<a href="./two">link</a> | <div ng-viewport></div>');
     $rootScope.$digest();
     expect(elt.text()).toBe('link | one');
     elt.find('a')[0].click();
 
     $rootScope.$digest();
     expect(elt.text()).toBe('link | two');
-  }));
-
-  // TODO: location path base href
-  /*
-  it('should change the location according to...', fuction () {
-    expect('').toBe('');
   });
-  */
 
-  it('should change location to the canonical route', inject(function ($router, $location) {
+
+  it('should change location to the canonical route', inject(function ($location) {
     compile('<div ng-viewport></div>');
 
     $router.config([
@@ -475,21 +462,18 @@ describe('ngViewport', function () {
   }));
 
 
-  it('should change location to the canonical route with nested components', inject(function ($router, $location) {
+  it('should change location to the canonical route with nested components', inject(function ($location) {
     $router.config([
       { path: '/old-parent', redirectTo: '/new-parent' },
       { path: '/new-parent', component:  'childRouter' }
     ]);
 
-    put('childRouter', '<div>inner { <div ng-viewport></div> }</div>');
-    function ChildRouterController($router) {}
-    ChildRouterController.$routeConfig = [
+    registerComponent('childRouter', '<div>inner { <div ng-viewport></div> }</div>', [
       { path: '/old-child', redirectTo: '/new-child' },
       { path: '/new-child', component: 'one'},
       { path: '/old-child-two', redirectTo: '/new-child-two' },
       { path: '/new-child-two', component: 'two'}
-    ];
-    $controllerProvider.register('ChildRouterController', ChildRouterController);
+    ]);
 
     compile('<div ng-viewport></div>');
 
@@ -507,18 +491,37 @@ describe('ngViewport', function () {
   }));
 
 
-  it('should navigate when the location path changes', inject(function ($router, $location) {
+  it('should navigate when the location path changes', inject(function ($location) {
     $router.config([
-      { path: '/user', component: 'user' }
+      { path: '/one', component: 'one' }
     ]);
     compile('<div ng-viewport></div>');
 
-    $location.path('/user');
+    $location.path('/one');
     $rootScope.$digest();
 
-    expect(elt.text()).toBe('hello blank');
+    expect(elt.text()).toBe('one');
   }));
 
+  function registerComponent(name, template, config) {
+    if (!template) {
+      template = '';
+    }
+    var ctrl;
+    if (!config) {
+      ctrl = function () {};
+    } else if (angular.isArray(config)) {
+      ctrl = function () {};
+      ctrl.$routeConfig = config;
+    } else if (typeof config === 'function') {
+      ctrl = config;
+    } else {
+      ctrl = function () {};
+      ctrl.prototype = config;
+    }
+    $controllerProvider.register(componentControllerName(name), ctrl);
+    put(name, template);
+  }
 
   function boringController (model, value) {
     return function () {
@@ -541,10 +544,10 @@ describe('ngViewport', function () {
 describe('ngViewport animations', function () {
 
   var elt,
-      ctrl,
       $animate,
       $compile,
       $rootScope,
+      $router,
       $templateCache,
       $controllerProvider;
 
@@ -556,21 +559,17 @@ describe('ngViewport animations', function () {
       $controllerProvider = _$controllerProvider_;
     });
 
-    inject(function(_$animate_, _$compile_, _$rootScope_, _$templateCache_) {
+    inject(function(_$animate_, _$compile_, _$rootScope_, _$router_, _$templateCache_) {
       $animate = _$animate_;
       $compile = _$compile_;
       $rootScope = _$rootScope_;
+      $router = _$router_;
       $templateCache = _$templateCache_;
-    });
-
-    put('router', '<div ng-viewport></div>');
-    $controllerProvider.register('RouterController', function ($router) {
-      ctrl = this;
     });
 
     put('user', '<div>hello {{user.name}}</div>');
     $controllerProvider.register('UserController', function($routeParams) {
-      this.name = $routeParams.name || 'blank';
+      this.name = $routeParams.name;
     });
   });
 
@@ -578,7 +577,7 @@ describe('ngViewport animations', function () {
     expect($animate.queue).toEqual([]);
   });
 
-  it('should work in a simple case', inject(function ($router) {
+  it('should work in a simple case', function () {
     var item;
 
     compile('<div ng-viewport></div>');
@@ -609,8 +608,7 @@ describe('ngViewport animations', function () {
     item = $animate.queue.shift();
     expect(item.event).toBe('leave');
     expect(item.element.text()).toBe('hello brian');
-
-  }));
+  });
 
   function put (name, template) {
     $templateCache.put(componentTemplatePath(name), [200, template, {}]);
@@ -625,6 +623,10 @@ describe('ngViewport animations', function () {
 
 function componentTemplatePath(name) {
   return './components/' + dashCase(name) + '/' + dashCase(name) + '.html';
+}
+
+function componentControllerName(name) {
+  return name[0].toUpperCase() + name.substr(1) + 'Controller';
 }
 
 function dashCase(str) {
