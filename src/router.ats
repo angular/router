@@ -11,14 +11,11 @@ class Router {
   constructor(grammar:Grammar, pipeline:Pipeline, parent, name) {
     this.name = name;
     this.parent = parent || null;
-    this.root = parent ? parent.root : this;
     this.navigating = false;
     this.ports = {};
-    this.rewrites = {};
     this.children = {};
     this.registry = grammar;
     this.pipeline = pipeline;
-    this.instruction = null;
   }
 
 
@@ -75,31 +72,18 @@ class Router {
 
     var instruction = this.recognize(url);
 
-    if (notMatched(instruction)) {
+    if (!instruction) {
       return Promise.reject();
     }
 
-    // top-level instruction object
-    this.makeDescendantRouters(instruction);
+    instruction.router = this;
 
-    return this.canDeactivatePorts(instruction)
-    .then(() => this.traverseInstruction(instruction, (instruction) => {
-      return instruction.controller = this.pipeline.init(instruction);
-    }))
-    .then(() => this.traverseInstruction(instruction, (instruction) => {
-      return this.pipeline.canActivate(instruction);
-    }))
-    .then(() => this.traverseInstruction(instruction, (instruction) => {
-      return this.pipeline.load(instruction).then((templateHtml) => {
-        return instruction.template = templateHtml;
-      });
-    }))
-    .then(() => this.activatePorts(instruction))
-    .then(() => instruction.canonicalUrl);
+    return this.pipeline.process(instruction)
+        .then(() => instruction.canonicalUrl);
   }
 
+
   makeDescendantRouters(instruction) {
-    instruction.router = this;
     this.traverseInstructionSync(instruction, (instruction, childInstruction) => {
       childInstruction.router = instruction.router.childRouter(childInstruction.component);
     });
@@ -202,14 +186,6 @@ class ChildRouter extends Router {
     super(parent.registry, parent.pipeline, parent, name);
     this.parent = parent;
   }
-}
-
-function copy(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-function notMatched(instruction) {
-  return instruction == null || instruction.length < 1;
 }
 
 function forEach(obj, fn) {

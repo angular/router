@@ -104,7 +104,7 @@ function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controll
  *
  * The value for the `ngViewport` attribute is optional.
  */
-function ngViewportDirective($animate, $compile, $controller, $injector, $templateRequest, $q, $router) {
+function ngViewportDirective($animate, $injector, $q, $router) {
   var rootRouter = $router;
 
   return {
@@ -119,9 +119,7 @@ function ngViewportDirective($animate, $compile, $controller, $injector, $templa
   };
 
   function invoke(method, context, instruction) {
-    return $injector.invoke(method, context, {
-      $routeParams: instruction.params
-    });
+    return $injector.invoke(method, context, instruction.locals);
   }
 
   function viewportLink(scope, $element, attrs, ctrls, $transclude) {
@@ -157,13 +155,13 @@ function ngViewportDirective($animate, $compile, $controller, $injector, $templa
     }
 
     router.registerViewport({
-      canDeactivate: function (instruction) {
+      canDeactivate: function(instruction) {
         if (currentController && currentController.canDeactivate) {
           return invoke(currentController.canDeactivate, currentController, instruction);
         }
         return true;
       },
-      activate: function (instruction) {
+      activate: function(instruction) {
         var nextInstruction = serializeInstruction(instruction);
         if (nextInstruction === previousInstruction) {
           return;
@@ -335,7 +333,8 @@ function anchorLinkDirective($router) {
   }
 }
 
-function pipelineFactory($controller, $componentLoader, $injector, $templateRequest) {
+
+function pipelineFactory($controller, $componentLoader, $q, $injector, $templateRequest) {
 
   function invoke(method, context, instruction) {
     return $injector.invoke(method, context, {
@@ -343,32 +342,85 @@ function pipelineFactory($controller, $componentLoader, $injector, $templateRequ
     });
   }
 
-  return {
-    init: function(instruction) {
-      var controllerName = $componentLoader.controllerName(instruction.component);
+  var STEPS = [
+    setupRouters,
+    initLocals,
+    initControllers,
+    runCanDeactivateHook,
+    runCanActivateHook,
+    loadTemplates,
+    activate
+  ];
 
-      var locals = {
+  return {
+    process: function(instruction) {
+      // make a copy
+      var steps = STEPS.slice(0);
+
+      function processOne(result) {
+        if (steps.length === 0) {
+          return result;
+        }
+        var step = steps.shift();
+        return $q.when(step(instruction)).then(processOne);
+      }
+
+      return processOne();
+    }
+  }
+
+
+  function setupRouters(instruction) {
+    return instruction.router.makeDescendantRouters(instruction);
+  }
+
+  function initLocals(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
+      return instruction.locals = {
         $router: instruction.router,
-        $routeParams: instruction.params || {}
+        $routeParams: (instruction.params || {})
       };
+    });
+  }
+
+  function initControllers(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
+      var controllerName = $componentLoader.controllerName(instruction.component);
+      var locals = instruction.locals;
       var ctrl;
       try {
         ctrl = $controller(controllerName, locals);
-      } catch (e) {
+      } catch(e) {
         console.warn && console.warn('Could not instantiate controller', controllerName);
         ctrl = $controller(angular.noop, locals);
       }
-      return ctrl;
-    },
-    load: function (instruction) {
-      var componentTemplateUrl = $componentLoader.template(instruction.component);
-      return $templateRequest(componentTemplateUrl);
-    },
-    canActivate: function (instruction) {
+      return instruction.controller = ctrl;
+    });
+  }
+
+  function runCanDeactivateHook(instruction) {
+    return instruction.router.canDeactivatePorts(instruction);
+  }
+
+  function runCanActivateHook(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
       var controller = instruction.controller;
       return !controller.canActivate || invoke(controller.canActivate, controller, instruction);
-    }
-  };
+    });
+  }
+
+  function loadTemplates(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
+      var componentTemplateUrl = $componentLoader.template(instruction.component);
+      return $templateRequest(componentTemplateUrl).then(function (templateHtml) {
+        return instruction.template = templateHtml;
+      });
+    });
+  }
+
+  function activate(instruction) {
+    return instruction.router.activatePorts(instruction);
+  }
 }
 
 /**
