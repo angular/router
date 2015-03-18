@@ -7,11 +7,21 @@ angular.module('ngNewRouter', [])
   .factory('$router', routerFactory)
   .value('$routeParams', {})
   .provider('$componentLoader', $componentLoaderProvider)
-  .factory('$$pipeline', pipelineFactory)
+  .provider('$pipeline', pipelineProvider)
+  .factory('$$pipeline', privatePipelineFactory)
+  .factory('$setupRoutersStep', setupRoutersStepFactory)
+  .factory('$initLocalsStep', initLocalsStepFactory)
+  .factory('$initControllersStep', initControllersStepFactory)
+  .factory('$runCanDeactivateHookStep', runCanDeactivateHookStepFactory)
+  .factory('$runCanActivateHookStep', runCanActivateHookStepFactory)
+  .factory('$loadTemplatesStep', loadTemplatesStepFactory)
+  .value('$activateStep', activateStepValue)
   .directive('ngViewport', ngViewportDirective)
   .directive('ngViewport', ngViewportFillContentDirective)
   .directive('ngLink', ngLinkDirective)
-  .directive('a', anchorLinkDirective);
+  .directive('a', anchorLinkDirective)
+
+
 
 
 /*
@@ -333,48 +343,17 @@ function anchorLinkDirective($router) {
   }
 }
 
-
-function pipelineFactory($controller, $componentLoader, $q, $injector, $templateRequest) {
-
-  function invoke(method, context, instruction) {
-    return $injector.invoke(method, context, {
-      $routeParams: instruction.params
-    });
-  }
-
-  var STEPS = [
-    setupRouters,
-    initLocals,
-    initControllers,
-    runCanDeactivateHook,
-    runCanActivateHook,
-    loadTemplates,
-    activate
-  ];
-
-  return {
-    process: function(instruction) {
-      // make a copy
-      var steps = STEPS.slice(0);
-
-      function processOne(result) {
-        if (steps.length === 0) {
-          return result;
-        }
-        var step = steps.shift();
-        return $q.when(step(instruction)).then(processOne);
-      }
-
-      return processOne();
-    }
-  }
-
-
-  function setupRouters(instruction) {
+function setupRoutersStepFactory() {
+  return function (instruction) {
     return instruction.router.makeDescendantRouters(instruction);
   }
+}
 
-  function initLocals(instruction) {
+/*
+ * $initLocalsStep
+ */
+function initLocalsStepFactory() {
+  return function initLocals(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
       return instruction.locals = {
         $router: instruction.router,
@@ -382,8 +361,13 @@ function pipelineFactory($controller, $componentLoader, $q, $injector, $template
       };
     });
   }
+}
 
-  function initControllers(instruction) {
+/*
+ * $initControllersStep
+ */
+function initControllersStepFactory($controller, $componentLoader) {
+  return function initControllers(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
       var controllerName = $componentLoader.controllerName(instruction.component);
       var locals = instruction.locals;
@@ -397,31 +381,89 @@ function pipelineFactory($controller, $componentLoader, $q, $injector, $template
       return instruction.controller = ctrl;
     });
   }
+}
 
-  function runCanDeactivateHook(instruction) {
+function runCanDeactivateHookStepFactory() {
+  return function runCanDeactivateHook(instruction) {
     return instruction.router.canDeactivatePorts(instruction);
+  };
+}
+
+function runCanActivateHookStepFactory($injector) {
+
+  function invoke(method, context, instruction) {
+    return $injector.invoke(method, context, {
+      $routeParams: instruction.params
+    });
   }
 
-  function runCanActivateHook(instruction) {
+  return function runCanActivateHook(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
       var controller = instruction.controller;
       return !controller.canActivate || invoke(controller.canActivate, controller, instruction);
     });
   }
+}
 
-  function loadTemplates(instruction) {
+function loadTemplatesStepFactory($componentLoader, $templateRequest) {
+  return function loadTemplates(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
       var componentTemplateUrl = $componentLoader.template(instruction.component);
       return $templateRequest(componentTemplateUrl).then(function (templateHtml) {
         return instruction.template = templateHtml;
       });
     });
-  }
-
-  function activate(instruction) {
-    return instruction.router.activatePorts(instruction);
-  }
+  };
 }
+
+
+function activateStepValue(instruction) {
+  return instruction.router.activatePorts(instruction);
+}
+
+
+function pipelineProvider() {
+  var stepConfiguration;
+
+  var protoStepConfiguration = [
+    '$setupRoutersStep',
+    '$initLocalsStep',
+    '$initControllersStep',
+    '$runCanDeactivateHookStep',
+    '$runCanActivateHookStep',
+    '$loadTemplatesStep',
+    '$activateStep'
+  ];
+
+  return {
+    steps: protoStepConfiguration.slice(0),
+    config: function (newConfig) {
+      protoStepConfiguration = newConfig;
+    },
+    $get: function ($injector, $q) {
+      stepConfiguration = protoStepConfiguration.map(function (step) {
+        return $injector.get(step);
+      });
+      return {
+        process: function(instruction) {
+          // make a copy
+          var steps = stepConfiguration.slice(0);
+
+          function processOne(result) {
+            if (steps.length === 0) {
+              return result;
+            }
+            var step = steps.shift();
+            return $q.when(step(instruction)).then(processOne);
+          }
+
+          return processOne();
+        }
+      }
+    }
+  };
+}
+
 
 /**
  * @name $componentLoaderProvider
@@ -493,6 +535,12 @@ function $componentLoaderProvider() {
     }
   };
 }
+
+// this is a hack as a result of the build system used to transpile
+function privatePipelineFactory($pipeline) {
+  return $pipeline;
+}
+
 
 function dashCase(str) {
   return str.replace(/([A-Z])/g, function ($1) {

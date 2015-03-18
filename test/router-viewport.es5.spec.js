@@ -731,17 +731,3 @@ describe('ngViewport animations', function () {
     return elt;
   }
 });
-
-function componentTemplatePath(name) {
-  return './components/' + dashCase(name) + '/' + dashCase(name) + '.html';
-}
-
-function componentControllerName(name) {
-  return name[0].toUpperCase() + name.substr(1) + 'Controller';
-}
-
-function dashCase(str) {
-  return str.replace(/([A-Z])/g, function ($1) {
-    return '-' + $1.toLowerCase();
-  });
-}

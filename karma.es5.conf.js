@@ -15,6 +15,7 @@ module.exports = function(config) {
 
       buildDir + '/*.es5.js',
 
+      'test/*.es5.js',
       'test/*.es5.spec.js'
     ],
 
