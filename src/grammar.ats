@@ -15,7 +15,7 @@ export class Grammar {
       name = '/';
     }
     if (!this.rules[name]) {
-      this.rules[name] = new MiniRecognizer(name);
+      this.rules[name] = new CanonicalRecognizer(name);
     }
     this.rules[name].config(config);
   }
@@ -92,7 +92,7 @@ export class Grammar {
 /*
  * includes redirect rules
  */
-class MiniRecognizer {
+class CanonicalRecognizer {
   constructor(name) {
     this.name = name;
     this.rewrites = {};
