@@ -600,6 +600,20 @@ describe('ngViewport', function () {
     expect(elt.text()).toBe('one');
   }));
 
+
+  it('should expose a "navigating" property on $router', function () {
+    $router.config([
+      { path: '/one', component: 'one' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/one');
+    expect($router.navigating).toBe(true);
+    $rootScope.$digest();
+    expect($router.navigating).toBe(false);
+  });
+
+
   function registerComponent(name, template, config) {
     if (!template) {
       template = '';

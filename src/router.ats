@@ -76,10 +76,20 @@ class Router {
       return Promise.reject();
     }
 
-    instruction.router = this;
+    this._startNavigating();
 
+    instruction.router = this;
     return this.pipeline.process(instruction)
+        .then(() => this._finishNavigating(), () => this._finishNavigating())
         .then(() => instruction.canonicalUrl);
+  }
+
+  _startNavigating() {
+    this.navigating = true;
+  }
+
+  _finishNavigating() {
+    this.navigating = false;
   }
 
 
