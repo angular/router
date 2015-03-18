@@ -41,9 +41,6 @@ class Router {
    * You probably don't need to use this unless you're writing a reusable component.
    */
   registerViewport(view, name = 'default') {
-    if (this.ports[name]) {
-      //throw new Error(name + ' viewport is already registered');
-    }
     this.ports[name] = view;
     return this.renavigate();
   }
@@ -77,8 +74,6 @@ class Router {
     this.lastNavigationAttempt = url;
 
     var instruction = this.recognize(url);
-    //console.log(JSON.stringify(instruction, null, 2));
-    //console.log(instruction);
 
     if (notMatched(instruction)) {
       return Promise.reject();
@@ -123,11 +118,11 @@ class Router {
     if (!instruction) {
       return Promise.resolve();
     }
-    return Promise.all(mapObj(instruction.viewports,
-      (childInstruction, viewportName) => boolToPromise(fn(childInstruction, viewportName))))
-      .then(() => Promise.all(mapObj(instruction.viewports, (childInstruction, viewportName) => {
+    return mapObjAsync(instruction.viewports,
+      (childInstruction, viewportName) => boolToPromise(fn(childInstruction, viewportName)))
+      .then(() => mapObjAsync(instruction.viewports, (childInstruction, viewportName) => {
         return childInstruction.router.traverseInstruction(childInstruction, fn);
-      })));
+      }));
   }
 
 
@@ -136,12 +131,12 @@ class Router {
    * update viewports accordingly
    */
   activatePorts(instruction) {
-    return Promise.all(mapObj(this.ports, (port, name) => {
+    return this.queryViewports((port, name) => {
       return port.activate(instruction.viewports[name]);
-    }))
-    .then(() => Promise.all(mapObj(instruction.viewports, (instruction, viewportName) => {
+    })
+    .then(() => mapObjAsync(instruction.viewports, (instruction) => {
       return instruction.router.activatePorts(instruction);
-    })));
+    }));
   }
 
 
@@ -150,12 +145,18 @@ class Router {
    * update viewports accordingly
    */
   canDeactivatePorts(instruction) {
-    return Promise.all(mapObj(this.ports, (port, name) => {
+    return this.traversePorts((port, name) => {
       return boolToPromise(port.canDeactivate(instruction.viewports[name]));
-    }))
-    .then(() => Promise.all(mapObj(this.children, (child) => {
-      return child.canDeactivatePorts(instruction);
-    })));
+    });
+  }
+
+  traversePorts(fn) {
+    return this.queryViewports(fn)
+        .then(() => mapObjAsync(this.children, (child) => child.traversePorts(fn)));
+  }
+
+  queryViewports(fn) {
+    return mapObjAsync(this.ports, fn);
   }
 
 
@@ -213,6 +214,10 @@ function notMatched(instruction) {
 
 function forEach(obj, fn) {
   Object.keys(obj).forEach(key => fn(obj[key], key));
+}
+
+function mapObjAsync(obj, fn) {
+  return Promise.all(mapObj(obj, fn));
 }
 
 function mapObj(obj, fn) {
