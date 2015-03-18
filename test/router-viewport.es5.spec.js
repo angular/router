@@ -300,7 +300,7 @@ describe('ngViewport', function () {
       { path: '/a', component: 'deactivate' },
       { path: '/b', component: 'activate' }
     ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
+    compile('outer { <div ng-viewport></div> }');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -321,7 +321,7 @@ describe('ngViewport', function () {
     $router.config([
       { path: '/a', component: 'activate' }
     ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
+    compile('outer { <div ng-viewport></div> }');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -341,7 +341,7 @@ describe('ngViewport', function () {
     $router.config([
       { path: '/a', component: 'activate' }
     ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
+    compile('outer { <div ng-viewport></div> }');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -418,7 +418,7 @@ describe('ngViewport', function () {
       { path: '/a', component: 'activate' },
       { path: '/b', component: 'one' }
     ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
+    compile('outer { <div ng-viewport></div> }');
 
     $router.navigate('/a');
     $rootScope.$digest();
@@ -439,7 +439,7 @@ describe('ngViewport', function () {
       { path: '/a', component: 'activate' },
       { path: '/b', component: 'one' }
     ]);
-    compile('<div>outer { <div ng-viewport></div> }</div>');
+    compile('outer { <div ng-viewport></div> }');
 
     $router.navigate('/a');
     $rootScope.$digest();
