@@ -17,7 +17,7 @@ In this phase of routing, Angular [injects the controller's dependencies](https:
 
 <!-- <aside> -->
 If the controller can't be instantiated (the constructor throws), the router cancels navigation.
-However, you should avoid control flow logic my means of throwing exceptions.
+However, you should avoid control flow logic by means of throwing exceptions.
 If you have logic that determines whether or not to perform a navigation, use the `canActivate` hook instead.
 <!-- </aside> -->
 
