@@ -568,7 +568,7 @@ describe('ngOutlet', function () {
 
   // TODO: test injecting $scope
 
-  it('should navigate when a link url matches a route', function () {
+  it('should navigate on left-mouse click when a link url matches a route', function () {
     $router.config([
       { path: '/', component: 'one' },
       { path: '/two', component: 'two' },
@@ -582,6 +582,23 @@ describe('ngOutlet', function () {
     $rootScope.$digest();
     expect(elt.text()).toBe('link | two');
   });
+
+
+  it('should not navigate on non-left mouse click when a link url matches a route', inject(function ($router) {
+    $router.config([
+      { path: '/', component: 'one' },
+      { path: '/two', component: 'two' },
+    ]);
+
+    compile('<a href="./two">link</a> | <div ng-viewport></div>');
+    $rootScope.$digest();
+    expect(elt.text()).toBe('link | one');
+    elt.find('a').triggerHandler({ type: 'click', which: 3 });
+
+    $rootScope.$digest();
+    expect(elt.text()).toBe('link | one');
+  }));
+
 
   // See https://github.com/angular/router/issues/206
   it('should not navigate a link without an href', function () {

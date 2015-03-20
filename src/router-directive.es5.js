@@ -350,6 +350,9 @@ function anchorLinkDirective($router) {
                      'xlink:href' : 'href';
 
       element.on('click', function(event) {
+        if (event.which !== 1)
+          return;
+
         var href = element.attr(hrefAttrName);
         if (!href) {
           event.preventDefault();
