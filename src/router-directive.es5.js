@@ -262,8 +262,8 @@ var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
  *
  * ```js
  * angular.module('myApp', ['ngFuturisticRouter'])
- *   .controller('AppController', ['router', function(router) {
- *     router.config({ path: '/user/:id' component: 'user' });
+ *   .controller('AppController', ['$router', function($router) {
+ *     $router.config({ path: '/user/:id' component: 'user' });
  *     this.user = { name: 'Brian', id: 123 };
  *   });
  * ```
