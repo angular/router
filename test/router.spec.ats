@@ -76,8 +76,9 @@ describe('RootRouter', () => {
       expect(status).toBe('/a');
 
       view.canDeactivate = jasmine.createSpy('canDeactivate component').and.returnValue(false);
-      status = await router.navigate('/a');
-      expect(status).toBe(false);
+      view.activate.calls.reset();
+      var status = await router.navigate('/a');
+      expect(view.activate).not.toHaveBeenCalled();
     }));
 
     it('should generate URLs', () => {
