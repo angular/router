@@ -21,6 +21,9 @@ export class Grammar {
   }
 
   recognize(url:string, componentName = '/') {
+    if (typeof url === 'undefined') {
+      return;
+    }
 
     var componentRecognizer = this.rules[componentName];
     if (!componentRecognizer) {

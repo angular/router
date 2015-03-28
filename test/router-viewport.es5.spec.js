@@ -543,6 +543,21 @@ describe('ngViewport', function () {
     expect(elt.text()).toBe('link | two');
   });
 
+  // See https://github.com/angular/router/issues/206
+  it('should not navigate a link without an href', function () {
+    $router.config([
+      { path: '/', component: 'one' },
+      { path: '/two', component: 'two' },
+    ]);
+    expect(function() {
+      compile('<a>link</a>');
+      $rootScope.$digest();
+      expect(elt.text()).toBe('link');
+      elt.find('a')[0].click();
+      $rootScope.$digest();
+    }).not.toThrow();
+  });
+
 
   it('should change location to the canonical route', inject(function ($location) {
     compile('<div ng-viewport></div>');
