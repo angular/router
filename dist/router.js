@@ -13,14 +13,11 @@ define(["assert", './grammar', './pipeline'], function($__0,$__2,$__4) {
     assert.argumentTypes(grammar, Grammar, pipeline, Pipeline, parent, $traceurRuntime.type.any, name, $traceurRuntime.type.any);
     this.name = name;
     this.parent = parent || null;
-    this.root = parent ? parent.root : this;
     this.navigating = false;
     this.ports = {};
-    this.rewrites = {};
     this.children = {};
     this.registry = grammar;
     this.pipeline = pipeline;
-    this.instruction = null;
   };
   ($traceurRuntime.createClass)(Router, {
     childRouter: function() {
@@ -32,7 +29,6 @@ define(["assert", './grammar', './pipeline'], function($__0,$__2,$__4) {
     },
     registerViewport: function(view) {
       var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
-      if (this.ports[name]) {}
       this.ports[name] = view;
       return this.renavigate();
     },
@@ -47,33 +43,26 @@ define(["assert", './grammar', './pipeline'], function($__0,$__2,$__4) {
       }
       this.lastNavigationAttempt = url;
       var instruction = this.recognize(url);
-      if (notMatched(instruction)) {
+      if (!instruction) {
         return Promise.reject();
       }
-      this.makeDescendantRouters(instruction);
-      return this.canDeactivatePorts(instruction).then((function() {
-        return $__6.traverseInstruction(instruction, (function(instruction, viewportName) {
-          return instruction.controller = $__6.pipeline.init(instruction);
-        }));
-      })).then((function() {
-        return $__6.traverseInstruction(instruction, (function(instruction, viewportName) {
-          var controller = instruction.controller;
-          return !controller.canActivate || controller.canActivate();
-        }));
-      })).then((function() {
-        return $__6.traverseInstruction(instruction, (function(instruction, viewportName) {
-          return $__6.pipeline.load(instruction).then((function(templateHtml) {
-            return instruction.template = templateHtml;
-          }));
-        }));
-      })).then((function() {
-        return $__6.activatePorts(instruction);
+      this._startNavigating();
+      instruction.router = this;
+      return this.pipeline.process(instruction).then((function() {
+        return $__6._finishNavigating();
+      }), (function() {
+        return $__6._finishNavigating();
       })).then((function() {
         return instruction.canonicalUrl;
       }));
     },
+    _startNavigating: function() {
+      this.navigating = true;
+    },
+    _finishNavigating: function() {
+      this.navigating = false;
+    },
     makeDescendantRouters: function(instruction) {
-      instruction.router = this;
       this.traverseInstructionSync(instruction, (function(instruction, childInstruction) {
         childInstruction.router = instruction.router.childRouter(childInstruction.component);
       }));
@@ -91,32 +80,38 @@ define(["assert", './grammar', './pipeline'], function($__0,$__2,$__4) {
       if (!instruction) {
         return Promise.resolve();
       }
-      return Promise.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+      return mapObjAsync(instruction.viewports, (function(childInstruction, viewportName) {
         return boolToPromise(fn(childInstruction, viewportName));
-      }))).then((function() {
-        return Promise.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+      })).then((function() {
+        return mapObjAsync(instruction.viewports, (function(childInstruction, viewportName) {
           return childInstruction.router.traverseInstruction(childInstruction, fn);
-        })));
+        }));
       }));
     },
     activatePorts: function(instruction) {
-      return Promise.all(mapObj(this.ports, (function(port, name) {
+      return this.queryViewports((function(port, name) {
         return port.activate(instruction.viewports[name]);
-      }))).then((function() {
-        return Promise.all(mapObj(instruction.viewports, (function(instruction, viewportName) {
+      })).then((function() {
+        return mapObjAsync(instruction.viewports, (function(instruction) {
           return instruction.router.activatePorts(instruction);
-        })));
+        }));
       }));
     },
     canDeactivatePorts: function(instruction) {
-      var $__6 = this;
-      return Promise.all(mapObj(this.ports, (function(port, name) {
+      return this.traversePorts((function(port, name) {
         return boolToPromise(port.canDeactivate(instruction.viewports[name]));
-      }))).then((function() {
-        return Promise.all(mapObj($__6.children, (function(child) {
-          return child.canDeactivatePorts(instruction);
-        })));
       }));
+    },
+    traversePorts: function(fn) {
+      var $__6 = this;
+      return this.queryViewports(fn).then((function() {
+        return mapObjAsync($__6.children, (function(child) {
+          return child.traversePorts(fn);
+        }));
+      }));
+    },
+    queryViewports: function(fn) {
+      return mapObjAsync(this.ports, fn);
     },
     recognize: function(url) {
       return this.registry.recognize(url);
@@ -149,16 +144,13 @@ define(["assert", './grammar', './pipeline'], function($__0,$__2,$__4) {
   };
   var $ChildRouter = ChildRouter;
   ($traceurRuntime.createClass)(ChildRouter, {}, {}, Router);
-  function copy(obj) {
-    return JSON.parse(JSON.stringify(obj));
-  }
-  function notMatched(instruction) {
-    return instruction == null || instruction.length < 1;
-  }
   function forEach(obj, fn) {
     Object.keys(obj).forEach((function(key) {
       return fn(obj[key], key);
     }));
+  }
+  function mapObjAsync(obj, fn) {
+    return Promise.all(mapObj(obj, fn));
   }
   function mapObj(obj, fn) {
     var result = [];

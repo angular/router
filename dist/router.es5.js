@@ -7,11 +7,21 @@ angular.module('ngNewRouter', [])
   .factory('$router', routerFactory)
   .value('$routeParams', {})
   .provider('$componentLoader', $componentLoaderProvider)
-  .factory('$$pipeline', pipelineFactory)
+  .provider('$pipeline', pipelineProvider)
+  .factory('$$pipeline', privatePipelineFactory)
+  .factory('$setupRoutersStep', setupRoutersStepFactory)
+  .factory('$initLocalsStep', initLocalsStepFactory)
+  .factory('$initControllersStep', initControllersStepFactory)
+  .factory('$runCanDeactivateHookStep', runCanDeactivateHookStepFactory)
+  .factory('$runCanActivateHookStep', runCanActivateHookStepFactory)
+  .factory('$loadTemplatesStep', loadTemplatesStepFactory)
+  .value('$activateStep', activateStepValue)
   .directive('ngViewport', ngViewportDirective)
   .directive('ngViewport', ngViewportFillContentDirective)
   .directive('ngLink', ngLinkDirective)
-  .directive('a', anchorLinkDirective);
+  .directive('a', anchorLinkDirective)
+
+
 
 
 /*
@@ -106,7 +116,7 @@ routerFactory.$inject = ["$$rootRouter", "$rootScope", "$location", "$$grammar",
  *
  * The value for the `ngViewport` attribute is optional.
  */
-function ngViewportDirective($animate, $compile, $controller, $templateRequest, $rootScope, $location, $componentLoader, $router) {
+function ngViewportDirective($animate, $injector, $q, $router) {
   var rootRouter = $router;
 
   return {
@@ -119,6 +129,10 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
     controller: function() {},
     controllerAs: '$$ngViewport'
   };
+
+  function invoke(method, context, instruction) {
+    return $injector.invoke(method, context, instruction.locals);
+  }
 
   function viewportLink(scope, $element, attrs, ctrls, $transclude) {
     var viewportName = attrs.ngViewport || 'default',
@@ -153,13 +167,13 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
     }
 
     router.registerViewport({
-      canDeactivate: function (instruction) {
+      canDeactivate: function(instruction) {
         if (currentController && currentController.canDeactivate) {
-          return currentController.canDeactivate();
+          return invoke(currentController.canDeactivate, currentController, instruction);
         }
         return true;
       },
-      activate: function (instruction) {
+      activate: function(instruction) {
         var nextInstruction = serializeInstruction(instruction);
         if (nextInstruction === previousInstruction) {
           return;
@@ -174,9 +188,15 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
           cleanupLastView();
         });
 
-        var ctrl = instruction.controller;
-        newScope[componentName] = ctrl;
-        currentController = ctrl;
+        var newController = instruction.controller;
+        newScope[componentName] = newController;
+
+        var result;
+        if (currentController && currentController.deactivate) {
+          result = $q.when(invoke(currentController.deactivate, currentController, instruction));
+        }
+
+        currentController = newController;
 
         currentElement = clone;
         currentScope = newScope;
@@ -184,9 +204,15 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
         previousInstruction = nextInstruction;
 
         // finally, run the hook
-        if (ctrl.activate) {
-          ctrl.activate(instruction);
+        if (newController.activate) {
+          var activationResult = $q.when(invoke(newController.activate, newController, instruction));
+          if (result) {
+            return result.then(activationResult);
+          } else {
+            return activationResult;
+          }
         }
+        return result;
       }
     }, viewportName);
   }
@@ -202,7 +228,7 @@ function ngViewportDirective($animate, $compile, $controller, $templateRequest, 
     });
   }
 }
-ngViewportDirective.$inject = ["$animate", "$compile", "$controller", "$templateRequest", "$rootScope", "$location", "$componentLoader", "$router"];
+ngViewportDirective.$inject = ["$animate", "$injector", "$q", "$router"];
 
 function ngViewportFillContentDirective($compile) {
   return {
@@ -305,7 +331,7 @@ function anchorLinkDirective($router) {
       if (element[0].nodeName.toLowerCase() !== 'a') return;
 
       // SVGAElement does not use the href attribute, but rather the 'xlinkHref' attribute.
-      var hrefAttrName = toString.call(element.prop('href')) === '[object SVGAnimatedString]' ?
+      var hrefAttrName = Object.prototype.toString.call(element.prop('href')) === '[object SVGAnimatedString]' ?
                      'xlink:href' : 'href';
 
       element.on('click', function(event) {
@@ -323,31 +349,130 @@ function anchorLinkDirective($router) {
 }
 anchorLinkDirective.$inject = ["$router"];
 
-function pipelineFactory($controller, $componentLoader, $templateRequest) {
-  return {
-    init: function(instruction) {
-      var controllerName = $componentLoader.controllerName(instruction.component);
+function setupRoutersStepFactory() {
+  return function (instruction) {
+    return instruction.router.makeDescendantRouters(instruction);
+  }
+}
 
-      var locals = {
+/*
+ * $initLocalsStep
+ */
+function initLocalsStepFactory() {
+  return function initLocals(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
+      return instruction.locals = {
         $router: instruction.router,
-        $routeParams: instruction.params || {}
+        $routeParams: (instruction.params || {})
       };
+    });
+  }
+}
+
+/*
+ * $initControllersStep
+ */
+function initControllersStepFactory($controller, $componentLoader) {
+  return function initControllers(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
+      var controllerName = $componentLoader.controllerName(instruction.component);
+      var locals = instruction.locals;
       var ctrl;
       try {
         ctrl = $controller(controllerName, locals);
-      } catch (e) {
+      } catch(e) {
         console.warn && console.warn('Could not instantiate controller', controllerName);
         ctrl = $controller(angular.noop, locals);
       }
-      return ctrl;
-    },
-    load: function (instruction) {
-      var componentTemplateUrl = $componentLoader.template(instruction.component);
-      return $templateRequest(componentTemplateUrl);
-    }
+      return instruction.controller = ctrl;
+    });
+  }
+}
+initControllersStepFactory.$inject = ["$controller", "$componentLoader"];
+
+function runCanDeactivateHookStepFactory() {
+  return function runCanDeactivateHook(instruction) {
+    return instruction.router.canDeactivatePorts(instruction);
   };
 }
-pipelineFactory.$inject = ["$controller", "$componentLoader", "$templateRequest"];
+
+function runCanActivateHookStepFactory($injector) {
+
+  function invoke(method, context, instruction) {
+    return $injector.invoke(method, context, {
+      $routeParams: instruction.params
+    });
+  }
+
+  return function runCanActivateHook(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
+      var controller = instruction.controller;
+      return !controller.canActivate || invoke(controller.canActivate, controller, instruction);
+    });
+  }
+}
+runCanActivateHookStepFactory.$inject = ["$injector"];
+
+function loadTemplatesStepFactory($componentLoader, $templateRequest) {
+  return function loadTemplates(instruction) {
+    return instruction.router.traverseInstruction(instruction, function(instruction) {
+      var componentTemplateUrl = $componentLoader.template(instruction.component);
+      return $templateRequest(componentTemplateUrl).then(function (templateHtml) {
+        return instruction.template = templateHtml;
+      });
+    });
+  };
+}
+loadTemplatesStepFactory.$inject = ["$componentLoader", "$templateRequest"];
+
+
+function activateStepValue(instruction) {
+  return instruction.router.activatePorts(instruction);
+}
+
+
+function pipelineProvider() {
+  var stepConfiguration;
+
+  var protoStepConfiguration = [
+    '$setupRoutersStep',
+    '$initLocalsStep',
+    '$initControllersStep',
+    '$runCanDeactivateHookStep',
+    '$runCanActivateHookStep',
+    '$loadTemplatesStep',
+    '$activateStep'
+  ];
+
+  return {
+    steps: protoStepConfiguration.slice(0),
+    config: function (newConfig) {
+      protoStepConfiguration = newConfig;
+    },
+    $get: ["$injector", "$q", function ($injector, $q) {
+      stepConfiguration = protoStepConfiguration.map(function (step) {
+        return $injector.get(step);
+      });
+      return {
+        process: function(instruction) {
+          // make a copy
+          var steps = stepConfiguration.slice(0);
+
+          function processOne(result) {
+            if (steps.length === 0) {
+              return result;
+            }
+            var step = steps.shift();
+            return $q.when(step(instruction)).then(processOne);
+          }
+
+          return processOne();
+        }
+      }
+    }]
+  };
+}
+
 
 /**
  * @name $componentLoaderProvider
@@ -419,6 +544,13 @@ function $componentLoaderProvider() {
     }
   };
 }
+
+// this is a hack as a result of the build system used to transpile
+function privatePipelineFactory($pipeline) {
+  return $pipeline;
+}
+privatePipelineFactory.$inject = ["$pipeline"];
+
 
 function dashCase(str) {
   return str.replace(/([A-Z])/g, function ($1) {
@@ -516,14 +648,11 @@ function superGet(self, homeObject, name) {
 var Router = function Router(grammar, pipeline, parent, name) {
     this.name = name;
     this.parent = parent || null;
-    this.root = parent ? parent.root : this;
     this.navigating = false;
     this.ports = {};
-    this.rewrites = {};
     this.children = {};
     this.registry = grammar;
     this.pipeline = pipeline;
-    this.instruction = null;
   };
 (createClass)(Router, {
     childRouter: function() {
@@ -535,7 +664,6 @@ var Router = function Router(grammar, pipeline, parent, name) {
     },
     registerViewport: function(view) {
       var name = arguments[1] !== (void 0) ? arguments[1] : 'default';
-      if (this.ports[name]) {}
       this.ports[name] = view;
       return this.renavigate();
     },
@@ -550,33 +678,26 @@ var Router = function Router(grammar, pipeline, parent, name) {
       }
       this.lastNavigationAttempt = url;
       var instruction = this.recognize(url);
-      if (notMatched(instruction)) {
+      if (!instruction) {
         return $q.reject();
       }
-      this.makeDescendantRouters(instruction);
-      return this.canDeactivatePorts(instruction).then((function() {
-        return $__0.traverseInstruction(instruction, (function(instruction, viewportName) {
-          return instruction.controller = $__0.pipeline.init(instruction);
-        }));
-      })).then((function() {
-        return $__0.traverseInstruction(instruction, (function(instruction, viewportName) {
-          var controller = instruction.controller;
-          return !controller.canActivate || controller.canActivate();
-        }));
-      })).then((function() {
-        return $__0.traverseInstruction(instruction, (function(instruction, viewportName) {
-          return $__0.pipeline.load(instruction).then((function(templateHtml) {
-            return instruction.template = templateHtml;
-          }));
-        }));
-      })).then((function() {
-        return $__0.activatePorts(instruction);
+      this._startNavigating();
+      instruction.router = this;
+      return this.pipeline.process(instruction).then((function() {
+        return $__0._finishNavigating();
+      }), (function() {
+        return $__0._finishNavigating();
       })).then((function() {
         return instruction.canonicalUrl;
       }));
     },
+    _startNavigating: function() {
+      this.navigating = true;
+    },
+    _finishNavigating: function() {
+      this.navigating = false;
+    },
     makeDescendantRouters: function(instruction) {
-      instruction.router = this;
       this.traverseInstructionSync(instruction, (function(instruction, childInstruction) {
         childInstruction.router = instruction.router.childRouter(childInstruction.component);
       }));
@@ -594,32 +715,38 @@ var Router = function Router(grammar, pipeline, parent, name) {
       if (!instruction) {
         return $q.when();
       }
-      return $q.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+      return mapObjAsync(instruction.viewports, (function(childInstruction, viewportName) {
         return boolToPromise(fn(childInstruction, viewportName));
-      }))).then((function() {
-        return $q.all(mapObj(instruction.viewports, (function(childInstruction, viewportName) {
+      })).then((function() {
+        return mapObjAsync(instruction.viewports, (function(childInstruction, viewportName) {
           return childInstruction.router.traverseInstruction(childInstruction, fn);
-        })));
+        }));
       }));
     },
     activatePorts: function(instruction) {
-      return $q.all(mapObj(this.ports, (function(port, name) {
+      return this.queryViewports((function(port, name) {
         return port.activate(instruction.viewports[name]);
-      }))).then((function() {
-        return $q.all(mapObj(instruction.viewports, (function(instruction, viewportName) {
+      })).then((function() {
+        return mapObjAsync(instruction.viewports, (function(instruction) {
           return instruction.router.activatePorts(instruction);
-        })));
+        }));
       }));
     },
     canDeactivatePorts: function(instruction) {
-      var $__0 = this;
-      return $q.all(mapObj(this.ports, (function(port, name) {
+      return this.traversePorts((function(port, name) {
         return boolToPromise(port.canDeactivate(instruction.viewports[name]));
-      }))).then((function() {
-        return $q.all(mapObj($__0.children, (function(child) {
-          return child.canDeactivatePorts(instruction);
-        })));
       }));
+    },
+    traversePorts: function(fn) {
+      var $__0 = this;
+      return this.queryViewports(fn).then((function() {
+        return mapObjAsync($__0.children, (function(child) {
+          return child.traversePorts(fn);
+        }));
+      }));
+    },
+    queryViewports: function(fn) {
+      return mapObjAsync(this.ports, fn);
     },
     recognize: function(url) {
       return this.registry.recognize(url);
@@ -656,16 +783,13 @@ var ChildRouter = function ChildRouter(parent, name) {
   };
 var $ChildRouter = ChildRouter;
 (createClass)(ChildRouter, {}, {}, Router);
-function copy(obj) {
-    return JSON.parse(JSON.stringify(obj));
-  }
-function notMatched(instruction) {
-    return instruction == null || instruction.length < 1;
-  }
 function forEach(obj, fn) {
     Object.keys(obj).forEach((function(key) {
       return fn(obj[key], key);
     }));
+  }
+function mapObjAsync(obj, fn) {
+    return $q.all(mapObj(obj, fn));
   }
 function mapObj(obj, fn) {
     var result = [];
@@ -1295,7 +1419,7 @@ var Grammar = function Grammar() {
         name = '/';
       }
       if (!this.rules[name]) {
-        this.rules[name] = new MiniRecognizer(name);
+        this.rules[name] = new CanonicalRecognizer(name);
       }
       this.rules[name].config(config);
     },
@@ -1358,12 +1482,12 @@ var Grammar = function Grammar() {
 Object.defineProperty(Grammar.prototype.recognize, "parameters", {get: function() {
       return [[$traceurRuntime.type.string], []];
     }});
-var MiniRecognizer = function MiniRecognizer(name) {
+var CanonicalRecognizer = function CanonicalRecognizer(name) {
     this.name = name;
     this.rewrites = {};
     this.recognizer = new RouteRecognizer();
   };
-(createClass)(MiniRecognizer, {
+(createClass)(CanonicalRecognizer, {
     config: function(mapping) {
       var $__0 = this;
       if (mapping instanceof Array) {
