@@ -18,6 +18,12 @@ var CUSTOM_LAUNCHERS = {
     browserName: 'safari',
     platform: 'OS X 10.9',
     version: '7'
+  },
+  'W7_InternetExplorer': {
+    base: 'SauceLabs',
+    browserName: 'internet explorer',
+    platform: 'Windows 7',
+    version: '11'
   }
 };
 
