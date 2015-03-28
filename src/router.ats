@@ -6,6 +6,9 @@ import {Pipeline} from './pipeline';
  * @where shared
  * @description
  * The router is responsible for mapping URLs to components.
+ *
+ * You can see the state of the router by inspecting the read-only field `router.navigating`.
+ * This may be useful for showing a spinner, for instance.
  */
 class Router {
   constructor(grammar:Grammar, pipeline:Pipeline, parent, name) {
