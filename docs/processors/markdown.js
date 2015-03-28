@@ -114,8 +114,9 @@ function graphvizualize(data, cb) {
   cp.stdout.on('data', function (data) {
     buf += data;
   });
-  cp.stdout.on('end', function () {
-    cb(null, buf);
+  cp.on('error', function () {});
+  cp.on('close', function (code) {
+    cb(null, code > 0 ? '' : buf);
   });
 
   // set dot to stdin
