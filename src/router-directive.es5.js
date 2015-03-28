@@ -177,7 +177,7 @@ function ngViewportDirective($animate, $injector, $q, $router) {
           return;
         }
 
-        newScope = scope.$new();
+        instruction.locals.$scope = newScope = scope.$new();
         myCtrl.$$router = instruction.router;
         myCtrl.$$template = instruction.template;
         var componentName = instruction.component;

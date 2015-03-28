@@ -244,6 +244,25 @@ describe('ngViewport', function () {
   }));
 
 
+  it('should inject $scope into the activate hook of a controller', function () {
+    var spy = jasmine.createSpy('activate');
+    spy.$inject = ['$scope'];
+    registerComponent('user', '', {
+      activate: spy
+    });
+
+    $router.config([
+      { path: '/user/:name', component: 'user' }
+    ]);
+    compile('<div ng-viewport></div>');
+
+    $router.navigate('/user/brian');
+    $rootScope.$digest();
+
+    expect(spy.calls.first().args[0].$root).toEqual($rootScope);
+  });
+
+
   it('should run the deactivate hook of controllers', function () {
     var spy = jasmine.createSpy('deactivate');
     registerComponent('deactivate', '', {
