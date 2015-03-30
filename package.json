@@ -37,6 +37,7 @@
     "gulp-ng-annotate": "^0.5.2",
     "gulp-rename": "^1.2.0",
     "gulp-traceur": "^0.13.0",
+    "gulp-uglify": "^1.1.0",
     "highlight.js": "^8.4.0",
     "karma": "^0.12.24",
     "karma-chrome-launcher": "^0.1.5",

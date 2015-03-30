@@ -5,8 +5,9 @@ var connect = require('gulp-connect');
 var concat = require('gulp-concat');
 var rename = require('gulp-rename');
 var ngAnnotate = require('gulp-ng-annotate');
-var gulpMerge = require('gulp-merge')
+var gulpMerge = require('gulp-merge');
 var modulate = require('./scripts/angular-modulate');
+var uglify = require('gulp-uglify');
 
 var CONFIG = require('./config');
 var SERVER_CONFIG = CONFIG.server;
@@ -38,6 +39,9 @@ gulp.task('angularify', ['transpile'], function() {
   return gulpMerge(directive, generated)
       .pipe(concat('router.es5.js'))
       .pipe(ngAnnotate())
+      .pipe(gulp.dest(BUILD_DIR))
+      .pipe(uglify())
+      .pipe(rename({extname: '.min.js'}))
       .pipe(gulp.dest(BUILD_DIR));
 });
 
