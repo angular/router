@@ -179,7 +179,7 @@ function ngViewportDirective($animate, $injector, $q, $router) {
           return;
         }
 
-        newScope = scope.$new();
+        instruction.locals.$scope = newScope = scope.$new();
         myCtrl.$$router = instruction.router;
         myCtrl.$$template = instruction.template;
         var componentName = instruction.component;
@@ -266,8 +266,8 @@ var LINK_MICROSYNTAX_RE = /^(.+?)(?:\((.*)\))?$/;
  *
  * ```js
  * angular.module('myApp', ['ngFuturisticRouter'])
- *   .controller('AppController', ['router', function(router) {
- *     router.config({ path: '/user/:id' component: 'user' });
+ *   .controller('AppController', ['$router', function($router) {
+ *     $router.config({ path: '/user/:id' component: 'user' });
  *     this.user = { name: 'Brian', id: 123 };
  *   });
  * ```
@@ -1426,6 +1426,9 @@ var Grammar = function Grammar() {
     recognize: function(url) {
       var componentName = arguments[1] !== (void 0) ? arguments[1] : '/';
       var $__0 = this;
+      if (typeof url === 'undefined') {
+        return;
+      }
       var componentRecognizer = this.rules[componentName];
       if (!componentRecognizer) {
         return;

@@ -1,6 +1,6 @@
 {
   "name": "angular-new-router",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A new router for both Angular 1 and Angular 2",
   "homepage": "https://github.com/angular/router",
   "main": "dist/router.es5.js",
