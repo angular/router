@@ -1,3 +1,11 @@
+<a name"v0.5.3"></a>
+### v0.5.3 magnificent-fortitude (2015-03-30)
+
+#### Bug Fixes
+
+* **build:** add missing files from dist ([10e7174c](https://github.com/angular/router/commit/10e7174c)) (oops!!)
+
+
 <a name"v0.5.2"></a>
 ### v0.5.2 extraterrestrial-illusion (2015-03-30)
 
