@@ -3,7 +3,7 @@
   "version": "0.5.1",
   "description": "A new router for both Angular 1 and Angular 2",
   "homepage": "https://github.com/angular/router",
-  "main": "index.js",
+  "main": "dist/router.es5.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/angular/router.git"
