@@ -20,7 +20,7 @@ TODO: expected behavior of a navigation while another navigation is completing?
 In this phase of routing, Angular <a href="https://docs.angularjs.org/guide/di#controllers">injects the controller&#39;s dependencies</a>.</p>
 <!-- <aside> -->
 If the controller can&#39;t be instantiated (the constructor throws), the router cancels navigation.
-However, you should avoid control flow logic my means of throwing exceptions.
+However, you should avoid control flow logic by means of throwing exceptions.
 If you have logic that determines whether or not to perform a navigation, use the <code>canActivate</code> hook instead.
 <!-- </aside> -->
 
@@ -86,7 +86,7 @@ before continuing.</p>
 </code></pre>
 <pre><code class="lang-html"><span class="tag">&lt;<span class="title">div</span>&gt;</span>
   <span class="tag">&lt;<span class="title">div</span> <span class="attribute">ng-show</span>=<span class="value">"showSaveDialog"</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">p</span>&gt;</span>Would you lke to save your work?<span class="tag">&lt;/<span class="title">p</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">p</span>&gt;</span>Would you like to save your work?<span class="tag">&lt;/<span class="title">p</span>&gt;</span>
     <span class="tag">&lt;<span class="title">button</span> <span class="attribute">ng-click</span>=<span class="value">"save.deferred.resolve()"</span>&gt;</span>Save<span class="tag">&lt;/<span class="title">button</span>&gt;</span>
     <span class="tag">&lt;<span class="title">button</span> <span class="attribute">ng-click</span>=<span class="value">"save.deferred.reject()"</span>&gt;</span>Discard<span class="tag">&lt;/<span class="title">button</span>&gt;</span>
   <span class="tag">&lt;/<span class="title">div</span>&gt;</span>
@@ -155,123 +155,123 @@ TODO
 <polygon fill="white" stroke="none" points="-4,4 -4,-603 724,-603 724,4 -4,4"/>
 <!-- complete navigation -->
 <g id="node1" class="node"><title>complete navigation</title>
-<polygon fill="#e5e5e5" stroke="none" points="468,-36 252,-36 252,-0 468,-0 468,-36"/>
-<text text-anchor="middle" x="360" y="-14.4" font-family="Helvetica,sans-Serif" font-size="12.00">complete navigation</text>
+<polygon fill="#e5e5e5" stroke="none" points="720,-36 504,-36 504,-0 720,-0 720,-36"/>
+<text text-anchor="middle" x="612" y="-14.4" font-family="Helvetica,sans-Serif" font-size="12.00">complete navigation</text>
 </g>
 <!-- cancel navigation -->
 <g id="node2" class="node"><title>cancel navigation</title>
-<polygon fill="#e5e5e5" stroke="none" points="216,-36 0,-36 0,-0 216,-0 216,-36"/>
-<text text-anchor="middle" x="108" y="-14.4" font-family="Helvetica,sans-Serif" font-size="12.00">cancel navigation</text>
+<polygon fill="#e5e5e5" stroke="none" points="468,-36 252,-36 252,-0 468,-0 468,-36"/>
+<text text-anchor="middle" x="360" y="-14.4" font-family="Helvetica,sans-Serif" font-size="12.00">cancel navigation</text>
 </g>
 <!-- begin navigation -->
 <g id="node3" class="node"><title>begin navigation</title>
-<polygon fill="#e5e5e5" stroke="none" points="657,-599 441,-599 441,-563 657,-563 657,-599"/>
-<text text-anchor="middle" x="549" y="-577.4" font-family="Helvetica,sans-Serif" font-size="12.00">begin navigation</text>
+<polygon fill="#e5e5e5" stroke="none" points="237,-599 21,-599 21,-563 237,-563 237,-599"/>
+<text text-anchor="middle" x="129" y="-577.4" font-family="Helvetica,sans-Serif" font-size="12.00">begin navigation</text>
 </g>
 <!-- oldCtrl.canReuse() -->
-<g id="node9" class="node"><title>oldCtrl.canReuse()</title>
-<polygon fill="lightgrey" stroke="none" points="657,-526 441,-526 441,-490 657,-490 657,-526"/>
-<text text-anchor="middle" x="549" y="-504.4" font-family="Times,serif" font-size="12.00">oldCtrl.canReuse()</text>
+<g id="node4" class="node"><title>oldCtrl.canReuse()</title>
+<polygon fill="lightgrey" stroke="none" points="237,-526 21,-526 21,-490 237,-490 237,-526"/>
+<text text-anchor="middle" x="129" y="-504.4" font-family="Courier,monospace" font-size="12.00">oldCtrl.canReuse()</text>
 </g>
 <!-- begin navigation&#45;&gt;oldCtrl.canReuse() -->
 <g id="edge1" class="edge"><title>begin navigation&#45;&gt;oldCtrl.canReuse()</title>
-<path fill="none" stroke="black" d="M549,-562.955C549,-562.955 549,-536.09 549,-536.09"/>
-<polygon fill="black" stroke="black" points="552.5,-536.09 549,-526.09 545.5,-536.09 552.5,-536.09"/>
-</g>
-<!-- oldCtrl.canDeactivate() -->
-<g id="node4" class="node"><title>oldCtrl.canDeactivate()</title>
-<polygon fill="lightblue" stroke="none" points="468,-453 252,-453 252,-417 468,-417 468,-453"/>
-<text text-anchor="middle" x="360" y="-431.4" font-family="Courier,monospace" font-size="12.00">oldCtrl.canDeactivate()</text>
-</g>
-<!-- oldCtrl.canDeactivate()&#45;&gt;cancel navigation -->
-<g id="edge5" class="edge"><title>oldCtrl.canDeactivate()&#45;&gt;cancel navigation</title>
-<path fill="none" stroke="black" d="M251.662,-435C157.473,-435 36,-435 36,-435 36,-435 36,-46.1861 36,-46.1861"/>
-<polygon fill="black" stroke="black" points="39.5001,-46.1861 36,-36.1861 32.5001,-46.1861 39.5001,-46.1861"/>
-</g>
-<!-- newCtrl = new Ctrl() -->
-<g id="node5" class="node"><title>newCtrl = new Ctrl()</title>
-<polygon fill="lightsalmon" stroke="none" points="468,-367 252,-367 252,-331 468,-331 468,-367"/>
-<text text-anchor="middle" x="360" y="-345.4" font-family="Courier,monospace" font-size="12.00">newCtrl = new Ctrl()</text>
-</g>
-<!-- oldCtrl.canDeactivate()&#45;&gt;newCtrl = new Ctrl() -->
-<g id="edge4" class="edge"><title>oldCtrl.canDeactivate()&#45;&gt;newCtrl = new Ctrl()</title>
-<path fill="none" stroke="black" d="M360,-416.762C360,-416.762 360,-377.212 360,-377.212"/>
-<polygon fill="black" stroke="black" points="363.5,-377.212 360,-367.212 356.5,-377.212 363.5,-377.212"/>
-<text text-anchor="middle" x="370.883" y="-387.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">true</text>
-</g>
-<!-- newCtrl = new Ctrl()&#45;&gt;cancel navigation -->
-<g id="edge7" class="edge"><title>newCtrl = new Ctrl()&#45;&gt;cancel navigation</title>
-<path fill="none" stroke="black" d="M251.94,-349C170.219,-349 72,-349 72,-349 72,-349 72,-46.2675 72,-46.2675"/>
-<polygon fill="black" stroke="black" points="75.5001,-46.2674 72,-36.2675 68.5001,-46.2675 75.5001,-46.2674"/>
-</g>
-<!-- newCtrl.canActivate() -->
-<g id="node6" class="node"><title>newCtrl.canActivate()</title>
-<polygon fill="lightsalmon" stroke="none" points="468,-281 252,-281 252,-245 468,-245 468,-281"/>
-<text text-anchor="middle" x="360" y="-259.4" font-family="Courier,monospace" font-size="12.00">newCtrl.canActivate()</text>
-</g>
-<!-- newCtrl = new Ctrl()&#45;&gt;newCtrl.canActivate() -->
-<g id="edge6" class="edge"><title>newCtrl = new Ctrl()&#45;&gt;newCtrl.canActivate()</title>
-<path fill="none" stroke="black" d="M360,-330.762C360,-330.762 360,-291.212 360,-291.212"/>
-<polygon fill="black" stroke="black" points="363.5,-291.212 360,-281.212 356.5,-291.212 363.5,-291.212"/>
-<text text-anchor="middle" x="367" y="-301.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">ok</text>
-</g>
-<!-- newCtrl.canActivate()&#45;&gt;cancel navigation -->
-<g id="edge9" class="edge"><title>newCtrl.canActivate()&#45;&gt;cancel navigation</title>
-<path fill="none" stroke="black" d="M251.667,-263C183.366,-263 108,-263 108,-263 108,-263 108,-46.0154 108,-46.0154"/>
-<polygon fill="black" stroke="black" points="111.5,-46.0154 108,-36.0154 104.5,-46.0155 111.5,-46.0154"/>
-</g>
-<!-- oldCtrl.deactivate() -->
-<g id="node7" class="node"><title>oldCtrl.deactivate()</title>
-<polygon fill="lightblue" stroke="none" points="468,-195 252,-195 252,-159 468,-159 468,-195"/>
-<text text-anchor="middle" x="360" y="-173.4" font-family="Courier,monospace" font-size="12.00">oldCtrl.deactivate()</text>
-</g>
-<!-- newCtrl.canActivate()&#45;&gt;oldCtrl.deactivate() -->
-<g id="edge8" class="edge"><title>newCtrl.canActivate()&#45;&gt;oldCtrl.deactivate()</title>
-<path fill="none" stroke="black" d="M360,-244.762C360,-244.762 360,-205.212 360,-205.212"/>
-<polygon fill="black" stroke="black" points="363.5,-205.212 360,-195.212 356.5,-205.212 363.5,-205.212"/>
-<text text-anchor="middle" x="370.883" y="-215.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">true</text>
-</g>
-<!-- oldCtrl.deactivate()&#45;&gt;cancel navigation -->
-<g id="edge11" class="edge"><title>oldCtrl.deactivate()&#45;&gt;cancel navigation</title>
-<path fill="none" stroke="black" d="M251.684,-177C197.789,-177 144,-177 144,-177 144,-177 144,-46.2393 144,-46.2393"/>
-<polygon fill="black" stroke="black" points="147.5,-46.2393 144,-36.2393 140.5,-46.2394 147.5,-46.2393"/>
-</g>
-<!-- newCtrl.activate() -->
-<g id="node8" class="node"><title>newCtrl.activate()</title>
-<polygon fill="lightsalmon" stroke="none" points="468,-109 252,-109 252,-73 468,-73 468,-109"/>
-<text text-anchor="middle" x="360" y="-87.4" font-family="Courier,monospace" font-size="12.00">newCtrl.activate()</text>
-</g>
-<!-- oldCtrl.deactivate()&#45;&gt;newCtrl.activate() -->
-<g id="edge10" class="edge"><title>oldCtrl.deactivate()&#45;&gt;newCtrl.activate()</title>
-<path fill="none" stroke="black" d="M360,-158.762C360,-158.762 360,-119.212 360,-119.212"/>
-<polygon fill="black" stroke="black" points="363.5,-119.212 360,-109.212 356.5,-119.212 363.5,-119.212"/>
-<text text-anchor="middle" x="367" y="-129.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">ok</text>
-</g>
-<!-- newCtrl.activate()&#45;&gt;complete navigation -->
-<g id="edge12" class="edge"><title>newCtrl.activate()&#45;&gt;complete navigation</title>
-<path fill="none" stroke="black" d="M360,-72.9551C360,-72.9551 360,-46.0904 360,-46.0904"/>
-<polygon fill="black" stroke="black" points="363.5,-46.0903 360,-36.0904 356.5,-46.0904 363.5,-46.0903"/>
-</g>
-<!-- newCtrl.activate()&#45;&gt;cancel navigation -->
-<g id="edge13" class="edge"><title>newCtrl.activate()&#45;&gt;cancel navigation</title>
-<path fill="none" stroke="black" d="M251.917,-91C213.688,-91 180,-91 180,-91 180,-91 180,-46.0449 180,-46.0449"/>
-<polygon fill="black" stroke="black" points="183.5,-46.0449 180,-36.0449 176.5,-46.045 183.5,-46.0449"/>
-</g>
-<!-- oldCtrl.canReuse()&#45;&gt;oldCtrl.canDeactivate() -->
-<g id="edge3" class="edge"><title>oldCtrl.canReuse()&#45;&gt;oldCtrl.canDeactivate()</title>
-<path fill="none" stroke="black" d="M454.5,-489.955C454.5,-489.955 454.5,-463.09 454.5,-463.09"/>
-<polygon fill="black" stroke="black" points="458,-463.09 454.5,-453.09 451,-463.09 458,-463.09"/>
+<path fill="none" stroke="black" d="M129,-562.955C129,-562.955 129,-536.09 129,-536.09"/>
+<polygon fill="black" stroke="black" points="132.5,-536.09 129,-526.09 125.5,-536.09 132.5,-536.09"/>
 </g>
 <!-- oldCtrl.reuse() -->
-<g id="node10" class="node"><title>oldCtrl.reuse()</title>
-<polygon fill="lightgrey" stroke="none" points="720,-36 504,-36 504,-0 720,-0 720,-36"/>
-<text text-anchor="middle" x="612" y="-14.4" font-family="Times,serif" font-size="12.00">oldCtrl.reuse()</text>
+<g id="node5" class="node"><title>oldCtrl.reuse()</title>
+<polygon fill="lightgrey" stroke="none" points="216,-36 0,-36 0,-0 216,-0 216,-36"/>
+<text text-anchor="middle" x="108" y="-14.4" font-family="Courier,monospace" font-size="12.00">oldCtrl.reuse()</text>
 </g>
 <!-- oldCtrl.canReuse()&#45;&gt;oldCtrl.reuse() -->
 <g id="edge2" class="edge"><title>oldCtrl.canReuse()&#45;&gt;oldCtrl.reuse()</title>
-<path fill="none" stroke="black" d="M580.5,-489.98C580.5,-489.98 580.5,-46.1843 580.5,-46.1843"/>
-<polygon fill="black" stroke="black" points="584,-46.1843 580.5,-36.1843 577,-46.1844 584,-46.1843"/>
-<text text-anchor="middle" x="622.883" y="-258.8" font-family="Times,serif" font-size="14.00">true</text>
+<path fill="none" stroke="black" d="M118.5,-489.98C118.5,-489.98 118.5,-46.1843 118.5,-46.1843"/>
+<polygon fill="black" stroke="black" points="122,-46.1843 118.5,-36.1843 115,-46.1844 122,-46.1843"/>
+<text text-anchor="middle" x="118.883" y="-258.8" font-family="Times,serif" font-size="14.00">true</text>
+</g>
+<!-- oldCtrl.canDeactivate() -->
+<g id="node6" class="node"><title>oldCtrl.canDeactivate()</title>
+<polygon fill="lightblue" stroke="none" points="720,-453 504,-453 504,-417 720,-417 720,-453"/>
+<text text-anchor="middle" x="612" y="-431.4" font-family="Courier,monospace" font-size="12.00">oldCtrl.canDeactivate()</text>
+</g>
+<!-- oldCtrl.canReuse()&#45;&gt;oldCtrl.canDeactivate() -->
+<g id="edge3" class="edge"><title>oldCtrl.canReuse()&#45;&gt;oldCtrl.canDeactivate()</title>
+<path fill="none" stroke="black" d="M226.5,-489.692C226.5,-469.854 226.5,-441 226.5,-441 226.5,-441 493.848,-441 493.848,-441"/>
+<polygon fill="black" stroke="black" points="493.848,-444.5 503.848,-441 493.848,-437.5 493.848,-444.5"/>
+</g>
+<!-- oldCtrl.canDeactivate()&#45;&gt;cancel navigation -->
+<g id="edge5" class="edge"><title>oldCtrl.canDeactivate()&#45;&gt;cancel navigation</title>
+<path fill="none" stroke="black" d="M503.662,-429C409.473,-429 288,-429 288,-429 288,-429 288,-46.1905 288,-46.1905"/>
+<polygon fill="black" stroke="black" points="291.5,-46.1904 288,-36.1905 284.5,-46.1905 291.5,-46.1904"/>
+</g>
+<!-- newCtrl = new Ctrl() -->
+<g id="node7" class="node"><title>newCtrl = new Ctrl()</title>
+<polygon fill="lightsalmon" stroke="none" points="720,-367 504,-367 504,-331 720,-331 720,-367"/>
+<text text-anchor="middle" x="612" y="-345.4" font-family="Courier,monospace" font-size="12.00">newCtrl = new Ctrl()</text>
+</g>
+<!-- oldCtrl.canDeactivate()&#45;&gt;newCtrl = new Ctrl() -->
+<g id="edge4" class="edge"><title>oldCtrl.canDeactivate()&#45;&gt;newCtrl = new Ctrl()</title>
+<path fill="none" stroke="black" d="M612,-416.762C612,-416.762 612,-377.212 612,-377.212"/>
+<polygon fill="black" stroke="black" points="615.5,-377.212 612,-367.212 608.5,-377.212 615.5,-377.212"/>
+<text text-anchor="middle" x="622.883" y="-387.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">true</text>
+</g>
+<!-- newCtrl = new Ctrl()&#45;&gt;cancel navigation -->
+<g id="edge7" class="edge"><title>newCtrl = new Ctrl()&#45;&gt;cancel navigation</title>
+<path fill="none" stroke="black" d="M503.94,-349C422.219,-349 324,-349 324,-349 324,-349 324,-46.2675 324,-46.2675"/>
+<polygon fill="black" stroke="black" points="327.5,-46.2674 324,-36.2675 320.5,-46.2675 327.5,-46.2674"/>
+</g>
+<!-- newCtrl.canActivate() -->
+<g id="node8" class="node"><title>newCtrl.canActivate()</title>
+<polygon fill="lightsalmon" stroke="none" points="720,-281 504,-281 504,-245 720,-245 720,-281"/>
+<text text-anchor="middle" x="612" y="-259.4" font-family="Courier,monospace" font-size="12.00">newCtrl.canActivate()</text>
+</g>
+<!-- newCtrl = new Ctrl()&#45;&gt;newCtrl.canActivate() -->
+<g id="edge6" class="edge"><title>newCtrl = new Ctrl()&#45;&gt;newCtrl.canActivate()</title>
+<path fill="none" stroke="black" d="M612,-330.762C612,-330.762 612,-291.212 612,-291.212"/>
+<polygon fill="black" stroke="black" points="615.5,-291.212 612,-281.212 608.5,-291.212 615.5,-291.212"/>
+<text text-anchor="middle" x="619" y="-301.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">ok</text>
+</g>
+<!-- newCtrl.canActivate()&#45;&gt;cancel navigation -->
+<g id="edge9" class="edge"><title>newCtrl.canActivate()&#45;&gt;cancel navigation</title>
+<path fill="none" stroke="black" d="M503.667,-263C435.366,-263 360,-263 360,-263 360,-263 360,-46.0154 360,-46.0154"/>
+<polygon fill="black" stroke="black" points="363.5,-46.0154 360,-36.0154 356.5,-46.0155 363.5,-46.0154"/>
+</g>
+<!-- oldCtrl.deactivate() -->
+<g id="node9" class="node"><title>oldCtrl.deactivate()</title>
+<polygon fill="lightblue" stroke="none" points="720,-195 504,-195 504,-159 720,-159 720,-195"/>
+<text text-anchor="middle" x="612" y="-173.4" font-family="Courier,monospace" font-size="12.00">oldCtrl.deactivate()</text>
+</g>
+<!-- newCtrl.canActivate()&#45;&gt;oldCtrl.deactivate() -->
+<g id="edge8" class="edge"><title>newCtrl.canActivate()&#45;&gt;oldCtrl.deactivate()</title>
+<path fill="none" stroke="black" d="M612,-244.762C612,-244.762 612,-205.212 612,-205.212"/>
+<polygon fill="black" stroke="black" points="615.5,-205.212 612,-195.212 608.5,-205.212 615.5,-205.212"/>
+<text text-anchor="middle" x="622.883" y="-215.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">true</text>
+</g>
+<!-- oldCtrl.deactivate()&#45;&gt;cancel navigation -->
+<g id="edge11" class="edge"><title>oldCtrl.deactivate()&#45;&gt;cancel navigation</title>
+<path fill="none" stroke="black" d="M503.684,-177C449.789,-177 396,-177 396,-177 396,-177 396,-46.2393 396,-46.2393"/>
+<polygon fill="black" stroke="black" points="399.5,-46.2393 396,-36.2393 392.5,-46.2394 399.5,-46.2393"/>
+</g>
+<!-- newCtrl.activate() -->
+<g id="node10" class="node"><title>newCtrl.activate()</title>
+<polygon fill="lightsalmon" stroke="none" points="720,-109 504,-109 504,-73 720,-73 720,-109"/>
+<text text-anchor="middle" x="612" y="-87.4" font-family="Courier,monospace" font-size="12.00">newCtrl.activate()</text>
+</g>
+<!-- oldCtrl.deactivate()&#45;&gt;newCtrl.activate() -->
+<g id="edge10" class="edge"><title>oldCtrl.deactivate()&#45;&gt;newCtrl.activate()</title>
+<path fill="none" stroke="black" d="M612,-158.762C612,-158.762 612,-119.212 612,-119.212"/>
+<polygon fill="black" stroke="black" points="615.5,-119.212 612,-109.212 608.5,-119.212 615.5,-119.212"/>
+<text text-anchor="middle" x="619" y="-129.8" font-family="Times,serif" font-size="14.00" fill="darkgreen">ok</text>
+</g>
+<!-- newCtrl.activate()&#45;&gt;complete navigation -->
+<g id="edge12" class="edge"><title>newCtrl.activate()&#45;&gt;complete navigation</title>
+<path fill="none" stroke="black" d="M612,-72.9551C612,-72.9551 612,-46.0904 612,-46.0904"/>
+<polygon fill="black" stroke="black" points="615.5,-46.0903 612,-36.0904 608.5,-46.0904 615.5,-46.0903"/>
+</g>
+<!-- newCtrl.activate()&#45;&gt;cancel navigation -->
+<g id="edge13" class="edge"><title>newCtrl.activate()&#45;&gt;cancel navigation</title>
+<path fill="none" stroke="black" d="M503.917,-91C465.688,-91 432,-91 432,-91 432,-91 432,-46.0449 432,-46.0449"/>
+<polygon fill="black" stroke="black" points="435.5,-46.0449 432,-36.0449 428.5,-46.045 435.5,-46.0449"/>
 </g>
 </g>
 </svg>
