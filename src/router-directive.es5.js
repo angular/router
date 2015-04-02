@@ -517,7 +517,7 @@ function $componentLoaderProvider() {
     },
 
     /**
-     * @name $componentLoaderProvider#setCtrlNameMapping
+     * @name $componentLoaderProvider#setComponentFromCtrlMapping
      * @description takes a function for mapping component controller names to component names
      */
     setComponentFromCtrlMapping: function (newFn) {
