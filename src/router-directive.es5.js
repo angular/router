@@ -180,14 +180,14 @@ function ngViewportDirective($animate, $injector, $q, $router) {
         instruction.locals.$scope = newScope = scope.$new();
         myCtrl.$$router = instruction.router;
         myCtrl.$$template = instruction.template;
-        var componentName = instruction.component;
+        var controllerAs = instruction.controllerAs || instruction.component;
         var clone = $transclude(newScope, function(clone) {
           $animate.enter(clone, null, currentElement || $element);
           cleanupLastView();
         });
 
         var newController = instruction.controller;
-        newScope[componentName] = newController;
+        newScope[controllerAs] = newController;
 
         var result;
         if (currentController && currentController.deactivate) {
@@ -378,6 +378,7 @@ function initControllersStepFactory($controller, $componentLoader) {
         console.warn && console.warn('Could not instantiate controller', controllerName);
         ctrl = $controller(angular.noop, locals);
       }
+      instruction.controllerAs = $componentLoader.controllerAs(instruction.component);
       return instruction.controller = ctrl;
     });
   }
@@ -498,10 +499,15 @@ function $componentLoaderProvider() {
     return name[0].toLowerCase() + name.substr(1, name.length - DEFAULT_SUFFIX.length - 1);
   };
 
+  var componentToControllerAs = function componentToControllerAsDefault(name) {
+    return name;
+  };
+
   return {
     $get: function () {
       return {
         controllerName: componentToCtrl,
+        controllerAs: componentToControllerAs,
         template: componentToTemplate,
         component: ctrlToComponent
       };
@@ -513,6 +519,15 @@ function $componentLoaderProvider() {
      */
     setCtrlNameMapping: function(newFn) {
       componentToCtrl = newFn;
+      return this;
+    },
+
+    /**
+     * @name $componentLoaderProvider#setCtrlAsMapping
+     * @description takes a function for mapping component names to controllerAs name in the template
+     */
+    setCtrlAsMapping: function(newFn) {
+      componentToControllerAs = newFn;
       return this;
     },
 
