@@ -1,8 +1,7 @@
 # The New Angular Router
 [![Build Status](https://travis-ci.org/angular/router.svg?branch=master)](https://travis-ci.org/angular/router)
 
-A work-in-progress new router for Angular 1.3 and 2.0, written with
-[AtScript](https://docs.google.com/document/d/11YUzC-1d0V1-Q3V0fQ7KSit97HnZoKVygDxpWzEYW0U/).
+A new router for Angular 1.4 and 2.0, written with [TypeScript](http://www.typescriptlang.org/) (originally written with [AtScript](https://docs.google.com/document/d/11YUzC-1d0V1-Q3V0fQ7KSit97HnZoKVygDxpWzEYW0U/)).
 
 
 ## State of this project
