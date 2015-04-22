@@ -48,7 +48,7 @@ Let's start with the contents of `index.html`:
   <title>My app</title>
 </head>
 <body ng-app="myApp" ng-controller="AppController as app">
-  <div ng-viewport></div>
+  <div ng-outlet></div>
 
   <script src="/node_modules/angular/angular.js"></script>
   <script src="/dist/router.es5.js"></script>
@@ -57,8 +57,8 @@ Let's start with the contents of `index.html`:
 </html>
 ```
 
-This is a pretty typical angular app, except the `ng-viewport` directive.
-`ng-viewport` is like `ng-view`; it's a placeholder for part of your app loaded
+This is a pretty typical angular app, except the `ng-outlet` directive.
+`ng-outlet` is like `ng-view`; it's a placeholder for part of your app loaded
 dynamically based on the route configuration.
 
 So how do we configure the app? Let's open `app.js` and find out. Add this to the file:
@@ -90,9 +90,9 @@ In Angular 1, we need this component system to hook up child routers.
 </aside>
 -->
 
-A component's template can have "viewports," which are holes in the DOM for loading parts of your app based on the route configuration and its controller can have a router.
-A component's router tells the component what to put inside the viewports based on URL.
-The configuration maps routes to components for each viewport.
+A component's template can have "outlets," which are holes in the DOM for loading parts of your app based on the route configuration and its controller can have a router.
+A component's router tells the component what to put inside the outlets based on URL.
+The configuration maps routes to components for each outlet.
 
 Let's make a `home` component that our app can route to.
 

@@ -16,8 +16,8 @@ angular.module('ngNewRouter', [])
   .factory('$runCanActivateHookStep', runCanActivateHookStepFactory)
   .factory('$loadTemplatesStep', loadTemplatesStepFactory)
   .value('$activateStep', activateStepValue)
-  .directive('ngViewport', ngViewportDirective)
-  .directive('ngViewport', ngViewportFillContentDirective)
+  .directive('ngOutlet', ngOutletDirective)
+  .directive('ngOutlet', ngOutletFillContentDirective)
   .directive('ngLink', ngLinkDirective)
   .directive('a', anchorLinkDirective)
 
@@ -109,20 +109,20 @@ function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controll
 }
 
 /**
- * @name ngViewport
+ * @name ngOutlet
  *
  * @description
- * An ngViewport is where resolved content goes.
+ * An ngOutlet is where resolved content goes.
  *
  * ## Use
  *
  * ```html
- * <div ng-viewport="name"></div>
+ * <div ng-outlet="name"></div>
  * ```
  *
- * The value for the `ngViewport` attribute is optional.
+ * The value for the `ngOutlet` attribute is optional.
  */
-function ngViewportDirective($animate, $injector, $q, $router) {
+function ngOutletDirective($animate, $injector, $q, $router) {
   var rootRouter = $router;
 
   return {
@@ -130,18 +130,18 @@ function ngViewportDirective($animate, $injector, $q, $router) {
     transclude: 'element',
     terminal: true,
     priority: 400,
-    require: ['?^^ngViewport', 'ngViewport'],
-    link: viewportLink,
+    require: ['?^^ngOutlet', 'ngOutlet'],
+    link: outletLink,
     controller: function() {},
-    controllerAs: '$$ngViewport'
+    controllerAs: '$$ngOutlet'
   };
 
   function invoke(method, context, instruction) {
     return $injector.invoke(method, context, instruction.locals);
   }
 
-  function viewportLink(scope, $element, attrs, ctrls, $transclude) {
-    var viewportName = attrs.ngViewport || 'default',
+  function outletLink(scope, $element, attrs, ctrls, $transclude) {
+    var outletName = attrs.ngOutlet || 'default',
         parentCtrl = ctrls[0],
         myCtrl = ctrls[1],
         router = (parentCtrl && parentCtrl.$$router) || rootRouter;
@@ -172,7 +172,7 @@ function ngViewportDirective($animate, $injector, $q, $router) {
       }
     }
 
-    router.registerViewport({
+    router.registerOutlet({
       canDeactivate: function(instruction) {
         if (currentController && currentController.canDeactivate) {
           return invoke(currentController.canDeactivate, currentController, instruction);
@@ -220,7 +220,7 @@ function ngViewportDirective($animate, $injector, $q, $router) {
         }
         return result;
       }
-    }, viewportName);
+    }, outletName);
   }
 
   // TODO: how best to serialize?
@@ -235,11 +235,11 @@ function ngViewportDirective($animate, $injector, $q, $router) {
   }
 }
 
-function ngViewportFillContentDirective($compile) {
+function ngOutletFillContentDirective($compile) {
   return {
     restrict: 'EA',
     priority: -400,
-    require: 'ngViewport',
+    require: 'ngOutlet',
     link: function(scope, $element, attrs, ctrl) {
       var template = ctrl.$$template;
       $element.html(template);
@@ -286,7 +286,7 @@ function ngLinkDirective($router, $location, $parse) {
   var rootRouter = $router;
 
   return {
-    require: '?^^ngViewport',
+    require: '?^^ngOutlet',
     restrict: 'A',
     link: ngLinkDirectiveLinkFn
   };

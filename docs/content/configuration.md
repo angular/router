@@ -10,9 +10,9 @@ MyController.$routeConfig = [
 ];
 ```
 
-## Sibling Viewports
+## Sibling Outlets
 
-You can configure multiple viewports on the same path like this:
+You can configure multiple outlets on the same path like this:
 
 ```js
 MyController.$routeConfig = [
@@ -25,8 +25,8 @@ MyController.$routeConfig = [
 ```
 
 ```html
-<div ng-viewport="master"></div>
-<div ng-viewport="detail"></div>
+<div ng-outlet="master"></div>
+<div ng-outlet="detail"></div>
 ```
 
 You can link to any sibling just as you normally would:
@@ -37,7 +37,7 @@ You can link to any sibling just as you normally would:
 <a ng-link="user">link to user component</a>
 ```
 
-Or, you can explicitly link to a viewport-component pair link this:
+Or, you can explicitly link to a outlet-component pair link this:
 
 
 ```html
@@ -59,7 +59,7 @@ MyController.$routeConfig = [
 ];
 ```
 
-A navigation to `/` will result in the URL changing to `/user` and the viewport at that level loading the `user` component.
+A navigation to `/` will result in the URL changing to `/user` and the outlet at that level loading the `user` component.
 
 ## Aliases
 

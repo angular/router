@@ -4,7 +4,7 @@ export class Pipeline {
       instruction => instruction.router.makeDescendantRouters(instruction),
       instruction => instruction.router.canDeactivatePorts(instruction),
       instruction => instruction.router.traversePorts((port, name) => {
-        return boolToPromise(port.canActivate(instruction.viewports[name]));
+        return boolToPromise(port.canActivate(instruction.outlets[name]));
       }),
       instruction => instruction.router.activatePorts(instruction)
     ];

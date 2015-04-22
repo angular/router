@@ -4,6 +4,6 @@
   flex-flow: row;
 }
 
-[ng-viewport] {
+[ng-outlet] {
   flex: 1;
 }

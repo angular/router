@@ -51,7 +51,7 @@ describe('$pipeline', function () {
       { path: '/', component: 'one' }
     ]);
 
-    compile('<ng-viewport></ng-viewport>');
+    compile('<ng-outlet></ng-outlet>');
 
     $router.navigate('/');
     $rootScope.$digest();

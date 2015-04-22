@@ -55,7 +55,7 @@ describe('$componentMapper', function () {
       this.message = 'howdy';
     };
 
-    compile('<ng-viewport></ng-viewport>');
+    compile('<ng-outlet></ng-outlet>');
 
     $router.config([
       { path: '/', component: 'myComponent' }

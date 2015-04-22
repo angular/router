@@ -40,7 +40,7 @@ class Router {
    * Register an object to notify of route changes.
    * You probably don't need to use this unless you're writing a reusable component.
    */
-  registerViewport(view, name = 'default') {
+  registerOutlet(view, name = 'default') {
     this.ports[name] = view;
     return this.renavigate();
   }
@@ -104,9 +104,9 @@ class Router {
 
 
   traverseInstructionSync(instruction, fn) {
-    forEach(instruction.viewports,
-        (childInstruction, viewportName) => fn(instruction, childInstruction));
-    forEach(instruction.viewports,
+    forEach(instruction.outlets,
+        (childInstruction, outletName) => fn(instruction, childInstruction));
+    forEach(instruction.outlets,
         (childInstruction) => this.traverseInstructionSync(childInstruction, fn));
   }
 
@@ -115,9 +115,9 @@ class Router {
     if (!instruction) {
       return Promise.resolve();
     }
-    return mapObjAsync(instruction.viewports,
-      (childInstruction, viewportName) => boolToPromise(fn(childInstruction, viewportName)))
-      .then(() => mapObjAsync(instruction.viewports, (childInstruction, viewportName) => {
+    return mapObjAsync(instruction.outlets,
+      (childInstruction, outletName) => boolToPromise(fn(childInstruction, outletName)))
+      .then(() => mapObjAsync(instruction.outlets, (childInstruction, outletName) => {
         return childInstruction.router.traverseInstruction(childInstruction, fn);
       }));
   }
@@ -125,13 +125,13 @@ class Router {
 
   /*
    * given a instruction obj
-   * update viewports accordingly
+   * update outlets accordingly
    */
   activatePorts(instruction) {
-    return this.queryViewports((port, name) => {
-      return port.activate(instruction.viewports[name]);
+    return this.queryOutlets((port, name) => {
+      return port.activate(instruction.outlets[name]);
     })
-    .then(() => mapObjAsync(instruction.viewports, (instruction) => {
+    .then(() => mapObjAsync(instruction.outlets, (instruction) => {
       return instruction.router.activatePorts(instruction);
     }));
   }
@@ -139,20 +139,20 @@ class Router {
 
   /*
    * given a instruction obj
-   * update viewports accordingly
+   * update outlets accordingly
    */
   canDeactivatePorts(instruction) {
     return this.traversePorts((port, name) => {
-      return boolToPromise(port.canDeactivate(instruction.viewports[name]));
+      return boolToPromise(port.canDeactivate(instruction.outlets[name]));
     });
   }
 
   traversePorts(fn) {
-    return this.queryViewports(fn)
+    return this.queryOutlets(fn)
         .then(() => mapObjAsync(this.children, (child) => child.traversePorts(fn)));
   }
 
-  queryViewports(fn) {
+  queryOutlets(fn) {
     return mapObjAsync(this.ports, fn);
   }
 
