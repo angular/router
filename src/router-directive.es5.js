@@ -11,7 +11,6 @@ angular.module('ngNewRouter', [])
   .factory('$$pipeline', privatePipelineFactory)
   .factory('$setupRoutersStep', setupRoutersStepFactory)
   .factory('$initLocalsStep', initLocalsStepFactory)
-  .factory('$initControllersStep', initControllersStepFactory)
   .factory('$runCanDeactivateHookStep', runCanDeactivateHookStepFactory)
   .factory('$runCanActivateHookStep', runCanActivateHookStepFactory)
   .factory('$loadTemplatesStep', loadTemplatesStepFactory)
@@ -122,7 +121,7 @@ function routerFactory($$rootRouter, $rootScope, $location, $$grammar, $controll
  *
  * The value for the `ngOutlet` attribute is optional.
  */
-function ngOutletDirective($animate, $injector, $q, $router) {
+function ngOutletDirective($animate, $injector, $q, $router, $componentMapper, $controller) {
   var rootRouter = $router;
 
   return {
@@ -185,7 +184,20 @@ function ngOutletDirective($animate, $injector, $q, $router) {
           return;
         }
 
-        instruction.locals.$scope = newScope = scope.$new();
+        var controllerConstructor = instruction.controllerConstructor;
+
+        if (!instruction.locals.$scope) {
+          instruction.locals.$scope = scope.$new();
+        }
+        newScope = instruction.locals.$scope;
+
+        if (controllerConstructor === NOOP_CONTROLLER) {
+          console.warn && console.warn('Could not find controller for', $componentMapper.controllerName(instruction.component));
+        }
+        var ctrl = $controller(controllerConstructor, instruction.locals);
+        instruction.controllerAs = $componentMapper.controllerAs(instruction.component);
+        instruction.controller = ctrl;
+
         myCtrl.$$router = instruction.router;
         myCtrl.$$template = instruction.template;
         var controllerAs = instruction.controllerAs || instruction.component;
@@ -382,25 +394,6 @@ function initLocalsStepFactory($componentMapper, $controllerIntrospector) {
   }
 }
 
-/*
- * $initControllersStep
- */
-function initControllersStepFactory($controller, $componentMapper) {
-  return function initControllers(instruction) {
-    return instruction.router.traverseInstruction(instruction, function(instruction) {
-      var controllerConstructor = instruction.controllerConstructor;
-
-      // if this is a string, we need to look it up...
-      var locals = instruction.locals;
-      if (controllerConstructor === NOOP_CONTROLLER) {
-        console.warn && console.warn('Could not find controller for', $componentMapper.controllerName(instruction.component));
-      }
-      var ctrl = $controller(controllerConstructor, locals);
-      instruction.controllerAs = $componentMapper.controllerAs(instruction.component);
-      return instruction.controller = ctrl;
-    });
-  }
-}
 
 function runCanDeactivateHookStepFactory() {
   return function runCanDeactivateHook(instruction) {
@@ -449,7 +442,6 @@ function pipelineProvider() {
     '$initLocalsStep',
     '$runCanDeactivateHookStep',
     '$runCanActivateHookStep',
-    '$initControllersStep',
     '$loadTemplatesStep',
     '$activateStep'
   ];

@@ -21,7 +21,6 @@ describe('$pipeline', function () {
         '$setupRoutersStep',
         '$initLocalsStep',
         'myCustomStep',
-        '$initControllersStep',
         '$runCanDeactivateHookStep',
         '$runCanActivateHookStep',
         '$loadTemplatesStep',
