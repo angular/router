@@ -1,39 +1,39 @@
-describe('$componentLoader', function () {
+describe('$componentMapper', function () {
   var elt,
       $compile,
       $rootScope,
       $router,
       $templateCache,
       $controllerProvider,
-      $componentLoaderProvider;
+      $componentMapperProvider;
 
   beforeEach(function() {
     module('ng');
     module('ngNewRouter');
   });
 
-  it('should convert a component name to a controller name', inject(function ($componentLoader) {
-    expect($componentLoader.controllerName('foo')).toBe('FooController');
+  it('should convert a component name to a controller name', inject(function ($componentMapper) {
+    expect($componentMapper.controllerName('foo')).toBe('FooController');
   }));
 
-  it('should convert a controller name to a component name', inject(function ($componentLoader) {
-    expect($componentLoader.component('FooController')).toBe('foo');
+  it('should convert a controller name to a component name', inject(function ($componentMapper) {
+    expect($componentMapper.component('FooController')).toBe('foo');
   }));
 
-  it('should convert a component name to a template URL', inject(function ($componentLoader) {
-    expect($componentLoader.template('foo')).toBe('./components/foo/foo.html');
+  it('should convert a component name to a template URL', inject(function ($componentMapper) {
+    expect($componentMapper.template('foo')).toBe('./components/foo/foo.html');
   }));
 
   it('should work with a controller constructor fn and a template url', function () {
     var routes = {};
-    module(function($componentLoaderProvider) {
-      $componentLoaderProvider.setCtrlNameMapping(function (name) {
+    module(function($componentMapperProvider) {
+      $componentMapperProvider.setCtrlNameMapping(function (name) {
         return routes[name].controller;
       });
-      $componentLoaderProvider.setTemplateMapping(function (name) {
+      $componentMapperProvider.setTemplateMapping(function (name) {
         return routes[name].templateUrl;
       });
-      $componentLoaderProvider.setCtrlAsMapping(function (name) {
+      $componentMapperProvider.setCtrlAsMapping(function (name) {
         return 'ctrl';
       });
     });

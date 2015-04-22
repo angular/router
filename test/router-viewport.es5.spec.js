@@ -8,15 +8,15 @@ describe('ngViewport', function () {
       $router,
       $templateCache,
       $controllerProvider,
-      $componentLoaderProvider;
+      $componentMapperProvider;
 
 
   beforeEach(function() {
     module('ng');
     module('ngNewRouter');
-    module(function(_$controllerProvider_, _$componentLoaderProvider_) {
+    module(function(_$controllerProvider_, _$componentMapperProvider_) {
       $controllerProvider = _$controllerProvider_;
-      $componentLoaderProvider = _$componentLoaderProvider_;
+      $componentMapperProvider = _$componentMapperProvider_;
     });
 
     inject(function(_$compile_, _$rootScope_, _$router_, _$templateCache_) {

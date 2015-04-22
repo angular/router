@@ -6,7 +6,7 @@
 angular.module('ngNewRouter', [])
   .factory('$router', routerFactory)
   .value('$routeParams', {})
-  .provider('$componentLoader', $componentLoaderProvider)
+  .provider('$componentMapper', $componentMapperProvider)
   .provider('$pipeline', pipelineProvider)
   .factory('$$pipeline', privatePipelineFactory)
   .factory('$setupRoutersStep', setupRoutersStepFactory)
@@ -361,13 +361,13 @@ function setupRoutersStepFactory() {
 /*
  * $initLocalsStep
  */
-function initLocalsStepFactory($componentLoader, $controllerIntrospector) {
+function initLocalsStepFactory($componentMapper, $controllerIntrospector) {
   return function initLocals(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
       if (typeof instruction.component === 'function') {
         instruction.controllerConstructor = instruction.component;
       } else {
-        var controllerName = $componentLoader.controllerName(instruction.component);
+        var controllerName = $componentMapper.controllerName(instruction.component);
         if (typeof controllerName === 'function') {
           instruction.controllerConstructor = controllerName;
         } else {
@@ -385,7 +385,7 @@ function initLocalsStepFactory($componentLoader, $controllerIntrospector) {
 /*
  * $initControllersStep
  */
-function initControllersStepFactory($controller, $componentLoader) {
+function initControllersStepFactory($controller, $componentMapper) {
   return function initControllers(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
       var controllerConstructor = instruction.controllerConstructor;
@@ -393,10 +393,10 @@ function initControllersStepFactory($controller, $componentLoader) {
       // if this is a string, we need to look it up...
       var locals = instruction.locals;
       if (controllerConstructor === NOOP_CONTROLLER) {
-        console.warn && console.warn('Could not find controller for', $componentLoader.controllerName(instruction.component));
+        console.warn && console.warn('Could not find controller for', $componentMapper.controllerName(instruction.component));
       }
       var ctrl = $controller(controllerConstructor, locals);
-      instruction.controllerAs = $componentLoader.controllerAs(instruction.component);
+      instruction.controllerAs = $componentMapper.controllerAs(instruction.component);
       return instruction.controller = ctrl;
     });
   }
@@ -418,16 +418,16 @@ function runCanActivateHookStepFactory($injector) {
 
   return function runCanActivateHook(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
-      var controller = instruction.controller;
-      return !controller.canActivate || invoke(controller.canActivate, controller, instruction);
+      var controllerConstructor = instruction.controllerConstructor;
+      return !controllerConstructor.canActivate || invoke(controllerConstructor.canActivate, null, instruction);
     });
   }
 }
 
-function loadTemplatesStepFactory($componentLoader, $templateRequest) {
+function loadTemplatesStepFactory($componentMapper, $templateRequest) {
   return function loadTemplates(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
-      var componentTemplateUrl = $componentLoader.template(instruction.component);
+      var componentTemplateUrl = $componentMapper.template(instruction.component);
       return $templateRequest(componentTemplateUrl).then(function (templateHtml) {
         return instruction.template = templateHtml;
       });
@@ -485,7 +485,7 @@ function pipelineProvider() {
 
 
 /**
- * @name $componentLoaderProvider
+ * @name $componentMapperProvider
  * @description
  *
  * This lets you configure conventions for what controllers are named and where to load templates from.
@@ -500,7 +500,7 @@ function pipelineProvider() {
  *
  * This service makes it easy to group all of them into a single concept.
  */
-function $componentLoaderProvider() {
+function $componentMapperProvider() {
 
   var DEFAULT_SUFFIX = 'Controller';
 
@@ -532,7 +532,7 @@ function $componentLoaderProvider() {
     },
 
     /**
-     * @name $componentLoaderProvider#setCtrlNameMapping
+     * @name $componentMapperProvider#setCtrlNameMapping
      * @description takes a function for mapping component names to component controller names
      */
     setCtrlNameMapping: function(newFn) {
@@ -541,7 +541,7 @@ function $componentLoaderProvider() {
     },
 
     /**
-     * @name $componentLoaderProvider#setCtrlAsMapping
+     * @name $componentMapperProvider#setCtrlAsMapping
      * @description takes a function for mapping component names to controllerAs name in the template
      */
     setCtrlAsMapping: function(newFn) {
@@ -550,7 +550,7 @@ function $componentLoaderProvider() {
     },
 
     /**
-     * @name $componentLoaderProvider#setComponentFromCtrlMapping
+     * @name $componentMapperProvider#setComponentFromCtrlMapping
      * @description takes a function for mapping component controller names to component names
      */
     setComponentFromCtrlMapping: function (newFn) {
@@ -559,7 +559,7 @@ function $componentLoaderProvider() {
     },
 
     /**
-     * @name $componentLoaderProvider#setTemplateMapping
+     * @name $componentMapperProvider#setTemplateMapping
      * @description takes a function for mapping component names to component template URLs
      */
     setTemplateMapping: function(newFn) {
