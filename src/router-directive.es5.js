@@ -6,7 +6,7 @@
 angular.module('ngNewRouter', [])
   .factory('$router', routerFactory)
   .value('$routeParams', {})
-  .provider('$componentMapper', $componentMapperProvider)
+  .factory('$componentMapper', $componentMapperFactory)
   .provider('$pipeline', pipelineProvider)
   .factory('$$pipeline', privatePipelineFactory)
   .factory('$setupRoutersStep', setupRoutersStepFactory)
@@ -485,7 +485,7 @@ function pipelineProvider() {
 
 
 /**
- * @name $componentMapperProvider
+ * @name $componentMapperFactory
  * @description
  *
  * This lets you configure conventions for what controllers are named and where to load templates from.
@@ -500,7 +500,7 @@ function pipelineProvider() {
  *
  * This service makes it easy to group all of them into a single concept.
  */
-function $componentMapperProvider() {
+function $componentMapperFactory() {
 
   var DEFAULT_SUFFIX = 'Controller';
 
@@ -522,17 +522,24 @@ function $componentMapperProvider() {
   };
 
   return {
-    $get: function () {
-      return {
-        controllerName: componentToCtrl,
-        controllerAs: componentToControllerAs,
-        template: componentToTemplate,
-        component: ctrlToComponent
-      };
+    controllerName: function (name) {
+      return componentToCtrl(name);
+    },
+
+    controllerAs: function (name) {
+      return componentToControllerAs(name);
+    },
+
+    template: function (name) {
+      return componentToTemplate(name);
+    },
+
+    component: function (name) {
+      return ctrlToComponent(name);
     },
 
     /**
-     * @name $componentMapperProvider#setCtrlNameMapping
+     * @name $componentMapper#setCtrlNameMapping
      * @description takes a function for mapping component names to component controller names
      */
     setCtrlNameMapping: function(newFn) {
@@ -541,7 +548,7 @@ function $componentMapperProvider() {
     },
 
     /**
-     * @name $componentMapperProvider#setCtrlAsMapping
+     * @name $componentMapper#setCtrlAsMapping
      * @description takes a function for mapping component names to controllerAs name in the template
      */
     setCtrlAsMapping: function(newFn) {
@@ -550,7 +557,7 @@ function $componentMapperProvider() {
     },
 
     /**
-     * @name $componentMapperProvider#setComponentFromCtrlMapping
+     * @name $componentMapper#setComponentFromCtrlMapping
      * @description takes a function for mapping component controller names to component names
      */
     setComponentFromCtrlMapping: function (newFn) {
@@ -559,7 +566,7 @@ function $componentMapperProvider() {
     },
 
     /**
-     * @name $componentMapperProvider#setTemplateMapping
+     * @name $componentMapper#setTemplateMapping
      * @description takes a function for mapping component names to component template URLs
      */
     setTemplateMapping: function(newFn) {

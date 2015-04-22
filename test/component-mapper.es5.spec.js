@@ -24,18 +24,16 @@ describe('$componentMapper', function () {
     expect($componentMapper.template('foo')).toBe('./components/foo/foo.html');
   }));
 
-  it('should work with a controller constructor fn and a template url', function () {
+  it('should work with a controller constructor fn and a template url', inject(function ($componentMapper) {
     var routes = {};
-    module(function($componentMapperProvider) {
-      $componentMapperProvider.setCtrlNameMapping(function (name) {
-        return routes[name].controller;
-      });
-      $componentMapperProvider.setTemplateMapping(function (name) {
-        return routes[name].templateUrl;
-      });
-      $componentMapperProvider.setCtrlAsMapping(function (name) {
-        return 'ctrl';
-      });
+    $componentMapper.setCtrlNameMapping(function (name) {
+      return routes[name].controller;
+    });
+    $componentMapper.setTemplateMapping(function (name) {
+      return routes[name].templateUrl;
+    });
+    $componentMapper.setCtrlAsMapping(function (name) {
+      return 'ctrl';
     });
 
     routes.myComponent = {
@@ -65,7 +63,7 @@ describe('$componentMapper', function () {
     $rootScope.$digest();
 
     expect(elt.text()).toBe('howdy');
-  });
+  }));
 
   function compile(template) {
     elt = $compile('<div>' + template + '</div>')($rootScope);
