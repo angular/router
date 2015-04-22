@@ -59,7 +59,7 @@ describe('ngViewport', function () {
     compile('<ng-viewport></ng-viewport>');
     $router.navigate('/');
 
-    expect(console.warn).toHaveBeenCalledWith('Could not instantiate controller', 'NoControllerController');
+    expect(console.warn).toHaveBeenCalledWith('Could not find controller for', 'NoControllerController');
     expect(elt.text()).toBe('4');
   });
 
@@ -654,19 +654,23 @@ describe('ngViewport', function () {
     if (!template) {
       template = '';
     }
-    var ctrl;
+    var Ctrl;
     if (!config) {
-      ctrl = function () {};
+      Ctrl = function () {};
     } else if (angular.isArray(config)) {
-      ctrl = function () {};
-      ctrl.$routeConfig = config;
+      Ctrl = function () {};
+      Ctrl.$routeConfig = config;
     } else if (typeof config === 'function') {
-      ctrl = config;
+      Ctrl = config;
     } else {
-      ctrl = function () {};
-      ctrl.prototype = config;
+      Ctrl = function () {};
+      if (config.canActivate) {
+        Ctrl.canActivate = config.canActivate;
+        delete config.canActivate;
+      }
+      Ctrl.prototype = config;
     }
-    $controllerProvider.register(componentControllerName(name), ctrl);
+    $controllerProvider.register(componentControllerName(name), Ctrl);
     put(name, template);
   }
 

@@ -22,7 +22,7 @@ angular.module('ngNewRouter', [])
   .directive('a', anchorLinkDirective)
 
 
-
+var NOOP_CONTROLLER = function(){};
 
 /*
  * A module for inspecting controller constructors
@@ -47,12 +47,14 @@ function controllerProviderDecorator($controllerProvider, $controllerIntrospecto
  */
 function $controllerIntrospectorProvider() {
   var controllers = [];
+  var controllersByName = {};
   var onControllerRegistered = null;
   return {
     register: function (name, constructor) {
       if (angular.isArray(constructor)) {
         constructor = constructor[constructor.length - 1];
       }
+      controllersByName[name] = constructor;
       if (constructor.$routeConfig) {
         if (onControllerRegistered) {
           onControllerRegistered(name, constructor.$routeConfig);
@@ -61,17 +63,23 @@ function $controllerIntrospectorProvider() {
         }
       }
     },
-    $get: ['$componentLoader', function ($componentLoader) {
-      return function (newOnControllerRegistered) {
+    $get: ['$componentMapper', function ($componentMapper) {
+      var fn = function (newOnControllerRegistered) {
         onControllerRegistered = function (name, constructor) {
-          name = $componentLoader.component(name);
+          name = $componentMapper.component(name);
           return newOnControllerRegistered(name, constructor);
         };
         while(controllers.length > 0) {
           var rule = controllers.pop();
           onControllerRegistered(rule.name, rule.config);
         }
-      }
+      };
+
+      fn.getTypeByName = function (name) {
+        return controllersByName[name];
+      };
+
+      return fn;
     }]
   }
 }
@@ -349,12 +357,23 @@ function setupRoutersStepFactory() {
   }
 }
 
+//TODO: rename to "normalize" step
 /*
  * $initLocalsStep
  */
-function initLocalsStepFactory() {
+function initLocalsStepFactory($componentLoader, $controllerIntrospector) {
   return function initLocals(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
+      if (typeof instruction.component === 'function') {
+        instruction.controllerConstructor = instruction.component;
+      } else {
+        var controllerName = $componentLoader.controllerName(instruction.component);
+        if (typeof controllerName === 'function') {
+          instruction.controllerConstructor = controllerName;
+        } else {
+          instruction.controllerConstructor = $controllerIntrospector.getTypeByName(controllerName) || NOOP_CONTROLLER;
+        }
+      }
       return instruction.locals = {
         $router: instruction.router,
         $routeParams: (instruction.params || {})
@@ -369,15 +388,14 @@ function initLocalsStepFactory() {
 function initControllersStepFactory($controller, $componentLoader) {
   return function initControllers(instruction) {
     return instruction.router.traverseInstruction(instruction, function(instruction) {
-      var controllerName = $componentLoader.controllerName(instruction.component);
+      var controllerConstructor = instruction.controllerConstructor;
+
+      // if this is a string, we need to look it up...
       var locals = instruction.locals;
-      var ctrl;
-      try {
-        ctrl = $controller(controllerName, locals);
-      } catch(e) {
-        console.warn && console.warn('Could not instantiate controller', controllerName);
-        ctrl = $controller(angular.noop, locals);
+      if (controllerConstructor === NOOP_CONTROLLER) {
+        console.warn && console.warn('Could not find controller for', $componentLoader.controllerName(instruction.component));
       }
+      var ctrl = $controller(controllerConstructor, locals);
       instruction.controllerAs = $componentLoader.controllerAs(instruction.component);
       return instruction.controller = ctrl;
     });
@@ -429,9 +447,9 @@ function pipelineProvider() {
   var protoStepConfiguration = [
     '$setupRoutersStep',
     '$initLocalsStep',
-    '$initControllersStep',
     '$runCanDeactivateHookStep',
     '$runCanActivateHookStep',
+    '$initControllersStep',
     '$loadTemplatesStep',
     '$activateStep'
   ];
