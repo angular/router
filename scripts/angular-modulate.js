@@ -80,12 +80,12 @@ function transform (dir, contents) {
       imports.push(match);
       return '';
     }
-    var includeFile = path.join(dir, MODULE_LOCATIONS[includePath]);
-    console.log(dir, includeFile);
-    if (includeFile.substr(-3) !== '.js') {
-      includeFile += '.js';
+    var inlineFilePath = path.join(dir, MODULE_LOCATIONS[includePath]);
+    console.log(dir, inlineFilePath);
+    if (inlineFilePath.substr(-3) !== '.js') {
+      inlineFilePath += '.js';
     }
-    return 'var ' + obj + '=' + inlineModule(includeFile) + ';';
+    return 'var ' + obj + '=' + inlineModule(inlineFilePath) + ';';
   });
 
   var services = imports.map(getParts).map(serviceify);
