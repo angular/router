@@ -19,16 +19,9 @@ var PATH = {
   ATS: './src/**/*.ats'
 };
 
-gulp.task('build', ['transpile', 'angularify']);
+gulp.task('build', ['angularify']);
 
-gulp.task('transpile', function() {
-  return gulp.src(PATH.ATS)
-      .pipe(traceur(TRACEUR_OPTIONS))
-      .pipe(rename({extname: '.js'}))
-      .pipe(gulp.dest(BUILD_DIR));
-});
-
-gulp.task('angularify', ['transpile'], function() {
+gulp.task('angularify', function() {
   var directive = gulp.src('./src/*.es5.js');
 
   var generated = gulp.src(['./src/router.ats', './src/grammar.ats'])
