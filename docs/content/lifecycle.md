@@ -6,9 +6,6 @@ A component can make use of these hooks by having its controller implement any n
 
 To understand how this works, let's step through a simple case where a component wants to navigate from one route to another.
 
-<!--
-TODO: expected behavior of a navigation while another navigation is completing?
--->
 
 ## Controller Constructor
 
@@ -24,9 +21,10 @@ If you have logic that determines whether or not to perform a navigation, use th
 Constructors should be lightweight.
 If you need to do a lot of work to setup a controller, consider using the [`activate`](#activate) lifecycle hook.
 
+
 ## canActivate
 
-Before switching to a new component, this hook runs for each active component in the app.
+Before switching to a new component, this hook runs for each component to be created in the app.
 If any of them return `false`, a rejected promise, or a promise that resolves to `false`,
 the navigation is cancelled.
 
