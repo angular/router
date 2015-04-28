@@ -41,7 +41,7 @@ class Router {
    * You probably don't need to use this unless you're writing a reusable component.
    */
   registerOutlet(view, name = 'default') {
-    this.ports[name] = view;
+    this.outlets[name] = view;
     return this.renavigate();
   }
 
@@ -142,14 +142,14 @@ class Router {
    * update outlets accordingly
    */
   canDeactivateOutlets(instruction) {
-    return this.traversePorts((outlet, name) => {
+    return this.traverseOutlets((outlet, name) => {
       return boolToPromise(outlet.canDeactivate(instruction.outlets[name]));
     });
   }
 
-  traversePorts(fn) {
+  traverseOutlets(fn) {
     return this.queryOutlets(fn)
-        .then(() => mapObjAsync(this.children, (child) => child.traversePorts(fn)));
+        .then(() => mapObjAsync(this.children, (child) => child.traverseOutlets(fn)));
   }
 
   queryOutlets(fn) {

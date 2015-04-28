@@ -2,11 +2,11 @@ export class Pipeline {
   constructor() {
     this.steps = [
       instruction => instruction.router.makeDescendantRouters(instruction),
-      instruction => instruction.router.canDeactivatePorts(instruction),
-      instruction => instruction.router.traversePorts((port, name) => {
-        return boolToPromise(port.canActivate(instruction.outlets[name]));
+      instruction => instruction.router.canDeactivateOutlets(instruction),
+      instruction => instruction.router.traverseOutlets((outlet, name) => {
+        return boolToPromise(outlet.canActivate(instruction.outlets[name]));
       }),
-      instruction => instruction.router.activatePorts(instruction)
+      instruction => instruction.router.activateOutlets(instruction)
     ];
   }
   process(instruction) {

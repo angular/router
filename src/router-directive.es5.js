@@ -400,7 +400,7 @@ function initLocalsStepFactory($componentMapper, $controllerIntrospector) {
 
 function runCanDeactivateHookStepFactory() {
   return function runCanDeactivateHook(instruction) {
-    return instruction.router.canDeactivatePorts(instruction);
+    return instruction.router.canDeactivateOutlets(instruction);
   };
 }
 
@@ -433,7 +433,7 @@ function loadTemplatesStepFactory($componentMapper, $templateRequest) {
 
 
 function activateStepValue(instruction) {
-  return instruction.router.activatePorts(instruction);
+  return instruction.router.activateOutlets(instruction);
 }
 
 
@@ -480,7 +480,7 @@ function pipelineProvider() {
 
 
 /**
- * @name $componentMapperFactory
+ * @name $componentMapper
  * @description
  *
  * This lets you configure conventions for what controllers are named and where to load templates from.
