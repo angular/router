@@ -113,16 +113,16 @@ describe('ngOutlet', function () {
       { path: '/',         component:  {left: 'one', right: 'two'} },
       { path: '/switched', components: {left: 'two', right: 'one'} }
     ]);
-    compile('port 1: <div ng-outlet="left"></div> | ' +
-            'port 2: <div ng-outlet="right"></div>');
+    compile('outlet 1: <div ng-outlet="left"></div> | ' +
+            'outlet 2: <div ng-outlet="right"></div>');
 
     $router.navigate('/');
     $rootScope.$digest();
-    expect(elt.text()).toBe('port 1: one | port 2: two');
+    expect(elt.text()).toBe('outlet 1: one | outlet 2: two');
 
     $router.navigate('/switched');
     $rootScope.$digest();
-    expect(elt.text()).toBe('port 1: two | port 2: one');
+    expect(elt.text()).toBe('outlet 1: two | outlet 2: one');
   });
 
 
@@ -590,7 +590,7 @@ describe('ngOutlet', function () {
       { path: '/two', component: 'two' },
     ]);
 
-    compile('<a href="./two">link</a> | <div ng-viewport></div>');
+    compile('<a href="./two">link</a> | <div ng-outlet></div>');
     $rootScope.$digest();
     expect(elt.text()).toBe('link | one');
     elt.find('a').triggerHandler({ type: 'click', which: 3 });
