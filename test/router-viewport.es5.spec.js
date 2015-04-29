@@ -7,16 +7,14 @@ describe('ngOutlet', function () {
       $rootScope,
       $router,
       $templateCache,
-      $controllerProvider,
-      $componentMapperProvider;
+      $controllerProvider;
 
 
   beforeEach(function() {
     module('ng');
     module('ngNewRouter');
-    module(function(_$controllerProvider_, _$componentMapperProvider_) {
+    module(function(_$controllerProvider_) {
       $controllerProvider = _$controllerProvider_;
-      $componentMapperProvider = _$componentMapperProvider_;
     });
 
     inject(function(_$compile_, _$rootScope_, _$router_, _$templateCache_) {
@@ -127,7 +125,7 @@ describe('ngOutlet', function () {
 
 
   it('should work with nested outlets', function () {
-    registerComponent('childRouter', '<div>inner { <div ng-outlet></div> }</div>', [
+    registerComponent('childRouter', '<div>inner { <div ng-outlet></div> }</div>', undefined, [
       { path: '/b', component: 'one' }
     ]);
 
@@ -282,6 +280,24 @@ describe('ngOutlet', function () {
 
     expect(injectedScope).toBeDefined();
   });
+
+
+  it('should inject controller constructors that use the array notation for dependency injection', inject(function ($http) {
+    var injectedHttp;
+    registerComponent('user', '', ['$http', function (differentName) {
+      injectedHttp = differentName;
+    }]);
+
+    $router.config([
+      { path: '/user', component: 'user' }
+    ]);
+    compile('<div ng-outlet></div>');
+
+    $router.navigate('/user');
+    $rootScope.$digest();
+
+    expect(injectedHttp).toBe($http);
+  }));
 
 
   it('should run the deactivate hook of controllers', function () {
@@ -637,7 +653,7 @@ describe('ngOutlet', function () {
       { path: '/new-parent', component:  'childRouter' }
     ]);
 
-    registerComponent('childRouter', '<div>inner { <div ng-outlet></div> }</div>', [
+    registerComponent('childRouter', '<div>inner { <div ng-outlet></div> }</div>', undefined, [
       { path: '/old-child', redirectTo: '/new-child' },
       { path: '/new-child', component: 'one'},
       { path: '/old-child-two', redirectTo: '/new-child-two' },
@@ -686,27 +702,27 @@ describe('ngOutlet', function () {
   });
 
 
-  function registerComponent(name, template, config) {
+  function registerComponent(name, template, componentConstructor, routeConfig) {
     if (!template) {
       template = '';
     }
     var Ctrl;
-    if (!config) {
+    componentConstructor = componentConstructor || function() {};
+    if (angular.isArray(componentConstructor)) {
+      Ctrl = componentConstructor[componentConstructor.length - 1];
+    } else if (angular.isFunction(componentConstructor)) {
+      Ctrl = componentConstructor;
+    } else if (angular.isObject(componentConstructor)) {
       Ctrl = function () {};
-    } else if (angular.isArray(config)) {
-      Ctrl = function () {};
-      Ctrl.$routeConfig = config;
-    } else if (typeof config === 'function') {
-      Ctrl = config;
-    } else {
-      Ctrl = function () {};
-      if (config.canActivate) {
-        Ctrl.canActivate = config.canActivate;
-        delete config.canActivate;
+      if (componentConstructor.canActivate) {
+        Ctrl.canActivate = componentConstructor.canActivate;
+        delete componentConstructor.canActivate;
       }
-      Ctrl.prototype = config;
+      Ctrl.prototype = componentConstructor;
+      componentConstructor = Ctrl;
     }
-    $controllerProvider.register(componentControllerName(name), Ctrl);
+    Ctrl.$routeConfig = routeConfig;
+    $controllerProvider.register(componentControllerName(name), componentConstructor);
     put(name, template);
   }
 
