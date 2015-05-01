@@ -44,7 +44,8 @@ This doc explains how to build the router module yourself.
 1. Install [NodeJS](http://nodejs.org/)
 2. Install [Gulp](http://gulpjs.com/) with `npm install -g gulp`
 3. Clone and `cd` into this repo.
-4. Install dependencies with `npm install` and `bower install`
+4. Install dependencies with `npm install`
+5. Run `gulp build` to build the new files.
 
 ### Running the Examples
 
