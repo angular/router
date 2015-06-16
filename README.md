@@ -1,16 +1,18 @@
-# The New Angular Router
+# Component Router
 [![Build Status](https://travis-ci.org/angular/router.svg?branch=master)](https://travis-ci.org/angular/router)
 
-A new router for Angular 1.4 and 2.0, written with [TypeScript](http://www.typescriptlang.org/) (originally written with [AtScript](https://docs.google.com/document/d/11YUzC-1d0V1-Q3V0fQ7KSit97HnZoKVygDxpWzEYW0U/)).
-
+A new router for Angular 1.5 and 2.0, written with [TypeScript](http://www.typescriptlang.org/).
 
 ## State of this project
 
-Currently, the router is usable in Angular 1, but still missing many of the planned features.
-APIs will rapidly change, so I do not recommend using this in an important production app quite yet.
+For now, the code has been moved to [angular/angular](https://github.com/angular/angular).
+APIs are still rapidly changing, so I don't recommend using this in an important production app quite yet.
 
-See the [Progress Document](https://docs.google.com/document/d/1-DBXTHaeec6XH5qx2tKVrgrjiILy76_lSrjgJv95RJ4/edit#)
-for standup-style updates
+See the [Angular Weekly Meeting Notes](https://docs.google.com/document/d/150lerb1LmNLuau_a_EznPV1I1UHMTbEl61t4hZ7ZpS0/edit#heading=h.5kbngfq9twyj) for updates.
+
+---
+
+**NOTE:** Everything below is out-of-date, but left for posterity.
 
 ### Trying the router
 
@@ -21,11 +23,6 @@ npm install angular-new-router
 ```
 
 The documentation is pretty sparse. See the `examples/` directory in this repo for now.
-
-### Helping out
-
-For now, the best way for you to help with the new router is to try it out and file GitHub issues
-with questions or feedback. Please also [check out existing discussions](https://github.com/angular/router/labels/type%3A%20use%20case).
 
 ## Goals
 
