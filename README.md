@@ -1,3 +1,8 @@
+# ---- OUT OF DATE ----
+## Ignore this repository. The component router lives inside the Angular 2 repository
+See https://github.com/angular/angular/tree/master/modules/angular2/src/router
+and https://github.com/angular/angular/tree/master/modules/angular1_router
+
 # Component Router
 [![Build Status](https://travis-ci.org/angular/router.svg?branch=master)](https://travis-ci.org/angular/router)
 
