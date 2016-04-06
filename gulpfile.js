@@ -1,6 +1,5 @@
 var gulp = require('gulp');
 var Dgeni = require('dgeni');
-var traceur = require('gulp-traceur');
 var connect = require('gulp-connect');
 var concat = require('gulp-concat');
 var rename = require('gulp-rename');
@@ -19,7 +18,9 @@ var PATH = {
   ATS: './src/**/*.ats'
 };
 
-gulp.task('build', []);
+gulp.task('build', function() {
+
+});
 
 
 gulp.task('dgeni', function() {

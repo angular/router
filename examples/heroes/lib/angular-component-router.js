@@ -1,0 +1,1 @@
+../../../dist/angular-component-router.js

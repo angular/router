@@ -31,6 +31,22 @@ Below is a short summary of these goals:
 * Handle updating the document title
 * *Lazy-load components* (partial support)
 
+## Layout
+
+The folder structure of the project is as follows:
+
+```
+- node_modules
+  - angular2
+    - src
+      - router : ES5 builds of the Angular 2 router files
+- src          : Angular 1 specific router files
+- overrides    : will be copied over the Angular 2 router files
+- shims        : alternatives to the core Angular 2 modules used by the router
+
+- tmp          : contains the copies of the files that will be webpacked
+- dist         : contains the final bundle file
+```
 
 ## Prior Art
 

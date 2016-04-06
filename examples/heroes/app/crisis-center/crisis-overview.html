@@ -1,0 +1,14 @@
+<my-tabs selected="$ctrl.selectedCountry" on-select="$ctrl.onSelectCountry($index)">
+  <my-panel ng-repeat="country in $ctrl.countries" title="{{country}}">
+    <panel-title>{{country}}</panel-title>
+    <panel-body>
+      <ul>
+        <li ng-repeat="crisis in $ctrl.crises | filter : {country: country}"
+          ng-class="{ selected: $ctrl.currentCrisis==crisis }"
+          ng-click="$ctrl.editCrisis(crisis)">
+          <span class="badge">{{crisis.id}}</span> {{crisis.name}}
+        </li>
+      </ul>
+    </panel-body>
+  </my-panel>
+</my-tabs>
