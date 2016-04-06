@@ -1,33 +1,16 @@
-# ---- OUT OF DATE ----
-## Ignore this repository. The component router lives inside the Angular 2 repository
-See https://github.com/angular/angular/tree/master/modules/angular2/src/router
-and https://github.com/angular/angular/tree/master/modules/angular1_router
-
-# Component Router
+# Component Router for Angular 1
 [![Build Status](https://travis-ci.org/angular/router.svg?branch=master)](https://travis-ci.org/angular/router)
 
-A new router for Angular 1.5 and 2.0, written with [TypeScript](http://www.typescriptlang.org/).
+This project contains the Angular 1 bits and distribution for the Component Router.
 
-## State of this project
+The code exists in two parts:
 
-For now, the code has been moved to [angular/angular](https://github.com/angular/angular).
-APIs are still rapidly changing, so I don't recommend using this in an important production app quite yet.
+* the core code, written in TypeScript, lives in the [Angular 2 repository](https://github.com/angular/angular)
+* the shims, services and directives, specific to Angular 1, live in this repository
 
-See the [Angular Weekly Meeting Notes](https://docs.google.com/document/d/150lerb1LmNLuau_a_EznPV1I1UHMTbEl61t4hZ7ZpS0/edit#heading=h.5kbngfq9twyj) for updates.
+In addition this repository contains the tools for building the Component Router distribution files and docs for use in Angular 1 projects.
 
----
-
-**NOTE:** Everything below is out-of-date, but left for posterity.
-
-### Trying the router
-
-You can install the router via `npm`:
-
-```shell
-npm install angular-new-router
-```
-
-The documentation is pretty sparse. See the `examples/` directory in this repo for now.
+The core API is still changing, so don't use this in an important production app quite yet, unless you are happy to cope with breaking changes.
 
 ## Goals
 
@@ -43,19 +26,19 @@ Below is a short summary of these goals:
 * Expose a "navigation model" which can be used to generate a navigation UI (like menus)
   * Expose which route in the model is active (useful in styling/highlighting links in the menu)
 * Generate `href`s based on router hierarchies
-* Lazy-load components
 * Be able to reuse component instances
 * Use either push state or hash change mode
 * Handle updating the document title
+* *Lazy-load components* (partial support)
 
 
 ## Prior Art
 
-* [Durandal Router](http://durandaljs.com/documentation/Using-The-Router.html)
 * [ngRoute from Angular 1.x](https://docs.angularjs.org/api/ngRoute)
+* [UI Router from angular-ui](http://angular-ui.github.io/ui-router/site/)
+* [Durandal Router](http://durandaljs.com/documentation/Using-The-Router.html)
 * [Route Recognizer](https://github.com/tildeio/route-recognizer)
 
 
-
 ## License
-Apache 2
+MIT

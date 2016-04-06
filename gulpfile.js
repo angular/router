@@ -19,24 +19,8 @@ var PATH = {
   ATS: './src/**/*.ats'
 };
 
-gulp.task('build', ['angularify']);
+gulp.task('build', []);
 
-gulp.task('angularify', function() {
-  var directive = gulp.src('./src/*.es5.js');
-
-  var generated = gulp.src(['./src/router.ats', './src/grammar.ats'])
-      .pipe(modulate({
-        moduleName: 'ngNewRouter.generated'
-      }))
-
-  return gulpMerge(directive, generated)
-      .pipe(concat('router.es5.js'))
-      .pipe(ngAnnotate())
-      .pipe(gulp.dest(BUILD_DIR))
-      .pipe(uglify())
-      .pipe(rename({extname: '.min.js'}))
-      .pipe(gulp.dest(BUILD_DIR));
-});
 
 gulp.task('dgeni', function() {
   try {

@@ -1,60 +1,236 @@
-# Contributing
+# Contributing to Angular 1 Component Router
 
-This doc explains how The New Router is developed, and how you can help improve it.
+We'd love for you to contribute to our source code and to make the Angular 1 Component Router even
+better than it is today!
 
-## Methodology
+Remember that this is only for the Angular 1 Component Router. If you have issues with the Angular 2
+version of the Component Router then see the [Angular 2 repository][angular2]
 
-You can see daily progress and goals in the [progress doc](https://docs.google.com/document/d/1-DBXTHaeec6XH5qx2tKVrgrjiILy76_lSrjgJv95RJ4/edit#).
-Individual tasks are mostly tracked as issues on GitHub.
+Here are the guidelines we'd like you to follow:
 
-### Giving Feedback
+ - [Code of Conduct](#coc)
+ - [Issue, Question or Problem?](#question)
+ - [Feature Requests](#feature)
+ - [Submission Guidelines](#submit)
+ - [Coding Rules](#rules)
+ - [Commit Message Guidelines](#commit)
+ - [Signing the CLA](#cla)
 
-Please check existing issues and PRs (including ones that have already been closed) before filing new ones.
-That being said, all forms of feedback are welcome: bug reports, feature requests, use cases, and questions.
+## <a name="coc"></a> Code of Conduct
+Help us keep Angular open and inclusive. Please read and follow our [Code of Conduct][coc].
 
-### GitHub Labels
-Most of the use cases are self-explanatory, so they are omitted.
+## <a name="question"></a> Got an Issue, Question or Problem?
 
-* [pair](https://github.com/angular/router/labels/pair) - issues that @btford wants to use or pairing with other Angular Core team members to get feedback.
-* [`type: use case`](https://github.com/angular/router/labels/type%3A%20use%20case) - issues that describe a common usage scenario.
-  Should be closed by adding an example to `examples/angular-1/`, complete with docs and an e2e test.
+If you find a bug in the source code or a mistake in the documentation, you can help us by
+submitting an issue to our [GitHub Repository][github]. Even better you can submit a Pull Request
+with a fix.
 
-### GitHub Milestones
-* v0.x.y - This is the list of tasks that I'm aiming to get done this week. I'll be closing these and cutting releases on Fridays.
-* [pre ng-conf](https://github.com/angular/router/issues?q=milestone%3Apre-ng-conf+) - these tasks need to be taken care of before the beginning of March.
-* [post ng-conf](https://github.com/angular/router/issues?q=milestone%3A%22post+ng-conf%22) - these tasks need to be taken care of eventually.
+**Please see the Submission Guidelines below**.
 
-After ng-conf, I'll likely reorganize these labels.
-
-
-## Releases
-
-Releases of this module live in the `dist` directory. Releases (tagged `vx.y.z`) of this module published on npm
-or will have up-to-date build artifacts checked in.
+## <a name="feature"></a> Want a Feature?
+You can request a new feature by submitting an issue to our [GitHub Repository][github].  If you
+would like to implement a new feature then consider what kind of change it is:
 
 
-## Development
+## <a name="submit"></a> Submission Guidelines
 
-This section explains how to build the router module yourself.
+### Submitting an Issue
+Before you submit your issue search the [archive][issues], maybe your question was already answered.
 
-### Setup
+If your issue appears to be a bug, and hasn't been reported, open a new issue.
+Help us to maximize the effort we can spend fixing issues and adding new
+features, by not reporting duplicate issues.  Providing the following information will increase the
+chances of your issue being dealt with quickly:
 
-This doc explains how to build the router module yourself.
+* **Overview of the Issue** - if an error is being thrown a non-minified stack trace helps
+* **Motivation for or Use Case** - explain why this is a bug for you
+* **Angular Version(s)** - is it a regression?
+* **Browsers and Operating System** - is this a problem with all browsers or only IE8?
+* **Reproduce the Error** - provide a live example (using [Plunker][plunker] or
+  [JSFiddle][jsfiddle]) or an unambiguous set of steps.
+* **Related Issues** - has a similar issue been reported before?
+* **Suggest a Fix** - if you can't fix the bug yourself, perhaps you can point to what might be
+  causing the problem (line of code or commit)
 
-1. Install [NodeJS](http://nodejs.org/)
-2. Install [Gulp](http://gulpjs.com/) with `npm install -g gulp`
-3. Clone and `cd` into this repo.
-4. Install dependencies with `npm install`
-5. Run `gulp build` to build the new files.
+Here is a great example of a well defined issue: https://github.com/angular/angular.js/issues/5069
 
-### Running the Examples
+**If you get help, help others. Good karma rulez!**
 
-1. Start the development server with `gulp build watch serve`
-2. Open a browser and navigate to [http://localhost:8000/examples/angular-1/hello](http://localhost:8000/examples/angular-1/hello)
+### Submitting a Pull Request
+Before you submit your pull request consider the following guidelines:
 
-### Running the Tests
+* Search [GitHub][pulls] for an open or closed Pull Request
+  that relates to your submission. You don't want to duplicate effort.
+* Please sign our [Contributor License Agreement (CLA)](#cla) before sending pull
+  requests. We cannot accept code without this.
+* Make your changes in a new git branch:
 
-1. Install [Karma](http://karma-runner.github.io/) with `npm install -g karma`
-2. Install the CLI for [Karma](http://karma-runner.github.io/) with `npm install -g karma-cli`
-3. Start karma with `karma start`
-4. Add new tests to the `test` folder. Be sure to give them an extension of `.spec.js`.
+     ```shell
+     git checkout -b my-fix-branch master
+     ```
+
+* Create your patch, **including appropriate test cases**.
+* Follow our [Coding Rules](#rules).
+* Run the full test suite and ensure that all tests pass.
+* Commit your changes using a descriptive commit message that follows our
+  [commit message conventions](#commit-message-format) and passes our commit message presubmit hook
+  `validate-commit-msg.js`. Adherence to the [commit message conventions](#commit-message-format)
+  is required because release notes are automatically generated from these messages.
+
+     ```shell
+     git commit -a
+     ```
+  Note: the optional commit `-a` command line option will automatically "add" and "rm" edited files.
+
+* Push your branch to GitHub:
+
+    ```shell
+    git push origin my-fix-branch
+    ```
+
+* In GitHub, send a pull request to the `master` branch.
+* If we suggest changes then:
+  * Make the required updates.
+  * Re-run the Angular test suite to ensure tests are still passing.
+  * Commit your changes to your branch (e.g. `my-fix-branch`).
+  * Push the changes to your GitHub repository (this will update your Pull Request).
+
+If the PR gets too outdated we may ask you to rebase and force push to update the PR:
+
+    ```shell
+    git rebase master -i
+    git push origin my-fix-branch -f
+    ```
+
+*WARNING. Squashing or reverting commits and forced push thereafter may remove GitHub comments
+on code that were previously made by you and others in your commits.*
+
+That's it! Thank you for your contribution!
+
+#### After your pull request is merged
+
+After your pull request is merged, you can safely delete your branch and pull the changes
+from the main (upstream) repository:
+
+* Delete the remote branch on GitHub either through the GitHub web UI or your local shell as follows:
+
+    ```shell
+    git push origin --delete my-fix-branch
+    ```
+
+* Check out the master branch:
+
+    ```shell
+    git checkout master -f
+    ```
+
+* Delete the local branch:
+
+    ```shell
+    git branch -D my-fix-branch
+    ```
+
+* Update your master with the latest upstream version:
+
+    ```shell
+    git pull --ff upstream master
+    ```
+
+## <a name="rules"></a> Coding Rules
+To ensure consistency throughout the source code, keep these rules in mind as you are working:
+
+* All features or bug fixes **must be tested** by one or more specs.
+* All public API methods **must be documented** with a jsdoc style comment block.
+
+## <a name="commit"></a> Git Commit Guidelines
+
+We have very precise rules over how our git commit messages can be formatted.  This leads to **more
+readable messages** that are easy to follow when looking through the **project history**.  But also,
+we use the git commit messages to **generate the AngularJS change log**.
+
+The commit message formatting can be added using a typical git workflow or through the use of a CLI wizard
+([Commitizen](https://github.com/commitizen/cz-cli)). To use the wizard, run `npm run commit` in your terminal
+after staging your changes in git.
+
+### Commit Message Format
+Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
+format that includes a **type**, a **scope** and a **subject**:
+
+```
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
+
+The **header** is mandatory and the **scope** of the header is optional.
+
+Any line of the commit message cannot be longer 200 characters! This allows the message to be easier
+to read on GitHub as well as in various git tools.
+
+### Revert
+If the commit reverts a previous commit, it should begin with `revert: `, followed by the header of the
+reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is the SHA of the commit
+being reverted.
+
+### Type
+Must be one of the following:
+
+* **feat**: A new feature
+* **fix**: A bug fix
+* **docs**: Documentation only changes
+* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing
+  semi-colons, etc)
+* **refactor**: A code change that neither fixes a bug nor adds a feature
+* **perf**: A code change that improves performance
+* **test**: Adding missing tests
+* **chore**: Changes to the build process or auxiliary tools and libraries such as documentation
+  generation
+
+### Scope
+The scope could be anything specifying place of the commit change. For example `$location`,
+`$browser`, `$compile`, `$rootScope`, `ngHref`, `ngClick`, `ngView`, etc...
+
+### Subject
+The subject contains succinct description of the change:
+
+* use the imperative, present tense: "change" not "changed" nor "changes"
+* don't capitalize first letter
+* no dot (.) at the end
+
+### Body
+Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes".
+The body should include the motivation for the change and contrast this with previous behavior.
+
+### Footer
+The footer should contain any information about **Breaking Changes** and is also the place to
+reference GitHub issues that this commit **Closes**.
+
+**Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines.
+The rest of the commit message is then used for this.
+
+A detailed explanation can be found in this [document][commit-message-format].
+
+## <a name="cla"></a> Signing the CLA
+
+Please sign our Contributor License Agreement (CLA) before sending pull requests. For any code
+changes to be accepted, the CLA must be signed. It's a quick process, we promise!
+
+* For individuals we have a [simple click-through form][individual-cla].
+* For corporations we'll need you to
+  [print, sign and one of scan+email, fax or mail the form][corporate-cla].
+
+
+
+[coc]: https://github.com/angular/code-of-conduct/blob/master/CODE_OF_CONDUCT.md
+[commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
+[corporate-cla]: http://code.google.com/legal/corporate-cla-v1.0.html
+[github]: https://github.com/angular/router
+[issues]: https://github.com/angular/router/issues
+[pulls]: https://github.com/angular/router/pulls
+[individual-cla]: http://code.google.com/legal/individual-cla-v1.0.html
+[jsfiddle]: http://jsfiddle.net/
+[plunker]: http://plnkr.co/edit
+
+[![Analytics](https://ga-beacon.appspot.com/UA-8594346-11/router/CONTRIBUTING.md?pixel)](https://github.com/igrigorik/ga-beacon)
