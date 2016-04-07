@@ -1,6 +1,7 @@
 var RouteRegistry = require('./route_registry').RouteRegistry;
 var lang = require('angular2/src/facade/lang');
 var isString = lang.isString;
+var isPresent = lang.isPresent;
 
 module.exports = function routeRegistryFactory(getAnnotation, rootComponent) {
 
@@ -20,7 +21,7 @@ module.exports = function routeRegistryFactory(getAnnotation, rootComponent) {
         $routeConfig.forEach(function (config) {
           var loader = config.loader;
           if (isPresent(loader)) {
-            config = angular.extend({}, config, { loader: () => $injector.invoke(loader) });
+            config = angular.extend({}, config, { loader: function() { return $injector.invoke(loader); } });
           }
           that.config(component, config);
         });
