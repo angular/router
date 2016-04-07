@@ -15,15 +15,16 @@ angular.module('ngComponentRouter', [])
     .directive('ngOutlet', ['$compile', ngOutlet.ngOutletFillContentDirective])
     .directive('$router', ['$q', ngOutlet.routerTriggerDirective])
     .directive('ngLink', ['$rootRouter', '$parse', ngLinkDirective])
-    .value('$route', null) // can be overloaded with ngRouteShim
-    // Unfortunately, $location doesn't expose what the current hashPrefix is
-    // So we have to monkey patch the $locationProvider to capture this value
     .provider('$locationHashPrefix', ['$locationProvider', $locationHashPrefixProvider])
-    // Because Angular 1 has no notion of a root component, we use an object with unique identity
-    // to represent this. Can be overloaded with a component name
-    .value('$routerRootComponent', new Object())
-    .factory('$rootRouter', ['$q', '$location', '$browser', '$rootScope', '$injector', '$routerRootComponent', routerFactory]);
+    .value('$routerRootComponent', new DummyRootComponent())
+    .factory('$rootRouter', ['$q', '$location', '$browser', '$rootScope', '$injector', '$routerRootComponent', '$locationHashPrefix', routerFactory]);
 
+// Because Angular 1 has no notion of a root component, we use an object with unique identity
+// to represent this. Can be overloaded with a component name
+function DummyRootComponent() {}
+
+// Unfortunately, $location doesn't expose what the current hashPrefix is
+// So we have to monkey patch the $locationProvider to capture this value
 function $locationHashPrefixProvider($locationProvider) {
 
   // Get hold of the original hashPrefix method

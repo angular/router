@@ -1,6 +1,6 @@
 module.exports = {
   context: __dirname + '/tmp',
-  entry: './angular-component-router.js',
+  entry: './ngComponentRouter.js',
   output: {
     path: __dirname + '/dist',
     pathInfo: true,
