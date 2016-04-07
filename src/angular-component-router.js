@@ -1,8 +1,9 @@
-var ngOutlet = require('./ng_outlet');
-var ngLinkDirective = require('./ng_link');
+var ngOutlet = require('./ngOutlet');
+var ngLinkDirective = require('./ngLink');
 
-var lang = require('angular2/src/facade/lang');
 var exceptions = require('angular2/src/facade/exceptions');
+var BaseException = exceptions.BaseException;
+var lang = require('angular2/src/facade/lang');
 var isString = lang.isString;
 var isPresent = lang.isPresent;
 
@@ -15,24 +16,46 @@ angular.module('ngComponentRouter', [])
     .directive('$router', ['$q', ngOutlet.routerTriggerDirective])
     .directive('ngLink', ['$rootRouter', '$parse', ngLinkDirective])
     .value('$route', null) // can be overloaded with ngRouteShim
+    // Unfortunately, $location doesn't expose what the current hashPrefix is
+    // So we have to monkey patch the $locationProvider to capture this value
+    .provider('$locationHashPrefix', ['$locationProvider', $locationHashPrefixProvider])
     // Because Angular 1 has no notion of a root component, we use an object with unique identity
     // to represent this. Can be overloaded with a component name
     .value('$routerRootComponent', new Object())
     .factory('$rootRouter', ['$q', '$location', '$browser', '$rootScope', '$injector', '$routerRootComponent', routerFactory]);
 
-function routerFactory($q, $location, $browser, $rootScope, $injector, $routerRootComponent) {
+function $locationHashPrefixProvider($locationProvider) {
 
-  // Helper function for finding the component controllers
-  function getComponentConstructor(name) {
-    var serviceName = name + 'Directive';
+  // Get hold of the original hashPrefix method
+  var hashPrefixFn = $locationProvider.hashPrefix.bind($locationProvider);
+
+  // Read the current hashPrefix (in case it was set before this monkey-patch occurred)
+  var hashPrefix = hashPrefixFn();
+
+  // Override the helper so that we can read any changes to the prefix (after this monkey-patch)
+  $locationProvider.hashPrefix = function(prefix) {
+    if (angular.isDefined(prefix)) {
+      hashPrefix = prefix;
+    }
+    return hashPrefixFn(prefix);
+  }
+
+  // Return the final hashPrefix as the value of this service
+  this.$get = function() { return hashPrefix; };
+}
+
+function routerFactory($q, $location, $browser, $rootScope, $injector, $routerRootComponent, $locationHashPrefix) {
+
+  function getAnnotation(componentName, annotationName) {
+    var serviceName = componentName + 'Directive';
     if ($injector.has(serviceName)) {
       var definitions = $injector.get(serviceName);
       if (definitions.length > 1) {
-        throw new exceptions.BaseException('too many directives named "' + name + '"');
+        throw new BaseException('too many directives named "' + componentName + '"');
       }
-      return definitions[0].controller;
+      return definitions[0][annotationName];
     } else {
-      throw new exceptions.BaseException('directive "' + name + '" is not registered');
+      throw new BaseException('directive "' + componentName + '" is not registered');
     }
   }
 
@@ -62,20 +85,20 @@ function routerFactory($q, $location, $browser, $rootScope, $injector, $routerRo
   // Monkey-patch to look for the hook as a static method on the controller class
   var routeLifecycleReflector = require('./router/lifecycle/route_lifecycle_reflector');
   routeLifecycleReflector.getCanActivateHook = function(directiveName) {
-    var controller = getComponentConstructor(directiveName);
-    return controller.$canActivate && function (next, prev) {
-      return $injector.invoke(controller.$canActivate, null, {
+    var $canActivate = getAnnotation(directiveName, '$canActivate');
+    return $canActivate && function (next, prev) {
+      return $injector.invoke($canActivate, null, {
         $nextInstruction: next,
         $prevInstruction: prev
       });
     };
   };
 
-  var locationFactory = require('./location_factory');
-  var location = locationFactory($location, $rootScope);
+  var Location = require('./router/location/location').Location;
+  var location = new Location($location, $rootScope);
 
-  var routeRegistryFactory = require('./route_registry_factory');
-  var registry = routeRegistryFactory(getComponentConstructor, $routerRootComponent);
+  var routeRegistryFactory = require('./router/route_registry_factory');
+  var registry = routeRegistryFactory(getAnnotation, $routerRootComponent);
 
   var RootRouter = require('./router/router').RootRouter;
   var router = new RootRouter(registry, location, $routerRootComponent);

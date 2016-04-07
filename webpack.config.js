@@ -1,6 +1,6 @@
 module.exports = {
   context: __dirname + '/tmp',
-  entry: './ng_component_router.js',
+  entry: './angular-component-router.js',
   output: {
     path: __dirname + '/dist',
     pathInfo: true,
@@ -8,5 +8,7 @@ module.exports = {
   },
   resolve: {
     root: __dirname + '/shims',
-  }
+  },
+  debug: true,
+  devtool: 'source-map'
 };

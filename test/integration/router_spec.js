@@ -8,7 +8,7 @@ fdescribe('router', function () {
       .value('$routerRootComponent', 'app');
   });
 
-  fit('should work with a provided root component', function() {
+  it('should work with a provided root component', function() {
 
     registerComponent('homeCmp', {
       template: 'Home'
@@ -21,6 +21,7 @@ fdescribe('router', function () {
       ]
     });
 
+    module('testMod');
     compileApp();
 
     inject(function($location, $rootScope) {
@@ -172,7 +173,6 @@ fdescribe('router', function () {
   });
 
   function compileApp() {
-    module('testMod');
     inject(function($compile, $rootScope) {
       elt = $compile('<div><app></app</div>')($rootScope);
       $rootScope.$digest();

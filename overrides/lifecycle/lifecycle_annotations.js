@@ -1,0 +1,1 @@
+// Empty file to clear out the Angular 2 annotations stuff

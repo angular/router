@@ -16,8 +16,12 @@ exports.ObservableWrapper = {
   callEmit: function(ob, val) {
     ob.fn(val);
   },
+  callError: function(ob, val) {
+    ob.errorFn && ob.errorFn(val);
+  },
 
-  subscribe: function(ob, fn) {
+  subscribe: function(ob, fn, errorFn) {
     ob.fn = fn;
+    ob.errorFn = errorFn;
   }
 };
