@@ -15,10 +15,17 @@
     "angular2": "^2.0.0-beta.8"
   },
   "devDependencies": {
-    "fs-extra": "^0.26.5",
-    "webpack": "^1.12.14",
     "angular": "1.5.x",
-    "lite-server": "^2.0.1"
+    "angular-animate": "^1.5.3",
+    "angular-mocks": "^1.5.3",
+    "es6-shim": "^0.35.0",
+    "fs-extra": "^0.26.5",
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.13.22",
+    "karma-chrome-launcher": "^0.2.3",
+    "karma-jasmine": "^0.3.8",
+    "lite-server": "^2.0.1",
+    "webpack": "^1.12.14"
   },
   "scripts": {
     "start": "node scripts/copy_files.js && webpack"

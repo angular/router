@@ -2,6 +2,7 @@ var ngOutlet = require('./ng_outlet');
 var ngLinkDirective = require('./ng_link');
 
 var lang = require('angular2/src/facade/lang');
+var exceptions = require('angular2/src/facade/exceptions');
 var isString = lang.isString;
 var isPresent = lang.isPresent;
 
@@ -27,11 +28,11 @@ function routerFactory($q, $location, $browser, $rootScope, $injector, $routerRo
     if ($injector.has(serviceName)) {
       var definitions = $injector.get(serviceName);
       if (definitions.length > 1) {
-        throw new BaseException('too many directives named "' + name + '"');
+        throw new exceptions.BaseException('too many directives named "' + name + '"');
       }
       return definitions[0].controller;
     } else {
-      throw new BaseException('directive "' + name + '" is not registered');
+      throw new exceptions.BaseException('directive "' + name + '" is not registered');
     }
   }
 
