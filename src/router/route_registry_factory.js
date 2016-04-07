@@ -3,7 +3,7 @@ var lang = require('angular2/src/facade/lang');
 var isString = lang.isString;
 var isPresent = lang.isPresent;
 
-module.exports = function routeRegistryFactory(getAnnotation, rootComponent) {
+module.exports = function routeRegistryFactory(getAnnotation, rootComponent, $injector) {
 
   // Create a monkey patched version of the registry
   var routeRegistry = new RouteRegistry(rootComponent);

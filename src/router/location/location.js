@@ -22,7 +22,6 @@ function Location($location, $rootScope){
   };
 
   $rootScope.$on('$locationChangeStart', function(event, newUrl, oldUrl, newState, oldState) {
-    console.log('$location.url changing', newUrl, oldUrl, $location.url());
     onNextHandlers.forEach(function(handler) { handler({url: $location.url()}); });
   });
 }

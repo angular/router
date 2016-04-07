@@ -1,6 +1,6 @@
 'use strict';
 
-fdescribe('router', function () {
+describe('router', function () {
 
   function createTestModule() {
     var mod = angular.module('testMod', ['ngComponentRouter'])
@@ -9,8 +9,7 @@ fdescribe('router', function () {
     return mod;
   }
 
-  fit('should work with a provided root component', function() {
-    console.log(1);
+  it('should work with a provided root component', function() {
     createTestModule()
       .component('homeCmp', {template: 'Home'})
       .component('otherCmp', {template: 'Other'})
@@ -42,8 +41,7 @@ fdescribe('router', function () {
     });
   });
 
-  fit('should bind the component to the current router', function() {
-    console.log(2);
+  it('should bind the component to the current router', function() {
     var router;
     createTestModule()
       .component('homeCmp', {
@@ -67,7 +65,6 @@ fdescribe('router', function () {
     inject(function($location, $rootScope) {
       $location.path('/home');
       $rootScope.$digest();
-      console.log(elt);
       var homeElement = elt.find('home-cmp');
       expect(homeElement.text()).toBe('Home');
       expect(homeElement.isolateScope().$ctrl.$router).toBeDefined();
@@ -76,22 +73,25 @@ fdescribe('router', function () {
   });
 
   it('should work when an async route is provided route data', function() {
-    registerComponent('homeCmp', {
-      template: 'Home ({{$ctrl.isAdmin}})',
-      $routerOnActivate: function(next, prev) {
-        this.isAdmin = next.routeData.data.isAdmin;
-      }
-    });
 
-    registerComponent('app', {
-      template: '<div ng-outlet></div>',
-      $routeConfig: [
-        { path: '/', loader: function($q) { return $q.when('homeCmp'); }, data: { isAdmin: true } }
-      ]
-    });
+    createTestModule()
 
-    module('testMod');
-    compileApp();
+      .component('homeCmp', {
+        template: 'Home ({{$ctrl.isAdmin}})',
+        controller: function() {
+          this.$routerOnActivate = function(next, prev) {
+            this.isAdmin = next.routeData.data.isAdmin;
+          };
+        }
+      })
+      .component('app', {
+        template: '<div ng-outlet></div>',
+        $routeConfig: [
+          { path: '/', loader: function($q) { return $q.when('homeCmp'); }, data: { isAdmin: true } }
+        ]
+      });
+
+    var elt = compileApp();
 
     inject(function($location, $rootScope) {
       $location.path('/');
@@ -104,25 +104,26 @@ fdescribe('router', function () {
 
     var $routerOnActivate = jasmine.createSpy('$routerOnActivate');
 
-    registerComponent('homeCmp', {
-      templateUrl: 'homeCmp.html',
-      $routerOnActivate: $routerOnActivate
-    });
+    createTestModule()
 
-    registerComponent('app', {
-      template: '<div ng-outlet></div>',
-      $routeConfig: [
-        { path: '/', component: 'homeCmp' }
-      ]
-    });
-
-    module('testMod');
+      .component('homeCmp', {
+        templateUrl: 'homeCmp.html',
+        controller: function() {
+          this.$routerOnActivate = $routerOnActivate;
+        }
+      })
+      .component('app', {
+        template: '<div ng-outlet></div>',
+        $routeConfig: [
+          { path: '/', component: 'homeCmp' }
+        ]
+      });
 
     inject(function($location, $rootScope, $httpBackend) {
 
       $httpBackend.expectGET('homeCmp.html').respond('Home');
 
-      compileApp();
+      var elt = compileApp();
 
       $location.path('/');
       $rootScope.$digest();
@@ -134,21 +135,20 @@ fdescribe('router', function () {
   });
 
   it('should provide the current instruction', function() {
-    registerComponent('homeCmp', {
-      template: 'Home ({{homeCmp.isAdmin}})'
-    });
+    createTestModule()
 
-    registerComponent('app', {
+    .component('homeCmp', {
+      template: 'Home ({{homeCmp.isAdmin}})'
+    })
+    .component('app', {
       template: '<div ng-outlet></div>',
       $routeConfig: [
         { path: '/', component: 'homeCmp', name: 'Home' }
       ]
     });
 
-    module('testMod');
-
     inject(function($rootScope, $rootRouter, $location) {
-      compileApp();
+      var elt = compileApp();
 
       $location.path('/');
       $rootScope.$digest();
@@ -158,24 +158,25 @@ fdescribe('router', function () {
   });
 
   it('should provide the root level router', function() {
-    registerComponent('homeCmp', {
+    createTestModule()
+
+    .component('homeCmp', {
       template: 'Home ({{homeCmp.isAdmin}})',
       bindings: {
         $router: '<'
       }
-    });
+    })
 
-    registerComponent('app', {
+    .component('app', {
       template: '<div ng-outlet></div>',
       $routeConfig: [
         { path: '/', component: 'homeCmp', name: 'Home' }
       ]
     });
 
-    module('testMod');
 
     inject(function($rootScope, $rootRouter, $location) {
-      compileApp();
+      var elt = compileApp();
 
       $location.path('/');
       $rootScope.$digest();

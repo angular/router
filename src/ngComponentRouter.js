@@ -70,13 +70,12 @@ function routerFactory($q, $location, $browser, $rootScope, $injector, $routerRo
 
   // Create the top level router, and its associated registry of router rules
   var routeRegistryFactory = require('./router/route_registry_factory');
-  var registry = routeRegistryFactory(getAnnotation, $routerRootComponent);
+  var registry = routeRegistryFactory(getAnnotation, $routerRootComponent, $injector);
   var Location = require('./router/location/location').Location;
   var RootRouter = require('./router/router').RootRouter;
   var router = new RootRouter(registry, new Location($location, $rootScope), $routerRootComponent);
 
   router.subscribe(function (change) {
-    console.log('xxx');
     $rootScope.$broadcast('$routeChangeSuccess', change);
   });
 
