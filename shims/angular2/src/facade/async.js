@@ -1,15 +1,26 @@
-exports.PromiseWrapper = {
-  // This is going to be monkey patched from inside
-  // the routerFactory closure, because the implementation
-  // will need access to $q
+var PromiseWrapper = {
+    resolve: function (reason) {
+      return PromiseWrapper.$q.when(reason);
+    },
+
+    reject: function (reason) {
+      return PromiseWrapper.$q.reject(reason);
+    },
+
+    catchError: function (promise, fn) {
+      return promise.then(null, fn);
+    },
+    all: function (promises) {
+      return PromiseWrapper.$q.all(promises);
+    }
 };
 
-exports.EventEmitter = function EventEmitter() {
+function EventEmitter() {
   //TODO: implement?
   // I think it's too heavy to ask 1.x users to bring in Rx for the router...
-};
+}
 
-exports.ObservableWrapper = {
+var ObservableWrapper = {
   callNext: function(ob, val) {
     ob.fn(val);
   },
@@ -17,11 +28,17 @@ exports.ObservableWrapper = {
     ob.fn(val);
   },
   callError: function(ob, val) {
-    ob.errorFn && ob.errorFn(val);
+    if (ob.errorFn) ob.errorFn(val);
   },
 
   subscribe: function(ob, fn, errorFn) {
     ob.fn = fn;
     ob.errorFn = errorFn;
   }
+};
+
+module.exports = {
+  PromiseWrapper: PromiseWrapper,
+  EventEmitter: EventEmitter,
+  ObservableWrapper: ObservableWrapper
 };

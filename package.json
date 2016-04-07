@@ -28,7 +28,8 @@
     "webpack": "^1.12.14"
   },
   "scripts": {
-    "start": "rm -rf tmp && rm -rf dist && node scripts/copy_files.js && webpack"
+    "clean": "rm -rf tmp && rm -rf dist",
+    "start": "node scripts/copy_files.js && webpack"
   },
   "author": "Angular Core Team",
   "license": "MIT"

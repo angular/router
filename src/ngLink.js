@@ -56,11 +56,13 @@ module.exports = function ngLinkDirective($rootRouter, $parse) {
       var params = routeParamsGetter();
       element.attr('href', getLink(params));
     } else {
-      scope.$watch(() => routeParamsGetter(scope), params => element.attr('href', getLink(params)),
-                   true);
+      scope.$watch(
+        function() { return routeParamsGetter(scope); },
+        function(params) { return element.attr('href', getLink(params)); },
+        true);
     }
 
-    element.on('click', event => {
+    element.on('click', function(event) {
       if (event.which !== 1 || !navigationInstruction) {
         return;
       }

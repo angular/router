@@ -11,5 +11,6 @@ function getCanActivateHook(directiveName) {
   // This is going to be monkey patched from inside
   // the routerFactory closure, because the implementation
   // will need access to $injector
-};
+}
+
 exports.getCanActivateHook = getCanActivateHook;

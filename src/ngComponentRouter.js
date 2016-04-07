@@ -3,6 +3,7 @@ var ngLinkDirective = require('./ngLink');
 
 var exceptions = require('angular2/src/facade/exceptions');
 var BaseException = exceptions.BaseException;
+
 var lang = require('angular2/src/facade/lang');
 var isString = lang.isString;
 var isPresent = lang.isPresent;
@@ -39,7 +40,7 @@ function $locationHashPrefixProvider($locationProvider) {
       hashPrefix = prefix;
     }
     return hashPrefixFn(prefix);
-  }
+  };
 
   // Return the final hashPrefix as the value of this service
   this.$get = function() { return hashPrefix; };
@@ -47,37 +48,9 @@ function $locationHashPrefixProvider($locationProvider) {
 
 function routerFactory($q, $location, $browser, $rootScope, $injector, $routerRootComponent, $locationHashPrefix) {
 
-  function getAnnotation(componentName, annotationName) {
-    var serviceName = componentName + 'Directive';
-    if ($injector.has(serviceName)) {
-      var definitions = $injector.get(serviceName);
-      if (definitions.length > 1) {
-        throw new BaseException('too many directives named "' + componentName + '"');
-      }
-      return definitions[0][annotationName];
-    } else {
-      throw new BaseException('directive "' + componentName + '" is not registered');
-    }
-  }
-
   // Monkey-patch promises to have access to the $q service
-  var async = require('angular2/src/facade/async');
-  async.PromiseWrapper = {
-    resolve: function (reason) {
-      return $q.when(reason);
-    },
-
-    reject: function (reason) {
-      return $q.reject(reason);
-    },
-
-    catchError: function (promise, fn) {
-      return promise.then(null, fn);
-    },
-    all: function (promises) {
-      return $q.all(promises);
-    }
-  };
+  var PromiseWrapper = require('angular2/src/facade/async').PromiseWrapper;
+  PromiseWrapper.$q = $q;
 
   // Monkey-patch assertions about the type of the "component" property in a route config
   var routeConfigNormalizer = require('./router/route_config/route_config_normalizer');
@@ -95,18 +68,33 @@ function routerFactory($q, $location, $browser, $rootScope, $injector, $routerRo
     };
   };
 
-  var Location = require('./router/location/location').Location;
-  var location = new Location($location, $rootScope);
-
+  // Create the top level router, and its associated registry of router rules
   var routeRegistryFactory = require('./router/route_registry_factory');
   var registry = routeRegistryFactory(getAnnotation, $routerRootComponent);
-
+  var Location = require('./router/location/location').Location;
   var RootRouter = require('./router/router').RootRouter;
-  var router = new RootRouter(registry, location, $routerRootComponent);
+  var router = new RootRouter(registry, new Location($location, $rootScope), $routerRootComponent);
 
-  router.subscribe(function () {
-    $rootScope.$broadcast('$routeChangeSuccess', {});
+  router.subscribe(function (change) {
+    console.log('xxx');
+    $rootScope.$broadcast('$routeChangeSuccess', change);
   });
 
   return router;
+
+
+
+  function getAnnotation(componentName, annotationName) {
+    var serviceName = componentName + 'Directive';
+    if ($injector.has(serviceName)) {
+      var definitions = $injector.get(serviceName);
+      if (definitions.length > 1) {
+        throw new BaseException('too many directives named "' + componentName + '"');
+      }
+      return definitions[0][annotationName];
+    } else {
+      throw new BaseException('directive "' + componentName + '" is not registered');
+    }
+  }
+
 }

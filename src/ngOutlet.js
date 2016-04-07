@@ -18,7 +18,7 @@ function createOutlet($q, $animate) {
     }
     if (this.currentElement) {
       this.previousLeaveAnimation = $animate.leave(this.currentElement);
-      this.previousLeaveAnimation.then(function () { return _this.previousLeaveAnimation = null; });
+      this.previousLeaveAnimation.then(function () { _this.previousLeaveAnimation = null; });
       this.currentElement = null;
     }
   };
@@ -120,7 +120,8 @@ exports.ngOutletDirective = function($animate, $q, $rootRouter) {
     controller: function() {},
     controllerAs: '$$ngOutlet'
   };
-}
+};
+
 /**
  * This directive is responsible for compiling the contents of ng-outlet
  */

@@ -21,8 +21,9 @@ function Location($location, $rootScope){
     return $location.url(path + query);
   };
 
-  $rootScope.$watch(function () { return $location.url(); }, function (url) {
-    onNextHandlers.forEach(function(handler) { handler({'url': url }); });
+  $rootScope.$on('$locationChangeStart', function(event, newUrl, oldUrl, newState, oldState) {
+    console.log('$location.url changing', newUrl, oldUrl, $location.url());
+    onNextHandlers.forEach(function(handler) { handler({url: $location.url()}); });
   });
 }
 

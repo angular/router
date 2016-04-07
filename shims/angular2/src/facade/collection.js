@@ -29,7 +29,8 @@ exports.StringMapWrapper = {
   },
 
   set: function (m, k, v) {
-    return m[k] = v;
+    m[k] = v;
+    return this;
   },
 
   get: function (m, k) {
@@ -82,13 +83,14 @@ exports.StringMapWrapper = {
   },
 
   merge: function(m1, m2) {
+    var attr;
     var m = {};
-    for (var attr in m1) {
+    for (attr in m1) {
       if (m1.hasOwnProperty(attr)) {
         m[attr] = m1[attr];
       }
     }
-    for (var attr in m2) {
+    for (attr in m2) {
       if (m2.hasOwnProperty(attr)) {
         m[attr] = m2[attr];
       }
@@ -155,7 +157,7 @@ exports.ListWrapper = {
   },
 
   maximum: function(list, predicate) {
-    if (list.length == 0) {
+    if (list.length === 0) {
       return null;
     }
     var solution = null;

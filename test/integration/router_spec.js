@@ -2,60 +2,72 @@
 
 fdescribe('router', function () {
 
-  var elt, testMod;
-  beforeEach(function () {
-    testMod = angular.module('testMod', ['ngComponentRouter'])
+  function createTestModule() {
+    var mod = angular.module('testMod', ['ngComponentRouter'])
       .value('$routerRootComponent', 'app');
-  });
-
-  it('should work with a provided root component', function() {
-
-    registerComponent('homeCmp', {
-      template: 'Home'
-    });
-
-    registerComponent('app', {
-      template: '<div ng-outlet></div>',
-      $routeConfig: [
-        { path: '/', component: 'homeCmp' }
-      ]
-    });
-
     module('testMod');
-    compileApp();
+    return mod;
+  }
+
+  fit('should work with a provided root component', function() {
+    console.log(1);
+    createTestModule()
+      .component('homeCmp', {template: 'Home'})
+      .component('otherCmp', {template: 'Other'})
+      .component('app', {
+        template: '<div ng-outlet></div>',
+        $routeConfig: [
+          { path: '/home', component: 'homeCmp' },
+          { path: '/other', component: 'otherCmp' }
+        ]
+      });
+
+    var elt = compileApp();
 
     inject(function($location, $rootScope) {
+      $location.path('/home');
+      $rootScope.$digest();
+      expect(elt.text()).toBe('Home');
+
       $location.path('/');
+      $rootScope.$digest();
+
+      $location.path('/other');
+      $rootScope.$digest();
+      expect(elt.text()).toBe('Other');
+
+      $location.path('/home');
       $rootScope.$digest();
       expect(elt.text()).toBe('Home');
     });
   });
 
-  it('should bind the component to the current router', function() {
+  fit('should bind the component to the current router', function() {
+    console.log(2);
     var router;
-    registerComponent('homeCmp', {
-      bindings: { $router: '=' },
-      controller: function($scope, $element) {
-        this.$routerOnActivate = function() {
-          router = this.$router;
-        };
-      },
-      template: 'Home'
-    });
+    createTestModule()
+      .component('homeCmp', {
+        bindings: { $router: '=' },
+        controller: function($scope, $element) {
+          this.$routerOnActivate = function() {
+            router = this.$router;
+          };
+        },
+        template: 'Home'
+      })
+      .component('app', {
+        template: '<div ng-outlet></div>',
+        $routeConfig: [
+          { path: '/home', component: 'homeCmp' }
+        ]
+      });
 
-    registerComponent('app', {
-      template: '<div ng-outlet></div>',
-      $routeConfig: [
-        { path: '/', component: 'homeCmp' }
-      ]
-    });
-
-    module('testMod');
-    compileApp();
+    var elt = compileApp();
 
     inject(function($location, $rootScope) {
-      $location.path('/');
+      $location.path('/home');
       $rootScope.$digest();
+      console.log(elt);
       var homeElement = elt.find('home-cmp');
       expect(homeElement.text()).toBe('Home');
       expect(homeElement.isolateScope().$ctrl.$router).toBeDefined();
@@ -173,6 +185,7 @@ fdescribe('router', function () {
   });
 
   function compileApp() {
+    var elt;
     inject(function($compile, $rootScope) {
       elt = $compile('<div><app></app</div>')($rootScope);
       $rootScope.$digest();
