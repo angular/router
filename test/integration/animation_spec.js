@@ -1,77 +1,56 @@
 'use strict';
 
-describe('ngOutlet animations', function () {
-  var elt,
-    $animate,
-    $compile,
-    $rootScope,
-    $rootRouter,
-    $compileProvider;
+fdescribe('ngOutlet animations', function () {
 
-  beforeEach(function () {
-    module('ng');
-    module('ngAnimate');
-    module('ngAnimateMock');
-    module('ngComponentRouter');
-    module(function (_$compileProvider_) {
-      $compileProvider = _$compileProvider_;
-    });
-
-    inject(function (_$animate_, _$compile_, _$rootScope_, _$rootRouter_) {
-      $animate = _$animate_;
-      $compile = _$compile_;
-      $rootScope = _$rootScope_;
-      $rootRouter = _$rootRouter_;
-    });
-
-    registerComponent('userCmp', {
-      template: '<div>hello {{userCmp.$routeParams.name}}</div>',
-      $routerOnActivate: function(next) {
-        this.$routeParams = next.params;
+  function createTestModule() {
+    angular.module('testMod', ['ngAnimate', 'ngAnimateMock', 'ngComponentRouter'])
+    .component('userCmp', {
+      template: '<div>hello {{$ctrl.$routeParams.name}}</div>',
+      controller: function() {
+        this.$routerOnActivate = function(next) {
+          this.$routeParams = next.params;
+        };
       }
     });
-  });
-
-  afterEach(function () {
-    expect($animate.queue).toEqual([]);
-  });
+    module('testMod');
+  }
 
   it('should work in a simple case', function () {
     var item;
 
-    compile('<div ng-outlet></div>');
+    createTestModule();
 
-    $rootRouter.config([
-      { path: '/user/:name', component: 'userCmp' }
-    ]);
+    inject(function($compile, $rootScope, $animate, $rootRouter) {
+      var elt = $compile('<div><div ng-outlet></div></div>')($rootScope);
 
-    $rootRouter.navigateByUrl('/user/brian');
-    $rootScope.$digest();
-    expect(elt.text()).toBe('hello brian');
+      $rootRouter.config([
+        { path: '/user/:name', component: 'userCmp' }
+      ]);
 
-    // "user" component enters
-    item = $animate.queue.shift();
-    expect(item.event).toBe('enter');
+      $rootRouter.navigateByUrl('/user/brian');
+      $rootScope.$digest();
+      expect(elt.text()).toBe('hello brian');
 
-    // navigate to pete
-    $rootRouter.navigateByUrl('/user/pete');
-    $rootScope.$digest();
-    expect(elt.text()).toBe('hello pete');
+      // "user" component enters
+      item = $animate.queue.shift();
+      expect(item.event).toBe('enter');
 
-    // "user pete" component enters
-    item = $animate.queue.shift();
-    expect(item.event).toBe('enter');
-    expect(item.element.text()).toBe('hello pete');
+      // navigate to pete
+      $rootRouter.navigateByUrl('/user/pete');
+      $rootScope.$digest();
+      expect(elt.text()).toBe('hello pete');
 
-    // "user brian" component leaves
-    item = $animate.queue.shift();
-    expect(item.event).toBe('leave');
-    expect(item.element.text()).toBe('hello brian');
+      // "user pete" component enters
+      item = $animate.queue.shift();
+      expect(item.event).toBe('enter');
+      expect(item.element.text()).toBe('hello pete');
+
+      // "user brian" component leaves
+      item = $animate.queue.shift();
+      expect(item.event).toBe('leave');
+      expect(item.element.text()).toBe('hello brian');
+
+      expect($animate.queue).toEqual([]);
+    });
   });
-
-  function compile(template) {
-    elt = $compile('<div>' + template + '</div>')($rootScope);
-    $rootScope.$digest();
-    return elt;
-  }
 });

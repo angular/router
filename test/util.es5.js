@@ -64,55 +64,9 @@ function provideHelpers(fn, preInject) {
       $templateCache.put(componentTemplatePath(name), [200, template, {}]);
     }
 
-    function compile(template) {
-      var elt = $compile('<div>' + template + '</div>')($rootScope);
-      $rootScope.$digest();
-      return elt;
-    }
-
     fn({
-      registerComponent: registerComponent,
       $rootRouter: $rootRouter,
-      put: put,
-      compile: compile
+      put: put
     })
   }
-}
-
-
-function registerComponent(name, options) {
-
-  var definition = {
-    bindings: options.bindings,
-    controller: getController(options),
-    $routeConfig: options.$routeConfig,
-    $routerCanActivate: options.$routeCanActivate
-  };
-  if (options.template) definition.template = options.template;
-  if (options.templateUrl) definition.templateUrl = options.templateUrl;
-
-  applyStaticProperties(definition.controller, options);
-  angular.module('testMod').component(name, definition);
-}
-
-function getController(options) {
-  var controller = options.controller || function () {};
-  [
-    '$routerOnActivate', '$routerOnDeactivate',
-    '$routerOnReuse', '$routerCanReuse',
-    '$routerCanDeactivate'
-  ].forEach(function (hookName) {
-    if (options[hookName]) {
-      controller.prototype[hookName] = options[hookName];
-    }
-  });
-  return controller;
-}
-
-function applyStaticProperties(target, options) {
-  ['$canActivate', '$routeConfig'].forEach(function(property) {
-    if (options[property]) {
-      target[property] = options[property];
-    }
-  });
 }

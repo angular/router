@@ -1,6 +1,6 @@
 'use strict';
 
-describe('router', function () {
+fdescribe('router', function () {
 
   function createTestModule() {
     var mod = angular.module('testMod', ['ngComponentRouter'])

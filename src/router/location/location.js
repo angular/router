@@ -21,8 +21,21 @@ function Location($location, $rootScope){
     return $location.url(path + query);
   };
 
+  this.prepareExternalUrl = function(url) {
+    if (url.length > 0 && !url.startsWith('/')) {
+      url = '/' + url;
+    }
+    if(!$location.$$html5) {
+      return '#' + url;
+    } else {
+      return '.' + url;
+    }
+  };
+
   $rootScope.$on('$locationChangeStart', function(event, newUrl, oldUrl, newState, oldState) {
-    onNextHandlers.forEach(function(handler) { handler({url: $location.url()}); });
+    if (newUrl !== oldUrl) {
+      onNextHandlers.forEach(function(handler) { handler({url: $location.url()}); });
+    }
   });
 }
 
